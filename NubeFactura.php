@@ -19,7 +19,7 @@ class NubeFactura {
             $sql = "SELECT TIP_NOF, NUM_NOF,
                             CED_RUC,NOM_CLI,FEC_VTA,DIR_CLI,VAL_BRU,POR_DES,VAL_DES,VAL_FLE,BAS_IVA,
                             BAS_IV0,POR_IVA,VAL_IVA,VAL_NET,POR_R_F,VAL_R_F,POR_R_I,VAL_R_I,GUI_REM,0 PROPINA,
-                            USUARIO,LUG_DES,NOM_CTO
+                            USUARIO,LUG_DES,NOM_CTO,ATIENDE
                         FROM " .  $obj_con->BdServidor . ".VC010101 
                     WHERE IND_UPD='L' AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
             //echo $sql;
@@ -106,10 +106,11 @@ class NubeFactura {
         //$tip_doc,$fec_doc,$ruc,$ambiente,$serie,$numDoc,$tipoemision
         $objCla = new VSClaveAcceso();
         $serie = $objEmp['Establecimiento'] . $objEmp['PuntoEmision'];
-        $fec_doc = date("Y-m-d", strtotime($objEnt[0]['FEC_VTA']));
+        $fec_doc = date("Y-m-d", strtotime($objEnt[$i]['FEC_VTA']));
         $ClaveAcceso = $objCla->claveAcceso($codDoc, $fec_doc, $objEmp['Ruc'], $objEmp['Ambiente'], $serie, $Secuencial, $objEmp['TipoEmision']);
         /** ********************** */
-        $nomCliente=str_replace("'","",$objEnt[$i]['NOM_CLI']);// Error del ' en el Text
+        $nomCliente=str_replace("'","`",$objEnt[$i]['NOM_CLI']);// Error del ' en el Text se lo Reemplaza `
+        //$nomCliente=$objEnt[$i]['NOM_CLI'];// Error del ' en el Text
         $TotalSinImpuesto=floatval($objEnt[$i]['BAS_IVA'])+floatval($objEnt[$i]['BAS_IV0']);//Cambio por Ajuste de Valores Byron Diferencias
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeFactura
                             (Ambiente,TipoEmision, RazonSocial, NombreComercial, Ruc,ClaveAcceso,CodigoDocumento, Establecimiento,
@@ -141,8 +142,8 @@ class NubeFactura {
                             '" . $objEnt[$i]['VAL_NET'] . "', 
                             '" . $objEmp['Moneda'] . "', 
                             '$Secuencial', 
-                            '" . $objEnt[0]['TIP_NOF'] . "',
-                            '" . $objEnt[0]['USUARIO'] . "',
+                            '" . $objEnt[$i]['TIP_NOF'] . "',
+                            '" . $objEnt[$i]['ATIENDE'] . "',
                             '1',CURRENT_TIMESTAMP() )";
 
 

@@ -12,12 +12,13 @@
  * @author root
  */
 class cls_Base {
-    var $BdServidor="utimpor2014"; 
-    var $BdAppweb="appweb_2014"; 
+    var $BdServidor="utimpor2015"; 
+    var $BdAppweb="APPWEB"; 
     var $BdIntermedio="VSSEAINTERMEDIA"; 
     //SERVIDOR LOCAL APP SEA
     public function conexionServidor() {
         //Configuracion Local
+        //$bd_host = "192.168.10.1";
         $bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = "root00";
