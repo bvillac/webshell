@@ -6,7 +6,7 @@ include('VSValidador.php');
 include('VSClaveAcceso.php');
 class NubeRetencion {
     
-    private function buscarRetenciones() {
+    private function buscarRetenciones($op,$NumPed) {
         try {
             $obj_con = new cls_Base();
             $obj_var = new cls_Global();
@@ -16,14 +16,37 @@ class NubeRetencion {
             $limitEnv=$obj_var->limitEnv;
             //$sql = "SELECT TIP_NOF,CONCAT(REPEAT('0',9-LENGTH(RIGHT(NUM_NOF,9))),RIGHT(NUM_NOF,9)) NUM_NOF,
             
-            $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
-                        A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.P_R_IVA,A.V_R_IVA,
-                        A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
-                     FROM " .  $obj_con->BdServidor . ".IG0050 A
-                             INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
-                                     ON B.COD_PRO=A.COD_PRO
-             WHERE A.TIP_PED='CO' AND A.IND_UPD='L' AND A.FEC_PED>='$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
-            
+            switch ($op) {
+                Case 1://Compras alimenta inventarios
+                    $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
+                                        A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.P_R_IVA,A.V_R_IVA,
+                                        A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
+                                     FROM " .  $obj_con->BdServidor . ".IG0050 A
+                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
+                                                     ON B.COD_PRO=A.COD_PRO
+                             WHERE A.TIP_PED='CO' AND A.IND_UPD='L' AND A.FEC_PED>='$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
+                    break;
+                Case 2://Compras provisiones de pasivos
+                    $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
+                                        A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
+                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
+                                     FROM " .  $obj_con->BdServidor . ".IG0054 A
+                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
+                                                     ON B.COD_PRO=A.COD_PRO
+                             WHERE A.TIP_PED='PP' AND A.IND_UPD='L' AND A.FEC_PED>='$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv ";
+                    break;
+                Case 3://Compras provisiones de pasivos por NUmero
+                    $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
+                                        A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
+                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
+                                     FROM " .  $obj_con->BdServidor . ".IG0054 A
+                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
+                                                     ON B.COD_PRO=A.COD_PRO
+                             WHERE A.TIP_PED='PP' AND A.IND_UPD='L' AND A.NUM_PED='$NumPed'  ";
+                    break;
+                default:
+                    $sql = "";
+            }
             //echo $sql;
             $sentencia = $conCont->query($sql);
             if ($sentencia->num_rows > 0) {
@@ -40,7 +63,7 @@ class NubeRetencion {
         }
     }
 
-    public function insertarDocumentos() {
+    public function insertarDocumentosFactura($op,$NumPed) {
         
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
@@ -51,18 +74,53 @@ class NubeRetencion {
         $est_id=$obj_var->est_id;
         $pemi_id=$obj_var->pemi_id;
         try {
-            $cabDoc = $this->buscarRetenciones();
+            $cabDoc = $this->buscarRetenciones($op,$NumPed);//Compras inventarios
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
             $codDoc='07';//Comprobante de Retencion
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 $this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
-                $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i);
+                $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,1);
                 $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
             }
             $con->commit();
             $con->close();
             $this->actualizaErpCabCompras($cabDoc);
+            echo "ERP Actualizado";
+            return true;
+        } catch (Exception $e) {
+            //$trans->rollback();
+            //$con->active = false;
+            $con->rollback();
+            $con->close();
+            throw $e;
+            return false;
+        }   
+    }
+    
+    public function insertarDocumentosPasivos($op,$NumPed) {
+        
+        $obj_con = new cls_Base();
+        $obj_var = new cls_Global();
+        $con = $obj_con->conexionIntermedio();
+        $objEmpData= new EMPRESA();
+        /****VARIBLES DE SESION*******/
+        $emp_id=$obj_var->emp_id;
+        $est_id=$obj_var->est_id;
+        $pemi_id=$obj_var->pemi_id;
+        try {
+            $cabDoc = $this->buscarRetenciones($op,$NumPed);//Provision de Pasivos
+            $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
+            $codDoc='07';//Comprobante de Retencion
+            for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                $this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
+                $idCab = $con->insert_id;
+                $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,2);
+                $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
+            }
+            $con->commit();
+            $con->close();
+            $this->actualizaErpCabProvision($cabDoc);
             echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -129,10 +187,10 @@ class NubeRetencion {
     }
     
     
-    private function InsertarDetRetencion($con,$obj_con, $objEnt, $idCab,$i) {
+    private function InsertarDetRetencion($con,$obj_con, $objEnt, $idCab,$i,$op) {
         $valida = new VSValidador();
         $codigo=0;//codigo impuesto a retener
-        $cod_retencion=0;//Codigo de Porcentaje de Retencion
+        $cod_retencion='';//Codigo de Porcentaje de Retencion
         $bas_imponible=0;//Base imponible para impuesto
         $por_retener=0;//Porcentaje de Retencion
         $val_retenido=0;//Valor Retenido
@@ -144,12 +202,25 @@ class NubeRetencion {
         if(strlen($objEnt[$i]['NUM_RET'])>0){
             //Valores Retención RENTA
             $codigo=1;
-            $cod_retencion=strlen($objEnt[$i]['TIP_RET']);//Tipo de Retencion de Fuente
+            $cod_retencion=trim($objEnt[$i]['TIP_RET']);//Tipo de Retencion de Fuente
             $bas_imponible=$objEnt[$i]['BAS_IVA'];
             $por_retener=$objEnt[$i]['POR_RET'];
             $val_retenido=$objEnt[$i]['VAL_RET'];
             $TotalRetencion=$TotalRetencion+$val_retenido;
             $sqlRet = "($codigo,'$cod_retencion',$bas_imponible,$por_retener,$val_retenido,'$codDocRet','$numDocRet','$fecDocRet',$idCab)";
+            
+            //Insertar Datos Retencion por Provision de Pasivos OP=2
+            //Solo para casos donde existan mas de 2 retenciones
+            if($op==2){
+                $codigo=1;
+                $val_retenido=0;//Valor Retenido
+                $cod_retencion=  trim($objEnt[$i]['TIP_RE1']);//Tipo de Retencion de Fuente
+                $bas_imponible=$objEnt[$i]['BAS_RE1'];
+                $por_retener=$objEnt[$i]['POR_RE1'];
+                $val_retenido=$objEnt[$i]['VAL_RE1'];
+                $TotalRetencion=$TotalRetencion+$val_retenido;
+                $sqlRet .= ",($codigo,'$cod_retencion',$bas_imponible,$por_retener,$val_retenido,'$codDocRet','$numDocRet','$fecDocRet',$idCab)";
+            }
             
             //Valores Retención IVA
             //Nota: Puede Existir retencion de fuent sin retenr iVA
@@ -223,6 +294,30 @@ class NubeRetencion {
                 $numero = $cabFact[$i]['NUM_PED'];
                 $tipo = $cabFact[$i]['TIP_PED'];
                 $sql = "UPDATE " . $obj_con->BdServidor . ".IG0050 SET ENV_DOC=1
+                        WHERE TIP_PED='$tipo' AND NUM_PED='$numero' AND IND_UPD='L'";
+                //echo $sql;
+                $command = $conCont->prepare($sql);
+                $command->execute();
+            }
+            $conCont->commit();
+            $conCont->close();
+            return true;
+        } catch (Exception $e) {
+            $conCont->rollback();
+            $conCont->close();
+            throw $e;
+            return false;
+        }
+    }
+    
+    private function actualizaErpCabProvision($cabFact) {
+        $obj_con = new cls_Base();
+        $conCont = $obj_con->conexionServidor();
+        try {
+            for ($i = 0; $i < sizeof($cabFact); $i++) {
+                $numero = $cabFact[$i]['NUM_PED'];
+                $tipo = $cabFact[$i]['TIP_PED'];
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0054 SET ENV_DOC=1
                         WHERE TIP_PED='$tipo' AND NUM_PED='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);
