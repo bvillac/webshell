@@ -7,6 +7,8 @@ include('NubeRetencion.php');
 $obj = new NubeRetencion();
 //$res= $obj->insertarDocumentosFactura(1,'');
 //$res= $obj->insertarDocumentosPasivos(3,'0000003530');
+//$res= $obj->insertarDocumentosFactura(1,'');
+//$res= $obj->insertarDocumentosPasivos(2,'');
 
 //print_r($res);
 //echo $res['NUM_NOF'];
