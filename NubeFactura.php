@@ -19,7 +19,7 @@ class NubeFactura {
             $sql = "SELECT TIP_NOF, NUM_NOF,
                             CED_RUC,NOM_CLI,FEC_VTA,DIR_CLI,VAL_BRU,POR_DES,VAL_DES,VAL_FLE,BAS_IVA,
                             BAS_IV0,POR_IVA,VAL_IVA,VAL_NET,POR_R_F,VAL_R_F,POR_R_I,VAL_R_I,GUI_REM,0 PROPINA,
-                            USUARIO,LUG_DES,NOM_CTO,ATIENDE
+                            USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC
                         FROM " .  $obj_con->BdServidor . ".VC010101 
                     WHERE IND_UPD='L' AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
             //echo $sql;
@@ -79,6 +79,7 @@ class NubeFactura {
                 $detFact=$this->buscarDetFacturas($cabFact[$i]['TIP_NOF'],$cabFact[$i]['NUM_NOF']);
                 $this->InsertarDetFactura($con,$obj_con,$detFact,$idCab);
                 $this->InsertarFacturaDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
+                $cabFact[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
             $con->commit();
             $con->close();
@@ -246,7 +247,8 @@ class NubeFactura {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_NOF'];
                 $tipo = $cabFact[$i]['TIP_NOF'];
-                $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ENV_DOC=1
+                $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
+                $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ENV_DOC='$ids'
                         WHERE TIP_NOF='$tipo' AND NUM_NOF='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);

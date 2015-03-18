@@ -20,7 +20,7 @@ class NubeGuiaRemision {
                 Case 1://Consulta Masiva
                     $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
                             A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
-                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,'' ID_DOC
                             FROM " .  $obj_con->BdServidor . ".IG0045 A
                                 INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
                                     ON A.COD_CLI=B.COD_CLI
@@ -30,7 +30,7 @@ class NubeGuiaRemision {
                 Case 2://Consulta por un Numero Determinado
                     $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
                             A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
-                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,'' ID_DOC
                             FROM " .  $obj_con->BdServidor . ".IG0045 A
                                 INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
                                     ON A.COD_CLI=B.COD_CLI
@@ -96,6 +96,7 @@ class NubeGuiaRemision {
                 $this->InsertarDetGuia($con,$obj_con,$detDoc,$idDestino);
                 //Descomentar si se desea Agregar Datos Adicional
                 //$this->InsertarGuiaDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
+                $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
             $con->commit();
             $con->close();
@@ -264,7 +265,8 @@ class NubeGuiaRemision {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_GUI'];
                 $tipo = $cabFact[$i]['TIP_PED'];
-                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0045 SET ENV_DOC=1
+                $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0045 SET ENV_DOC='$ids'
                         WHERE NUM_GUI='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);

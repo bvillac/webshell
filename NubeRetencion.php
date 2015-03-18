@@ -20,7 +20,7 @@ class NubeRetencion {
                 Case 1://Compras alimenta inventarios
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.P_R_IVA,A.V_R_IVA,
-                                        A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
+                                        A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
                                      FROM " .  $obj_con->BdServidor . ".IG0050 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
                                                      ON B.COD_PRO=A.COD_PRO
@@ -29,7 +29,7 @@ class NubeRetencion {
                 Case 2://Compras provisiones de pasivos
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
-                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
+                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
                                      FROM " .  $obj_con->BdServidor . ".IG0054 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
                                                      ON B.COD_PRO=A.COD_PRO
@@ -38,7 +38,7 @@ class NubeRetencion {
                 Case 3://Compras provisiones de pasivos por NUmero
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
-                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
+                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
                                      FROM " .  $obj_con->BdServidor . ".IG0054 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
                                                      ON B.COD_PRO=A.COD_PRO
@@ -82,6 +82,7 @@ class NubeRetencion {
                 $idCab = $con->insert_id;
                 $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,1);
                 $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
+                $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
             $con->commit();
             $con->close();
@@ -117,6 +118,7 @@ class NubeRetencion {
                 $idCab = $con->insert_id;
                 $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,2);
                 $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
+                $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
             $con->commit();
             $con->close();
@@ -293,7 +295,8 @@ class NubeRetencion {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_PED'];
                 $tipo = $cabFact[$i]['TIP_PED'];
-                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0050 SET ENV_DOC=1
+                $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0050 SET ENV_DOC='$ids'
                         WHERE TIP_PED='$tipo' AND NUM_PED='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);
@@ -317,7 +320,8 @@ class NubeRetencion {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_PED'];
                 $tipo = $cabFact[$i]['TIP_PED'];
-                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0054 SET ENV_DOC=1
+                $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0054 SET ENV_DOC='$ids'
                         WHERE TIP_PED='$tipo' AND NUM_PED='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);

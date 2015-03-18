@@ -1,7 +1,7 @@
 <?php
-/*include('NubeFactura.php');//para HTTP
+include('NubeFactura.php');//para HTTP
 $obj = new NubeFactura();
-$res= $obj->insertarFacturas();*/
+$res= $obj->insertarFacturas();
 
 //include('NubeRetencion.php');
 //$obj = new NubeRetencion();
@@ -11,9 +11,9 @@ $res= $obj->insertarFacturas();*/
 //$res= $obj->insertarDocumentosPasivos(2,'');
 
 //Guia Remision
-include('NubeGuiaRemision.php');
+/*include('NubeGuiaRemision.php');
 $obj = new NubeGuiaRemision();
-$res= $obj->insertarDocumentosGuia(1,'0000001070');
+$res= $obj->insertarDocumentosGuia(1,'0000001070');*/
 
 //print_r($res);
 //echo $res['NUM_NOF'];
