@@ -17,24 +17,24 @@ class NubeGuiaRemision {
             //$sql = "SELECT TIP_NOF,CONCAT(REPEAT('0',9-LENGTH(RIGHT(NUM_NOF,9))),RIGHT(NUM_NOF,9)) NUM_NOF,
             
             switch ($op) {
-                Case 1://Compras alimenta inventarios
+                Case 1://Consulta Masiva
                     $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
                             A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
-                            B.DIR_CLI
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E
                             FROM " .  $obj_con->BdServidor . ".IG0045 A
                                 INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
                                     ON A.COD_CLI=B.COD_CLI
                     WHERE A.IND_UPD='L' AND A.FEC_GUI>='$fechaIni' AND A.ENV_DOC='0' LIMIT $limitEnv ";
                     break;
                
-                Case 3://Compras provisiones de pasivos por NUmero
-                    $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
-                                        A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
-                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E
-                                     FROM " .  $obj_con->BdServidor . ".IG0054 A
-                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
-                                                     ON B.COD_PRO=A.COD_PRO
-                             WHERE A.TIP_PED='PP' AND A.IND_UPD='L' AND A.NUM_PED='$NumPed'  ";
+                Case 2://Consulta por un Numero Determinado
+                    $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
+                            A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E
+                            FROM " .  $obj_con->BdServidor . ".IG0045 A
+                                INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
+                                    ON A.COD_CLI=B.COD_CLI
+                    WHERE A.IND_UPD='L' AND A.NUM_GUI='$NumPed' ";
                     break;
                 default:
                     $sql = "";
@@ -55,8 +55,26 @@ class NubeGuiaRemision {
         }
     }
     
+    private function buscarDetGuia($tipDoc, $numDoc) {
+        $obj_con = new cls_Base();
+        $conCont = $obj_con->conexionServidor();
+        $rawData = array();
+        $sql = "SELECT A.COD_ART,A.NOM_ART,A.CAN_DES,A.COD_LIN
+                        FROM " . $obj_con->BdServidor . ".IG0046 A
+                WHERE NUM_GUI='$numDoc'";
+        //echo $sql;
+        $sentencia = $conCont->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+
+        $conCont->close();
+        return $rawData;
+    }
+    
     public function insertarDocumentosGuia($op,$NumPed) {
-        
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
         $con = $obj_con->conexionIntermedio();
@@ -73,12 +91,15 @@ class NubeGuiaRemision {
                 $this->InsertarCabGuia($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
                 $this->InsertarDestinatarioGuia($con,$obj_con,$cabDoc,$empresaEnt,$idCab,$i);
-                //$this->InsertarDetGuia($con,$obj_con,$cabDoc,$idCab);
-                //$this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
+                $idDestino = $con->insert_id;
+                $detDoc=$this->buscarDetGuia('GU',$cabDoc[$i]['NUM_GUI']);
+                $this->InsertarDetGuia($con,$obj_con,$detDoc,$idDestino);
+                //Descomentar si se desea Agregar Datos Adicional
+                //$this->InsertarGuiaDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
             }
             $con->commit();
             $con->close();
-            $this->actualizaErpCabCompras($cabDoc);
+            $this->actualizaErpCabGuia($cabDoc);
             echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -90,6 +111,7 @@ class NubeGuiaRemision {
             return false;
         }   
     }
+    
     
     private function InsertarCabGuia($con,$obj_con, $objEnt, $objEmp, $codDoc, $i) {
         $valida = new VSValidador();
@@ -112,6 +134,7 @@ class NubeGuiaRemision {
         $puntoPartida=$objEmp['DireccionMatriz'];//Direecion de partida de la GUia
         $RazonSocialTransportista=$objEnt[$i]['NOM_TRA'];
         $TipoIdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?$valida->tipoIdent($objEnt[$i]['C_R_TRA']):'';//Verifica si Existen Datos en Cedula Ruc del TRansportista
+        $IdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?trim($objEnt[$i]['C_R_TRA']):'';
         $Rise="";//Verificar cuando es RISE
         $Placa="";
         $NombreDocumento='GU';
@@ -136,6 +159,7 @@ class NubeGuiaRemision {
                 '$puntoPartida',
                 '$RazonSocialTransportista',
                 '$TipoIdentificacionTransportista',
+                '$IdentificacionTransportista',
                 '$Rise',
                 '" . $objEmp['ObligadoContabilidad'] . "', 
                 '" . $objEmp['ContribuyenteEspecial'] . "',
@@ -180,6 +204,7 @@ class NubeGuiaRemision {
                 '" . $cabDoc[$i]['DIR_CLI'] . "',
                 '$MotivoTraslado',
                 '$DocAduaneroUnico',
+                '$CodEstabDestino',
                 '$Ruta',
                 '$CodDocSustento',
                 '$NumDocSustento',
@@ -188,60 +213,74 @@ class NubeGuiaRemision {
                 '$idCab') ";
         $command = $con->prepare($sql);
         $command->execute();
-        $idDestino = $con->insert_id;
-
     }
     
-    private function InsertarDetGuia($con,$obj_con, $detFact, $idCab) {
-        
-    }
-    
-    private function InsertarDetGuiaxxx($con,$obj_con, $detFact, $idCab) {
-        $valSinImp = 0;
-        $val_iva12 = 0;
-        $vet_iva12 = 0;
-        $val_iva0 = 0;
-        $vet_iva0 = 0;
-        //TIP_NOF,NUM_NOF,FEC_VTA,COD_ART,NOM_ART,CAN_DES,P_VENTA,T_VENTA,VAL_DES,I_M_IVA,VAL_IVA
-        for ($i = 0; $i < sizeof($detFact); $i++) {
-            $valSinImp = floatval($detFact[$i]['T_VENTA']) - floatval($detFact[$i]['VAL_DES']);
-            if ($detFact[$i]['I_M_IVA'] == '1') {
-                $val_iva12 = $val_iva12 + floatval($detFact[$i]['VAL_IVA']);
-                $vet_iva12 = $vet_iva12 + $valSinImp;
-            } else {
-                $val_iva0 = 0;
-                $vet_iva0 = $vet_iva0 + $valSinImp;
-            }
-
-            $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleFactura 
-                    (CodigoPrincipal,CodigoAuxiliar,Descripcion,Cantidad,PrecioUnitario,Descuento,PrecioTotalSinImpuesto,IdFactura) VALUES (
-                    '" . $detFact[$i]['COD_ART'] . "', 
-                    '1',
-                    '" . $detFact[$i]['NOM_ART'] . "', 
-                    '" . $detFact[$i]['CAN_DES'] . "',
-                    '" . $detFact[$i]['P_VENTA'] . "',
-                    '" . $detFact[$i]['VAL_DES'] . "',
-                    '$valSinImp',
-                    '$idCab')";
+    private function InsertarDetGuia($con,$obj_con, $detDoc, $idCab) {
+        for ($i = 0; $i < sizeof($detDoc); $i++) {
+            $CodigoAdicional='';
+            $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDetalle
+                    (CodigoInterno,CodigoAdicional,Descripcion,Cantidad,IdGuiaRemisionDestinatario)VALUES(
+                    '" . $detDoc[$i]['COD_ART'] . "',
+                    '$CodigoAdicional',
+                    '" . $detDoc[$i]['NOM_ART'] . "',
+                    '" . $detDoc[$i]['CAN_DES'] . "',
+                    '$idCab') ";
             $command = $con->prepare($sql);
             $command->execute();
             $idDet = $con->insert_id;
-            if ($detFact[$i]['I_M_IVA'] == '1') {//Verifico si el ITEM tiene Impuesto
-                //Segun Datos Sri
-                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '2', '12', $valSinImp, $detFact[$i]['VAL_IVA']); //12%
-            } else {//Caso Contrario no Genera Impuesto
-                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
-            }
-        }
-        //Insertar Datos de Iva 0%
-        If ($vet_iva0 > 0) {
-            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '0', '0', $vet_iva0, $val_iva0);
-        }
-        //Inserta Datos de Iva 12
-        If ($vet_iva12 > 0) {
-            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '2', '12', $vet_iva12, $val_iva12);
+            //Descomentar si se desea guardar Datos Adicionales
+            //$this->InsertarGuiaDetDatoAdicional($con,$obj_con,$i,$detDoc,$idDet);
         }
     }
+    
+    private function InsertarGuiaDatoAdicional($con,$obj_con, $i, $cabDoc, $idCab) {
+        $direccion = $cabDoc[$i]['DIR_CLI'];
+        $correo = $cabDoc[$i]['CORRE_E'];
+        $contacto = $cabDoc[$i]['NOM_CTO'];
+        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDatoAdicionalGuiaRemision 
+                 (Nombre,Descripcion,IdGuiaRemision)
+                 VALUES
+                 ('Direccion','$direccion','$idCab'),('Correo','$correo','$idCab'),('Contacto','$contacto','$idCab')";
+        $command = $con->prepare($sql);
+        $command->execute();
+    }
+    
+    private function InsertarGuiaDetDatoAdicional($con,$obj_con, $i, $detDoc, $idDet) {
+        $direccion = $detDoc[$i]['COD_LIN'];
+        $telefono = $detDoc[$i]['COD_LIN'];
+        $correo = $detDoc[$i]['COD_LIN'];
+        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDatoAdicionalGuiaRemisionDetalle 
+                 (Nombre,Descripcion,IdGuiaRemisionDetalle)
+                 VALUES
+                 ('Direccion','$direccion','$idDet'),('Telefono','$telefono','$idDet'),('Correo','$correo','$idDet')";
+        $command = $con->prepare($sql);
+        $command->execute();
+    }
+    
+    private function actualizaErpCabGuia($cabFact) {
+        $obj_con = new cls_Base();
+        $conCont = $obj_con->conexionServidor();
+        try {
+            for ($i = 0; $i < sizeof($cabFact); $i++) {
+                $numero = $cabFact[$i]['NUM_GUI'];
+                $tipo = $cabFact[$i]['TIP_PED'];
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0045 SET ENV_DOC=1
+                        WHERE NUM_GUI='$numero' AND IND_UPD='L'";
+                //echo $sql;
+                $command = $conCont->prepare($sql);
+                $command->execute();
+            }
+            $conCont->commit();
+            $conCont->close();
+            return true;
+        } catch (Exception $e) {
+            $conCont->rollback();
+            $conCont->close();
+            throw $e;
+            return false;
+        }
+    }
+    
     
     Private Function motivoTransporte($op){
         $motivo  = "";
@@ -277,7 +316,7 @@ class NubeGuiaRemision {
             default:
                 $motivo = "OTROS";
         }
-        Return motivo;
+        Return $motivo;
     }
     
 }
