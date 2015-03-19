@@ -194,11 +194,12 @@ class NubeRetencion {
         $codigo=0;//codigo impuesto a retener
         $cod_retencion='';//Codigo de Porcentaje de Retencion
         $bas_imponible=0;//Base imponible para impuesto
-        $por_retener=0;//Porcentaje de Retencion
+        $por_retener=0;//Porcentaje de Retencion  
         $val_retenido=0;//Valor Retenido
-        $codDocRet=$objEnt[$i]['TIP_PED'];
-        $numDocRet = $valida->ajusteNumDoc($objEnt[$i]['NUM_PED'], 9);
-        $fecDocRet=$objEnt[$i]['FEC_PED'];
+        $codDocRet='01';//$objEnt[$i]['TIP_PED'];//Verificar  cuando Sea Otros Documento FACTURA='01'
+        $n_s_pro=str_replace('-', '', $objEnt[$i]['N_S_PRO']);//Remplaza 001-001 ->001001
+        $numDocRet = $n_s_pro.$valida->ajusteNumDoc($objEnt[$i]['N_F_PRO'], 9);
+        $fecDocRet=$objEnt[$i]['F_F_PRO'];
         $TotalRetencion=0;
 
         if(strlen($objEnt[$i]['NUM_RET'])>0){
@@ -213,7 +214,7 @@ class NubeRetencion {
             
             //Insertar Datos Retencion por Provision de Pasivos OP=2
             //Solo para casos donde existan mas de 2 retenciones
-            if($op==2){
+            if($op==2 && $objEnt[$i]['TIP_RE1']<>''){//Verifica si Hay Tipo de Retencion para Agregar Valores
                 $codigo=1;
                 $val_retenido=0;//Valor Retenido
                 $cod_retencion=  trim($objEnt[$i]['TIP_RE1']);//Tipo de Retencion de Fuente
