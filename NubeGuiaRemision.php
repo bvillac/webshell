@@ -130,14 +130,14 @@ class NubeGuiaRemision {
         $razonSocialDoc=str_replace("'","`",$objEnt[$i]['NOM_PRO']);// Error del ' en el Text se lo Reemplaza `
         //$nomCliente=$objEnt[$i]['NOM_PRO'];// Error del ' en el Text
         
-        //DATOS IMPORTANTES DE GUIA
+        //DATOS IMPORTANTES DE GUIA OBLIGATORIOS
         $DireccionEstablecimiento=$objEmp['DireccionMatriz'];
         $puntoPartida=$objEmp['DireccionMatriz'];//Direecion de partida de la GUia
-        $RazonSocialTransportista=$objEnt[$i]['NOM_TRA'];
-        $TipoIdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?$valida->tipoIdent($objEnt[$i]['C_R_TRA']):'';//Verifica si Existen Datos en Cedula Ruc del TRansportista
-        $IdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?trim($objEnt[$i]['C_R_TRA']):'';
+        $RazonSocialTransportista=(strlen($objEnt[$i]['NOM_TRA'])>0)?$objEnt[$i]['NOM_TRA']:'Transporte Empresa '.$objEmp['RazonSocial'];//Si no hay transporte Adjunta Nombre de la Empresa
+        $TipoIdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?$valida->tipoIdent($objEnt[$i]['C_R_TRA']):'04';//Verifica si Existen Datos en Cedula Ruc del TRansportista
+        $IdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?trim($objEnt[$i]['C_R_TRA']):'999999999999';
         $Rise="";//Verificar cuando es RISE
-        $Placa="";
+        $Placa="xxx";//Dato Obligatorio
         $NombreDocumento='GU';
         
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeGuiaRemision

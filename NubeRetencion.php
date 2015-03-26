@@ -87,7 +87,7 @@ class NubeRetencion {
             $con->commit();
             $con->close();
             $this->actualizaErpCabCompras($cabDoc);
-            echo "ERP Actualizado";
+            //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
             //$trans->rollback();
@@ -179,7 +179,7 @@ class NubeRetencion {
                         0,
                         '" . $objEnt[$i]['USUARIO'] . "',                        
                         '$Secuencial', 
-                        '" . $objEnt[$i]['TIP_PED'] . "',
+                        '" . $objEnt[$i]['TIP_PED'] . "-" . $objEnt[$i]['NUM_PED'] . "',
                         '1',CURRENT_TIMESTAMP() )";
 
         $command = $con->prepare($sql);
