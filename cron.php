@@ -1,7 +1,9 @@
 <?php
 include('NubeFactura.php');//para HTTP
 $obj = new NubeFactura();
-$res= $obj->insertarFacturas();
+//$res= $obj->insertarFacturas();
+
+$res= $obj->insertarFacturasRAD();
 
 //include('NubeRetencion.php');
 //$obj = new NubeRetencion();

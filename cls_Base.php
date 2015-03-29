@@ -14,7 +14,8 @@
 class cls_Base {
     var $BdServidor="utimpor2015"; 
     var $BdAppweb="APPWEB"; 
-    var $BdIntermedio="VSSEAINTERMEDIA"; 
+    var $BdIntermedio="VSSEAINTERMEDIA";
+    var $BdRad="VSSEARAD"; 
     //SERVIDOR LOCAL APP SEA
     public function conexionServidor() {
         //Configuracion Local
@@ -74,6 +75,22 @@ class cls_Base {
     }
     public function getBdAppweb() {
         return $this->BdAppweb;
+    }
+    //SERVIDOR REMOTO VSSEARAD
+    public function conexionVsRAd() {
+        //Configuracion Local
+        $bd_host = "localhost";
+        $bd_usuario = "root";
+        $bd_password = "root00";
+        $bd_base = $this->BdRad;
+        $con = new mysqli($bd_host,$bd_usuario,$bd_password,$bd_base);
+        if($con->connect_error){
+            die("Error en la conexion : ".$con->connect_errno."-".$con->connect_error);
+        }
+        return $con;
+    }
+    public function getBdVsRAd() {
+        return $this->BdRad;
     }
 
 }
