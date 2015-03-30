@@ -11,6 +11,7 @@
  *
  * @author root
  */
+//include('cls_Base.php');//para HTTP
 class cls_Global {
     //put your code here
     var $emp_id='1';//Empresa
@@ -19,7 +20,7 @@ class cls_Global {
     var $consumidorfinal='9999999999';
     var $dateStartFact='2015-02-27';
     var $limitEnv=5;
-    var $limitEnvMail=5;
+    var $limitEnvMail=2;
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;
@@ -57,47 +58,47 @@ class cls_Global {
         }
     }
     
-    public function insertarUsuarioPersona($cabDoc) {  
-        $obj_con = new cls_Base();
-        $con = $obj_con->conexionAppWeb();
+    public function insertarUsuarioPersona($obj_con,$cabDoc,$i) {  
+        //$obj_con = new cls_Base();
+        $conUse = $obj_con->conexionAppWeb();
         try {
-            $this->InsertarPersona($con,$cabDoc,$obj_con);
-            $idPer = $con->insert_id;
-            $keyUser=$this->InsertarUsuario($con, $cabDoc,$obj_con, $IdPer);
-            $con->commit();
-            $con->close();
+            $this->InsertarPersona($conUse,$cabDoc,$obj_con,$i);
+            $IdPer = $conUse->insert_id;
+            $keyUser=$this->InsertarUsuario($conUse, $cabDoc,$obj_con, $IdPer,$i);
+            $conUse->commit();
+            $conUse->close();
             return $this->messageSystem('OK', null, null, null, $keyUser);
         } catch (Exception $e) {
-            $con->rollback();
-            $con->close();
+            $conUse->rollback();
+            $conUse->close();
             //throw $e;
             return $this->messageSystem('NO_OK', $e->getMessage(), null, null, null);
         }   
     }
-    private function InsertarPersona($con, $objEnt,$obj_con) {
+    private function InsertarPersona($con, $objEnt,$obj_con,$i) {
         $sql = "INSERT INTO " . $obj_con->BdAppweb . ".PERSONA
                 (PER_CED_RUC,PER_NOMBRE,PER_GENERO,PER_EST_LOG,PER_FEC_CRE)VALUES
-                ('" . $objEnt['CedRuc'] . "','" . $objEnt['RazonSoc'] . "','M','1',CURRENT_TIMESTAMP()) ";
+                ('" . $objEnt[$i]['CedRuc'] . "','" . $objEnt[$i]['RazonSoc'] . "','M','1',CURRENT_TIMESTAMP()) ";
         $command = $con->prepare($sql);
         $command->execute();
     }
     
-    private function InsertarUsuario($con, $objEnt,$obj_con, $IdPer) {
-        $usuNombre = $objEnt['CedRuc'];
-        $RazonSoc = $objEnt['RazonSoc'];
-        $correo = '';//$objEnt['correo'];
+    private function InsertarUsuario($con, $objEnt,$obj_con, $IdPer,$i) {
+        $usuNombre = $objEnt[$i]['CedRuc'];
+        $RazonSoc = $objEnt[$i]['RazonSoc'];
+        $correo = ($objEnt[$i]['CorreoPer']<>'')?$objEnt[$i]['CorreoPer']:$this->buscarCorreoERP($obj_con,$usuNombre,'MG0031');//Consulta Tabla Clientes
         $pass = $this->generarCodigoKey(8);
         $sql = "INSERT INTO " . $obj_con->BdAppweb . ".USUARIO
                 (PER_ID,USU_NOMBRE,USU_ALIAS,USU_CORREO,USU_PASSWORD,USU_EST_LOG,USU_FEC_CRE)VALUES
                 ($IdPer,'$usuNombre','$RazonSoc','$correo',MD5('$pass'),'1',CURRENT_TIMESTAMP()) ";
         $command = $con->prepare($sql);
         $command->execute();
-        
+        //Retorna el Pass y el Correo Guardado
         $arroout["Clave"] = $pass;
         $arroout["CorreoPer"] = $correo;
         return $arroout;
     }
-    
+    //Genera un Codigo para Pass
     private function generarCodigoKey($longitud) {
         $key = '';
         $pattern = '1234567890abcdefghijklmnopqrstuvwxyz';
@@ -106,5 +107,22 @@ class cls_Global {
             $key .= $pattern{mt_rand(0, $max)};
         return $key;
     }
+    //Consulta en la Tablas del ERP si existe un correo
+    private function buscarCorreoERP($obj_con,$CedRuc, $DBTable) {
+        //$obj_con = new cls_Base();
+        $conCont = $obj_con->conexionServidor();
+        $rawData='';
+        $sql = "SELECT IFNULL(CORRE_E,'') CorreoPer  FROM " . $obj_con->BdServidor . ".$DBTable "
+                . "WHERE CED_RUC='$CedRuc' AND CORRE_E<>'' ";
+        //echo $sql;
+        $sentencia = $conCont->query($sql);
+        if ($sentencia->num_rows > 0) {
+            $fila = $sentencia->fetch_assoc();
+            $rawData= $fila["CorreoPer"];
+        }
+        $conCont->close();
+        return $rawData;
+    }
+    
 
 }

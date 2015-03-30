@@ -5,6 +5,7 @@ include('cls_Global.php');//para HTTP
 include('EMPRESA.php');//para HTTP
 include('VSValidador.php');
 include('VSClaveAcceso.php');
+include('mailSystem.php');
 class NubeFactura {
     
     private function buscarFacturas() {
@@ -478,6 +479,7 @@ class NubeFactura {
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
         $con = $obj_con->conexionVsRAd();
+        $dataMail = new mailSystem;
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
             //Se procede a preparar con loa correos para enviar.
@@ -490,15 +492,28 @@ class NubeFactura {
                     $cabDoc[$i]['Clave']='';//No genera Clave
                 }else{
                     //No Existe y se crea uno nuevo
-                    $rowUser=$obj_var->insertarUsuarioPersona($cabDoc);
+                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,$i);
                     $row=$rowUser['data'];
                     $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
                     $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada
                 }
             }
-            //$con->commit();
+            //Envia l iformacion de Correos que ya se completo
+            for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                if(strlen($cabDoc[$i]['CorreoPer'])>0){
+                    //Envia Correo
+                    $htmlMail="Hola como estas";
+                    $dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
+                    $cabDoc[$i]['Estado']=6;//Correo Envia
+                }else{
+                    //No envia Correo 
+                    //Error COrreo no EXISTE
+                    $cabDoc[$i]['Estado']=7;//Correo No enviado
+                }
+                
+            }
             $con->close();
-            //$this->actualizaRAD($cabFact);
+            $this->actualizaEnvioMailRAD($cabDoc);
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -528,6 +543,29 @@ class NubeFactura {
             //$conCont->close();
             return $rawData;
        
+    }
+    
+    private function actualizaEnvioMailRAD($cabFact) {
+        $obj_con = new cls_Base();
+        $conCont = $obj_con->conexionVsRAd();
+        try {
+            for ($i = 0; $i < sizeof($cabFact); $i++) {
+                $Estado=$cabFact[$i]['Estado'];//Contine el IDs del Tabla Autorizacion
+                $Ids=$cabFact[$i]['Ids'];
+                $sql = "UPDATE " . $obj_con->BdRad . ".VSFactura SET Estado='$Estado' WHERE IdFactura='$Ids';";
+                //echo $sql;
+                $command = $conCont->prepare($sql);
+                $command->execute();
+            }
+            $conCont->commit();
+            $conCont->close();
+            return true;
+        } catch (Exception $e) {
+            $conCont->rollback();
+            $conCont->close();
+            throw $e;
+            return false;
+        }
     }
 
     
