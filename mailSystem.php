@@ -62,7 +62,7 @@ class mailSystem {
         $mail->Username = "no-responder@utimpor.com";
         $mail->Password = "F0E4CwUyWy?h";
         $mail->CharSet = 'UTF-8';
-        $mail->SMTPDebug = 1;//Muestra el Error
+        //$mail->SMTPDebug = 1;//Muestra el Error
 
         if (!$mail->Send()) {
             echo "Error enviando: " . $mail->ErrorInfo;

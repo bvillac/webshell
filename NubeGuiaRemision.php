@@ -144,7 +144,7 @@ class NubeGuiaRemision {
                 (Ambiente,TipoEmision,RazonSocial,NombreComercial,Ruc,ClaveAcceso,CodigoDocumento,Establecimiento,PuntoEmision,
                  Secuencial,DireccionMatriz,DireccionEstablecimiento,DireccionPartida,RazonSocialTransportista,
                  TipoIdentificacionTransportista,IdentificacionTransportista,Rise,ObligadoContabilidad,ContribuyenteEspecial,
-                 FechaInicioTransporte,FechaFinTransporte,Placa,UsuarioCreador,NombreDocumento,SecuencialERP,Estado)VALUES(
+                 FechaInicioTransporte,FechaFinTransporte,Placa,UsuarioCreador,FechaEmisionErp,NombreDocumento,SecuencialERP,Estado)VALUES(
                 '" . $objEmp['Ambiente'] . "',
                 '" . $objEmp['TipoEmision'] . "',
                 '" . $objEmp['RazonSocial'] . "',
@@ -168,6 +168,7 @@ class NubeGuiaRemision {
                 '" . $objEnt[$i]['FEC_T_T'] . "',
                 '$Placa',
                 '" . $objEnt[$i]['USUARIO'] . "',
+                '" . $objEnt[$i]['FEC_GUI'] . "',
                 '$NombreDocumento',
                 '$Secuencial','1')";
         $command = $con->prepare($sql);
