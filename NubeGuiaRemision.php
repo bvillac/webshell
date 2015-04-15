@@ -134,10 +134,16 @@ class NubeGuiaRemision {
         $DireccionEstablecimiento=$objEmp['DireccionMatriz'];
         $puntoPartida=$objEmp['DireccionMatriz'];//Direecion de partida de la GUia
         $RazonSocialTransportista=(strlen($objEnt[$i]['NOM_TRA'])>0)?$objEnt[$i]['NOM_TRA']:'Transporte Empresa '.$objEmp['RazonSocial'];//Si no hay transporte Adjunta Nombre de la Empresa
-        $TipoIdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?$valida->tipoIdent($objEnt[$i]['C_R_TRA']):'04';//Verifica si Existen Datos en Cedula Ruc del TRansportista
-        $IdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?trim($objEnt[$i]['C_R_TRA']):'999999999999';
+        $TipoIdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?$valida->tipoIdent($objEnt[$i]['C_R_TRA']):'05';//Verifica si Existen Datos en Cedula Ruc del TRansportista
+        //Valida que la Identificacion sean numeros
+        if(is_numeric($objEnt[$i]['C_R_TRA'])){
+            $IdentificacionTransportista=(strlen($objEnt[$i]['C_R_TRA'])>0)?trim($objEnt[$i]['C_R_TRA']):'9999999999';
+        }else{
+            $IdentificacionTransportista='9999999999';
+        }
+        
         $Rise="";//Verificar cuando es RISE
-        $Placa="xxx";//Dato Obligatorio
+        $Placa="X";//Dato Obligatorio
         $NombreDocumento='GU';
         
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeGuiaRemision
