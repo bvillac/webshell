@@ -502,7 +502,10 @@ class NubeFactura {
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 if(strlen($cabDoc[$i]['CorreoPer'])>0){
                     //Envia Correo
-                    $htmlMail="Hola como estas";
+                    //$htmlMail="Hola como estas 2";
+                    include('mensaje.php');
+                    $htmlMail=$mensaje;
+                    //$htmlMail=file_get_contents('mensaje.php');
                     $dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
                     $cabDoc[$i]['Estado']=6;//Correo Envia
                 }else{

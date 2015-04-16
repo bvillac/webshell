@@ -20,7 +20,7 @@ class cls_Global {
     var $consumidorfinal='9999999999';
     var $dateStartFact='2015-03-20';
     var $limitEnv=5;
-    var $limitEnvMail=2;
+    var $limitEnvMail=1;
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;

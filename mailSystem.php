@@ -11,6 +11,12 @@ require_once('PHPMailerAutoload.php');
 //require_once('../class.phpmailer.php');
 //include('class.phpmailer.php');
 class mailSystem {
+    private $domEmpresa='Utimpor.com';
+    private $mailSMTP='mail.utimpor.com';
+    private $noResponder='no-responder@utimpor.com';
+    private $noResponderPass='F0E4CwUyWy?h';
+    private $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
+    
 
     //put your code here
     public function enviarMail($body,$CabPed,$obj_var) {
@@ -26,15 +32,15 @@ class mailSystem {
         $mail->SMTPSecure = "ssl";
         $mail->Port = 465;
         // la dirección del servidor, p. ej.: smtp.servidor.com
-        $mail->Host = "mail.utimpor.com";
+        $mail->Host = $this->mailSMTP;//"mail.utimpor.com";
 
         // dirección remitente, p. ej.: no-responder@miempresa.com
         // nombre remitente, p. ej.: "Servicio de envío automático"
-        $mail->setFrom('no-responder@utimpor.com', 'Servicio de envío automático Utimpor.com');
+        $mail->setFrom($this->noResponder, 'Servicio de envío automático '.$this->domEmpresa);
         //$mail->setFrom('bvillacreses@utimpor.com', 'Utimpor.com');
 
         // asunto y cuerpo alternativo del mensaje
-        $mail->Subject = "Ha Recibido un(a) Orden Nuevo(a)!!!";
+        $mail->Subject = $this->Subject;
         $mail->AltBody = "Data alternativao";
 
         // si el cuerpo del mensaje es HTML
@@ -54,13 +60,14 @@ class mailSystem {
         $mail->addBCC('byronvillacreses@gmail.com', 'Byron Villa'); //Para con copia
         //$mail->addCC('byronvillacreses@gmail.com', 'ByronV'); //Para con copia
         //$mail->addReplyTo('byronvillacreses@gmail.com', 'First Last');
-        //
+        
+        //$mail->AddAttachment("archivo.zip");//adjuntos un archivo al mensaje
         // si el SMTP necesita autenticación
         $mail->SMTPAuth = true;
 
         // credenciales usuario
-        $mail->Username = "no-responder@utimpor.com";
-        $mail->Password = "F0E4CwUyWy?h";
+        $mail->Username = $this->noResponder;
+        $mail->Password = $this->noResponderPass;
         $mail->CharSet = 'UTF-8';
         //$mail->SMTPDebug = 1;//Muestra el Error
 
