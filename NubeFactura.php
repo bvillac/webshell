@@ -480,6 +480,8 @@ class NubeFactura {
         $obj_var = new cls_Global();
         $con = $obj_con->conexionVsRAd();
         $dataMail = new mailSystem;
+        $dataMail->file_to_attach='/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
+        $rutaLink='http://www.docsea.utimpor.com';
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
             //Se procede a preparar con loa correos para enviar.
@@ -506,8 +508,15 @@ class NubeFactura {
                     include('mensaje.php');
                     $htmlMail=$mensaje;
                     //$htmlMail=file_get_contents('mensaje.php');
-                    $dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
-                    $cabDoc[$i]['Estado']=6;//Correo Envia
+                    $dataMail->Subject='Ha Recibido un(a) Factura Nuevo(a)!!! ';
+                    $dataMail->fileXML='FACTURA-'.$cabDoc[$i]["Documento"].'.xml';
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
+                    if($resulMail["status"]=='OK'){
+                        $cabDoc[$i]['Estado']=6;//Correo Envia
+                    }else{
+                        $cabDoc[$i]['Estado']=7;//Correo No enviado
+                    }
+                    
                 }else{
                     //No envia Correo 
                     //Error COrreo no EXISTE

@@ -5,17 +5,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-//Yii::import('system.vendors.PHPMailer.*'); //Usar de Forma nativa.
 require_once('PHPMailerAutoload.php');
-//require_once('../class.phpmailer.php');
-//include('class.phpmailer.php');
 class mailSystem {
     private $domEmpresa='Utimpor.com';
     private $mailSMTP='mail.utimpor.com';
     private $noResponder='no-responder@utimpor.com';
     private $noResponderPass='F0E4CwUyWy?h';
-    private $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
+    public $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
+    public $file_to_attach='';
+    public $fileXML='';
     
 
     //put your code here
@@ -62,6 +60,7 @@ class mailSystem {
         //$mail->addReplyTo('byronvillacreses@gmail.com', 'First Last');
         
         //$mail->AddAttachment("archivo.zip");//adjuntos un archivo al mensaje
+        $mail->AddAttachment($this->file_to_attach.$this->fileXML,$this->fileXML);
         // si el SMTP necesita autenticación
         $mail->SMTPAuth = true;
 
@@ -72,11 +71,11 @@ class mailSystem {
         //$mail->SMTPDebug = 1;//Muestra el Error
 
         if (!$mail->Send()) {
-            echo "Error enviando: " . $mail->ErrorInfo;
-            //return $obj_var->messageSystem('NO_OK', "Error enviando: " . $mail->ErrorInfo, 11, null, null);
+            //echo "Error enviando: " . $mail->ErrorInfo;
+            return $obj_var->messageSystem('NO_OK', "Error enviando: " . $mail->ErrorInfo, null, null, null);
         } else {
-            echo "¡¡Enviado!!";
-            //return $obj_var->messageSystem('OK', "¡¡Enviado!!", 30, null, null);
+            //echo "¡¡Enviado!!";
+            return $obj_var->messageSystem('OK', "¡¡Enviado!!", null, null, null);
         }
     }
 
