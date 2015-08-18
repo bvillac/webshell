@@ -85,7 +85,7 @@ class NubeFactura {
             $con->commit();
             $con->close();
             $this->actualizaErpCabFactura($cabFact);
-            echo "ERP Actualizado";
+            //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
             //$trans->rollback();

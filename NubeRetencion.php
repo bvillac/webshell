@@ -123,7 +123,7 @@ class NubeRetencion {
             $con->commit();
             $con->close();
             $this->actualizaErpCabProvision($cabDoc);
-            echo "ERP Actualizado";
+            //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
             //$trans->rollback();
