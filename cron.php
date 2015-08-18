@@ -1,10 +1,10 @@
 <?php
 include('NubeFactura.php');//para HTTP
 $obj = new NubeFactura();
-//$res= $obj->insertarFacturas();
+$res= $obj->insertarFacturas();
 
 //$res= $obj->insertarFacturasRAD();
-$res= $obj->enviarMailDoc();
+//$res= $obj->enviarMailDoc();
 
 //Enviar E-MAIL a Usuarios
 /*include('cls_Global.php');

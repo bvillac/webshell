@@ -101,7 +101,7 @@ class NubeGuiaRemision {
             $con->commit();
             $con->close();
             $this->actualizaErpCabGuia($cabDoc);
-            echo "ERP Actualizado";
+            //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
             //$trans->rollback();
@@ -127,7 +127,7 @@ class NubeGuiaRemision {
         //$perFiscal = date("m/Y", strtotime($objEnt[$i]['FEC_GUI']));
         $ClaveAcceso = $objCla->claveAcceso($codDoc, $fec_doc, $objEmp['Ruc'], $objEmp['Ambiente'], $serie, $Secuencial, $objEmp['TipoEmision']);
         /** ********************** */
-        $razonSocialDoc=str_replace("'","`",$objEnt[$i]['NOM_PRO']);// Error del ' en el Text se lo Reemplaza `
+        $razonSocialDoc=str_replace("'","`",$objEnt[$i]['NOM_CLI']);// Error del ' en el Text se lo Reemplaza `
         //$nomCliente=$objEnt[$i]['NOM_PRO'];// Error del ' en el Text
         
         //DATOS IMPORTANTES DE GUIA OBLIGATORIOS
@@ -150,7 +150,7 @@ class NubeGuiaRemision {
                 (Ambiente,TipoEmision,RazonSocial,NombreComercial,Ruc,ClaveAcceso,CodigoDocumento,Establecimiento,PuntoEmision,
                  Secuencial,DireccionMatriz,DireccionEstablecimiento,DireccionPartida,RazonSocialTransportista,
                  TipoIdentificacionTransportista,IdentificacionTransportista,Rise,ObligadoContabilidad,ContribuyenteEspecial,
-                 FechaInicioTransporte,FechaFinTransporte,Placa,UsuarioCreador,FechaEmisionErp,NombreDocumento,SecuencialERP,Estado)VALUES(
+                 FechaInicioTransporte,FechaFinTransporte,Placa,UsuarioCreador,FechaEmisionErp,NombreDocumento,SecuencialERP,Estado,FechaCarga)VALUES(
                 '" . $objEmp['Ambiente'] . "',
                 '" . $objEmp['TipoEmision'] . "',
                 '" . $objEmp['RazonSocial'] . "',
@@ -176,7 +176,7 @@ class NubeGuiaRemision {
                 '" . $objEnt[$i]['USUARIO'] . "',
                 '" . $objEnt[$i]['FEC_GUI'] . "',
                 '$NombreDocumento',
-                '$Secuencial','1')";
+                '$Secuencial','1',CURRENT_TIMESTAMP() )";
         $command = $con->prepare($sql);
         $command->execute();
 
@@ -271,7 +271,7 @@ class NubeGuiaRemision {
         try {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_GUI'];
-                $tipo = $cabFact[$i]['TIP_PED'];
+                $tipo = $cabFact[$i]['TIP_NOF'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
                 $sql = "UPDATE " . $obj_con->BdServidor . ".IG0045 SET ENV_DOC='$ids'
                         WHERE NUM_GUI='$numero' AND IND_UPD='L'";

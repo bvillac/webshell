@@ -18,7 +18,7 @@ class cls_Global {
     var $est_id='1';//
     var $pemi_id='1';//Punto Emision
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2015-07-20';//'2015-03-20';
+    var $dateStartFact='2015-08-01';//'2015-03-20';//2015-07-20
     var $limitEnv=5;
     var $limitEnvMail=1;
     
