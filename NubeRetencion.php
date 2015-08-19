@@ -201,6 +201,7 @@ class NubeRetencion {
         $numDocRet = $n_s_pro.$valida->ajusteNumDoc($objEnt[$i]['N_F_PRO'], 9);
         $fecDocRet=$objEnt[$i]['F_F_PRO'];
         $TotalRetencion=0;
+        $sqlRet="";
 
         if(strlen($objEnt[$i]['NUM_RET'])>0){
             //Valores Retención RENTA
@@ -245,7 +246,10 @@ class NubeRetencion {
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleRetencion
                 (Codigo,CodigoRetencion,BaseImponible,PorcentajeRetener,ValorRetenido,CodDocRetener,
                  NumDocRetener,FechaEmisionDocRetener,IdRetencion)VALUES ";
-        $sql .= $sqlRet ; 
+        /*
+         * nOTA revissar poque aveces no ingresa al $sqlRet cuando deberia ingresar en todas
+         */
+        $sql .= $sqlRet; 
         $command = $con->prepare($sql);
         $command->execute();
 

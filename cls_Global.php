@@ -19,7 +19,7 @@ class cls_Global {
     var $pemi_id='1';//Punto Emision
     var $consumidorfinal='9999999999';
     var $dateStartFact='2015-08-01';//'2015-03-20';//2015-07-20
-    var $limitEnv=1;
+    var $limitEnv=10;
     var $limitEnvMail=1;
     
     public function messageSystem($status,$error,$op,$message,$data) {
