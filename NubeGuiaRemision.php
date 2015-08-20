@@ -148,7 +148,7 @@ class NubeGuiaRemision {
         /*Configuracion para Usuario ATIENDE, se reempla la v16->16 ->20-08-2015
          * es decir solo para usuario Utimpor que en la tablas guarda la V16,V03 etc
          */
-        $Atiende=str_replace("v","",$objEnt[$i]['USUARIO']);
+        $Atiende=$objEnt[$i]['USUARIO'];//str_replace("v","",$objEnt[$i]['USUARIO']);
         //*****************************************************
         
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeGuiaRemision
