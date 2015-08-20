@@ -20,7 +20,7 @@ class NubeGuiaRemision {
                 Case 1://Consulta Masiva
                     $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
                             A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
-                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,'' ID_DOC
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,A.ATIENDE,'' ID_DOC
                             FROM " .  $obj_con->BdServidor . ".IG0045 A
                                 INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
                                     ON A.COD_CLI=B.COD_CLI
@@ -30,7 +30,7 @@ class NubeGuiaRemision {
                 Case 2://Consulta por un Numero Determinado
                     $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
                             A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
-                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,'' ID_DOC
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,A.ATIENDE,'' ID_DOC
                             FROM " .  $obj_con->BdServidor . ".IG0045 A
                                 INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
                                     ON A.COD_CLI=B.COD_CLI
@@ -148,7 +148,7 @@ class NubeGuiaRemision {
         /*Configuracion para Usuario ATIENDE, se reempla la v16->16 ->20-08-2015
          * es decir solo para usuario Utimpor que en la tablas guarda la V16,V03 etc
          */
-        $Atiende=$objEnt[$i]['USUARIO'];//str_replace("v","",$objEnt[$i]['USUARIO']);
+        $Atiende=$objEnt[$i]['ATIENDE'];//str_replace("v","",$objEnt[$i]['USUARIO']);
         //*****************************************************
         
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeGuiaRemision
