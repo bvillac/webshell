@@ -145,6 +145,11 @@ class NubeGuiaRemision {
         $Rise="";//Verificar cuando es RISE
         $Placa=(strlen($objEnt[$i]['PLK_TRA'])>0)?trim($objEnt[$i]['PLK_TRA']):'Utimpor';//$objEnt[$i]['PLK_TRA'];//Dato Obligatorio
         $NombreDocumento='GU';
+        /*Configuracion para Usuario ATIENDE, se reempla la v16->16 ->20-08-2015
+         * es decir solo para usuario Utimpor que en la tablas guarda la V16,V03 etc
+         */
+        $Atiende=str_replace("v","",$objEnt[$i]['USUARIO']);
+        //*****************************************************
         
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeGuiaRemision
                 (Ambiente,TipoEmision,RazonSocial,NombreComercial,Ruc,ClaveAcceso,CodigoDocumento,Establecimiento,PuntoEmision,
@@ -173,7 +178,7 @@ class NubeGuiaRemision {
                 '" . $objEnt[$i]['FEC_I_T'] . "',
                 '" . $objEnt[$i]['FEC_T_T'] . "',
                 '$Placa',
-                '" . $objEnt[$i]['USUARIO'] . "',
+                '$Atiende',
                 '" . $objEnt[$i]['FEC_GUI'] . "',
                 '$NombreDocumento',
                 '$Secuencial','1',CURRENT_TIMESTAMP() )";
