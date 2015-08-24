@@ -4,9 +4,9 @@ include('cls_Global.php');//para HTTP
 include('EMPRESA.php');//para HTTP
 include('VSValidador.php');
 include('VSClaveAcceso.php');
-class NubeRetencion {
+class NubeNotasCredito {
     
-    private function buscarRetenciones($op,$NumPed) {
+    private function buscarNC($op,$NumPed) {
         try {
             $obj_con = new cls_Base();
             $obj_var = new cls_Global();
@@ -63,7 +63,7 @@ class NubeRetencion {
         }
     }
 
-    public function insertarDocumentosFactura($op,$NumPed) {
+    public function insertarDocumentosNC($op,$NumPed) {
         
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
@@ -74,7 +74,7 @@ class NubeRetencion {
         $est_id=$obj_var->est_id;
         $pemi_id=$obj_var->pemi_id;
         try {
-            $cabDoc = $this->buscarRetenciones($op,$NumPed);//Compras inventarios
+            $cabDoc = $this->buscarNC($op,$NumPed);//Compras inventarios
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
             $codDoc='07';//Comprobante de Retencion
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
@@ -114,15 +114,11 @@ class NubeRetencion {
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
             $codDoc='07';//Comprobante de Retencion
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                //Por el 332, si no existe Numero de Retencion no se genera documento a validar Byron 24-08-2015 
-                if(strlen($cabDoc[$i]['NUM_RET'])>0){
-                    $this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
-                    $idCab = $con->insert_id;
-                    $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,2);
-                    $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
-                    $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
-                }
-               
+                $this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
+                $idCab = $con->insert_id;
+                $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,2);
+                $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
+                $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
             $con->commit();
             $con->close();
@@ -330,15 +326,11 @@ class NubeRetencion {
                 $numero = $cabFact[$i]['NUM_PED'];
                 $tipo = $cabFact[$i]['TIP_PED'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
-                ////Por el 332, si no existe Numero de Retencion no se genera documento a validar Byron 24-08-2015 
-                if($ids>0){
-                    $sql = "UPDATE " . $obj_con->BdServidor . ".IG0054 SET ENV_DOC='$ids'
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0054 SET ENV_DOC='$ids'
                         WHERE TIP_PED='$tipo' AND NUM_PED='$numero' AND IND_UPD='L'";
-                    //echo $sql;
-                    $command = $conCont->prepare($sql);
-                    $command->execute();
-                }
-                
+                //echo $sql;
+                $command = $conCont->prepare($sql);
+                $command->execute();
             }
             $conCont->commit();
             $conCont->close();
