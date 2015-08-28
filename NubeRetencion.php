@@ -15,6 +15,11 @@ class NubeRetencion {
             $fechaIni=$obj_var->dateStartFact;
             $limitEnv=$obj_var->limitEnv;
             //$sql = "SELECT TIP_NOF,CONCAT(REPEAT('0',9-LENGTH(RIGHT(NUM_NOF,9))),RIGHT(NUM_NOF,9)) NUM_NOF,
+            /*
+             * HAY LIQUIDACIONES POR REEMBOLSO QUE NO TIENE UN DOCUMENTO FISICO DE RETENCION
+             * Es por eso que en nuestra consulta si no tiene numero de retencion no va a ser agregada a las Retenciones Electronicas
+             * es decir no se va a genera un registro en las tablas intermedias
+             */
             
             switch ($op) {
                 Case 1://Compras alimenta inventarios
@@ -27,15 +32,17 @@ class NubeRetencion {
                              WHERE A.TIP_PED='CO' AND A.IND_UPD='L' AND A.FEC_PED>='$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
                     break;
                 Case 2://Compras provisiones de pasivos
+                    //Considear Reembolso AND A.NUM_RET<>0 para no ser selecionados ni insertados
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
                                         A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
                                      FROM " .  $obj_con->BdServidor . ".IG0054 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
                                                      ON B.COD_PRO=A.COD_PRO
-                             WHERE A.TIP_PED='PP' AND A.IND_UPD='L' AND A.FEC_PED>='$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv ";
+                             WHERE A.TIP_PED='PP' AND A.IND_UPD='L' AND A.FEC_PED>='$fechaIni' AND A.NUM_RET<>0 AND ENV_DOC='0' LIMIT $limitEnv ";
                     break;
                 Case 3://Compras provisiones de pasivos por NUmero
+                    
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
                                         A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
