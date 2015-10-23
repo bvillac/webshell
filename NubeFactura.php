@@ -167,8 +167,8 @@ class NubeFactura {
         $valSinImp = 0;
         $val_iva12 = 0;
         $vet_iva12 = 0;
-        $val_iva0 = 0;
-        $vet_iva0 = 0;
+        $val_iva0 = 0;//Valor de Iva
+        $vet_iva0 = 0;//Venta total con Iva
         //TIP_NOF,NUM_NOF,FEC_VTA,COD_ART,NOM_ART,CAN_DES,P_VENTA,T_VENTA,VAL_DES,I_M_IVA,VAL_IVA
         for ($i = 0; $i < sizeof($detFact); $i++) {
             $valSinImp = floatval($detFact[$i]['T_VENTA']) - floatval($detFact[$i]['VAL_DES']);
@@ -193,6 +193,7 @@ class NubeFactura {
             $command = $con->prepare($sql);
             $command->execute();
             $idDet = $con->insert_id;
+            //Inserta el IVA de cada Item 
             if ($detFact[$i]['I_M_IVA'] == '1') {//Verifico si el ITEM tiene Impuesto
                 //Segun Datos Sri
                 $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '2', '12', $valSinImp, $detFact[$i]['VAL_IVA']); //12%
@@ -200,6 +201,7 @@ class NubeFactura {
                 $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
             }
         }
+        //Inserta el Total del Iva Acumulado en el detalle
         //Insertar Datos de Iva 0%
         If ($vet_iva0 > 0) {
             $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '0', '0', $vet_iva0, $val_iva0);

@@ -7,8 +7,9 @@ include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
 class NubeNotasCredito {
+    private $tipDev="DV";
     
-    private function buscarNC() {
+    private function buscarNC($op,$NumPed) {
         try {
             $obj_con = new cls_Base();
             $obj_var = new cls_Global();
@@ -19,24 +20,26 @@ class NubeNotasCredito {
             
             switch ($op) {
                 Case 1://Devoluciones Cabecera
-                    $sql = "SELECT A.TIP_DEV,A.NUM_DEV,A.FEC_DEV,A.COD_MOT,A.TIP_NOF,A.NUM_NOF,
-                                    A.COD_CLI,B.CED_RUC,B.NOM_CLI,B.DIR_CLI,A.VAL_BRU,A.POR_DES,A.VAL_DES,
+                    $sql = "SELECT A.TIP_DEV,A.NUM_DEV,A.FEC_DEV,A.COD_MOT,C.NOM_MOT,A.TIP_NOF,A.NUM_NOF,A.FEC_NOF,
+                                    A.COD_CLI,B.CED_RUC,B.NOM_CLI,B.DIR_CLI,B.TEL_N01,B.CORRE_E,A.VAL_BRU,A.POR_DES,A.VAL_DES,
                                     A.BAS_IVA,A.BAS_IV0,A.POR_IVA,A.POR_IVA,A.VAL_IVA,A.VAL_NET,A.POR_RET,
                                     A.VAL_RET,A.T_I_DEV,A.T_P_DEV,A.LIN_N01,A.ATIENDE,A.USUARIO,'' ID_DOC
                                     FROM " .  $obj_con->BdServidor . ".IG0060 A
                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B ON A.COD_CLI=B.COD_CLI 
-                            WHERE A.TIP_DEV='DV' AND A.FEC_DEV>='$fechaIni' AND A.IND_UPD='L' AND A.ENV_DOC='0' LIMIT $limitEnv";
+                                            INNER JOIN " .  $obj_con->BdServidor . ".MG0041 C ON A.COD_MOT=C.COD_MOT
+                            WHERE A.TIP_DEV='".$this->tipDev."' AND A.FEC_DEV>='$fechaIni' AND A.IND_UPD='L' AND A.ENV_DOC='0' LIMIT $limitEnv";
                     
                     break;
                 Case 2://Compras provisiones de pasivos por NUmero
                     
-                    $sql = "SELECT A.TIP_DEV,A.NUM_DEV,A.FEC_DEV,A.COD_MOT,A.TIP_NOF,A.NUM_NOF,
-                                    A.COD_CLI,B.CED_RUC,B.NOM_CLI,B.DIR_CLI,A.VAL_BRU,A.POR_DES,A.VAL_DES,
+                    $sql = "SELECT A.TIP_DEV,A.NUM_DEV,A.FEC_DEV,A.COD_MOT,C.NOM_MOT,A.TIP_NOF,A.NUM_NOF,A.FEC_NOF,
+                                    A.COD_CLI,B.CED_RUC,B.NOM_CLI,B.DIR_CLI,B.TEL_N01,B.CORRE_E,A.VAL_BRU,A.POR_DES,A.VAL_DES,
                                     A.BAS_IVA,A.BAS_IV0,A.POR_IVA,A.POR_IVA,A.VAL_IVA,A.VAL_NET,A.POR_RET,
                                     A.VAL_RET,A.T_I_DEV,A.T_P_DEV,A.LIN_N01,A.ATIENDE,A.USUARIO,'' ID_DOC
                                     FROM " .  $obj_con->BdServidor . ".IG0060 A
                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B ON A.COD_CLI=B.COD_CLI 
-                            WHERE A.TIP_DEV='DV' AND A.IND_UPD='L' AND A.NUM_DEV='$NumPed'  ";
+                                            INNER JOIN " .  $obj_con->BdServidor . ".MG0041 C ON A.COD_MOT=C.COD_MOT
+                            WHERE A.TIP_DEV='".$this->tipDev."' AND A.IND_UPD='L' AND A.NUM_DEV='$NumPed'  ";
                     
                     break;
                 default:
@@ -62,7 +65,7 @@ class NubeNotasCredito {
         $obj_con = new cls_Base();
         $conCont = $obj_con->conexionServidor();
         $rawData = array();        
-        $sql = "SELECT A.COD_ART,A.NOM_ART,A.CAN_DEV,A.P_VENTA,A.T_VENTA,A.I_M_IVA,A.VAL_DES
+        $sql = "SELECT A.COD_ART,A.NOM_ART,A.CAN_DEV,A.P_VENTA,A.T_VENTA,A.I_M_IVA,A.VAL_DES,IF(A.I_M_IVA=1,A.T_VENTA*0.12,0) VAL_IVA
                     FROM " . $obj_con->BdServidor . ".IG0061 A
                 WHERE A.TIP_DEV='$tipDoc' AND A.NUM_DEV='$numDoc' AND A.IND_EST='L';";
         //echo $sql;
@@ -78,7 +81,6 @@ class NubeNotasCredito {
     }
 
     public function insertarDocumentosNC($op,$NumPed) {
-        
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
         $con = $obj_con->conexionIntermedio();
@@ -93,17 +95,17 @@ class NubeNotasCredito {
 
             $codDoc='04';//Documento Notas de Credito
             for ($i = 0; $i < sizeof($cabFact); $i++) {
-                $this->InsertarCabFactura($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
+                $this->InsertarCabNC($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
-                $detFact=$this->buscarDetNC($cabFact[$i]['TIP_NOF'],$cabFact[$i]['NUM_NOF']);
-                $this->InsertarDetFactura($con,$obj_con,$detFact,$idCab);
-                $this->InsertarFacturaDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
+                $detFact=$this->buscarDetNC($cabFact[$i]['TIP_DEV'],$cabFact[$i]['NUM_DEV']);
+                $this->InsertarDetNC($con,$obj_con,$detFact,$idCab);
+                $this->InsertarNcDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
                 $cabFact[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
             $con->commit();
             $con->close();
-            $this->actualizaErpCabFactura($cabFact);
-            //echo "ERP Actualizado";
+            $this->actualizaErpCabNc($cabFact);
+            echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
             //$trans->rollback();
@@ -115,28 +117,35 @@ class NubeNotasCredito {
         }   
     }
     
-    private function InsertarCabFactura($con,$obj_con, $objEnt, $objEmp, $codDoc, $i) {
+    private function InsertarCabNC($con,$obj_con, $objEnt, $objEmp, $codDoc, $i) {
         $valida = new VSValidador();
         $tip_iden = $valida->tipoIdent($objEnt[$i]['CED_RUC']);
-        $Secuencial = $valida->ajusteNumDoc($objEnt[$i]['NUM_NOF'], 9);
-        //$GuiaRemi=$valida->ajusteNumDoc($objEnt[$i]['GUI_REM'],9);
-        $GuiaRemi = (strlen($objEnt[$i]['GUI_REM']) > 0) ? $objEmp['Establecimiento'] . '-' . $objEmp['PuntoEmision'] . '-' . $valida->ajusteNumDoc($objEnt[$i]['GUI_REM'], 9) : '';
+        $Secuencial = $valida->ajusteNumDoc($objEnt[$i]['NUM_DEV'], 9);
+        
+        //$GuiaRemi = (strlen($objEnt[$i]['GUI_REM']) > 0) ? $objEmp['Establecimiento'] . '-' . $objEmp['PuntoEmision'] . '-' . $valida->ajusteNumDoc($objEnt[$i]['GUI_REM'], 9) : '';
         $ced_ruc = ($tip_iden == '07') ? '9999999999999' : $objEnt[$i]['CED_RUC'];
         /* Datos para Genera Clave */
         //$tip_doc,$fec_doc,$ruc,$ambiente,$serie,$numDoc,$tipoemision
         $objCla = new VSClaveAcceso();
         $serie = $objEmp['Establecimiento'] . $objEmp['PuntoEmision'];
-        $fec_doc = date("Y-m-d", strtotime($objEnt[$i]['FEC_VTA']));
+        $fec_doc = date("Y-m-d", strtotime($objEnt[$i]['FEC_DEV']));
         $ClaveAcceso = $objCla->claveAcceso($codDoc, $fec_doc, $objEmp['Ruc'], $objEmp['Ambiente'], $serie, $Secuencial, $objEmp['TipoEmision']);
         /** ********************** */
         $nomCliente=str_replace("'","`",$objEnt[$i]['NOM_CLI']);// Error del ' en el Text se lo Reemplaza `
         //$nomCliente=$objEnt[$i]['NOM_CLI'];// Error del ' en el Text
         $TotalSinImpuesto=floatval($objEnt[$i]['BAS_IVA'])+floatval($objEnt[$i]['BAS_IV0']);//Cambio por Ajuste de Valores Byron Diferencias
-        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeFactura
-                            (Ambiente,TipoEmision, RazonSocial, NombreComercial, Ruc,ClaveAcceso,CodigoDocumento, Establecimiento,
-                            PuntoEmision, Secuencial, DireccionMatriz, FechaEmision, DireccionEstablecimiento, ContribuyenteEspecial,
-                            ObligadoContabilidad, TipoIdentificacionComprador, GuiaRemision, RazonSocialComprador, IdentificacionComprador,
-                            TotalSinImpuesto, TotalDescuento, Propina, ImporteTotal, Moneda, SecuencialERP, CodigoTransaccionERP,UsuarioCreador,Estado,FechaCarga) VALUES (
+        $Rise="";//Verificar cuando es RISE
+        $CodDocMod="01";//Aplica a documentos de Facturas =>f4
+        $NumDocMod=$Secuencial = $objEmp['Establecimiento'] ."-" .$objEmp['PuntoEmision']."-".$valida->ajusteNumDoc($objEnt[$i]['NUM_NOF'], 9);
+        $FecEmiDocMod=date("Y-m-d", strtotime($objEnt[$i]['FEC_NOF']));
+
+        
+        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeNotaCredito
+                    (Ambiente,TipoEmision,RazonSocial,NombreComercial,Ruc,ClaveAcceso,CodigoDocumento,Establecimiento,
+                     PuntoEmision,Secuencial,DireccionMatriz,FechaEmision,DireccionEstablecimiento,ContribuyenteEspecial,
+                     ObligadoContabilidad,TipoIdentificacionComprador,RazonSocialComprador,IdentificacionComprador,Rise,
+                     CodDocModificado,NumDocModificado,FechaEmisionDocModificado,TotalSinImpuesto,ValorModificacion,MotivoModificacion,
+                     Moneda,SecuencialERP,CodigoTransaccionERP,UsuarioCreador,Estado,FechaCarga) VALUES (
                             '" . $objEmp['Ambiente'] . "',
                             '" . $objEmp['TipoEmision'] . "',
                             '" . $objEmp['RazonSocial'] . "',
@@ -152,28 +161,19 @@ class NubeNotasCredito {
                             '" . $objEmp['DireccionMatriz'] . "', 
                             '" . $objEmp['ContribuyenteEspecial'] . "', 
                             '" . $objEmp['ObligadoContabilidad'] . "', 
-                            '$tip_iden', 
-                            '$GuiaRemi',               
+                            '$tip_iden',          
                             '$nomCliente', 
-                            '$ced_ruc', 
-                            '" . $TotalSinImpuesto . "', 
-                            '" . $objEnt[$i]['VAL_DES'] . "', 
-                            '" . $objEnt[$i]['PROPINA'] . "', 
-                            '" . $objEnt[$i]['VAL_NET'] . "', 
+                            '$ced_ruc','$Rise',
+                            '$CodDocMod','$NumDocMod','$FecEmiDocMod', 
+                            '" . $TotalSinImpuesto . "',
+                            '" . $objEnt[$i]['VAL_NET'] . "',
+                            '" . $objEnt[$i]['NOM_MOT'] . "', 
                             '" . $objEmp['Moneda'] . "', 
                             '$Secuencial', 
-                            '" . $objEnt[$i]['TIP_NOF'] . "',
+                            '" . $objEnt[$i]['TIP_DEV'] . "',
                             '" . $objEnt[$i]['ATIENDE'] . "',
                             '1',CURRENT_TIMESTAMP() )";
 
-
-        //"@Ambiente,@TipoEmision,@RazonSocial,@NombreComercial,@Ruc,@CodigoDocumento,@Establecimiento, " &
-        //"@PuntoEmision,@Secuencial,@DireccionMatriz,@FechaEmision,@DireccionEstablecimiento,@ContribuyenteEspecial, " &
-        //"@ObligadoContabilidad,@TipoIdentificacionComprador,@GuiaRemision,@RazonSocialComprador,@IdentificacionComprador," &
-        //"@TotalSinImpuesto,@TotalDescuento,@Propina,@ImporteTotal,@Moneda,@SecuencialERP,@CodigoTransaccionERP,@Estado,GETDATE()) " &
-        //" SELECT @@IDENTITY";
-        //DATE(" . $cabOrden[0]['CDOR_FECHA_INGRESO'] . "),
-        //$sql .= "AND DATE(A.CDOR_FECHA_INGRESO) BETWEEN '" . date("Y-m-d", strtotime($control[0]['F_INI'])) . "' AND '" . date("Y-m-d", strtotime($control[0]['F_FIN'])) . "' ";
         //echo $sql;
         $command = $con->prepare($sql);
         $command->execute();
@@ -181,94 +181,100 @@ class NubeNotasCredito {
 
     }
 
-    private function InsertarDetFactura($con,$obj_con, $detFact, $idCab) {
+    private function InsertarDetNC($con,$obj_con, $detFact, $idCab) {
+        //$obj_var = new cls_Global();
         $valSinImp = 0;
         $val_iva12 = 0;
         $vet_iva12 = 0;
-        $val_iva0 = 0;
-        $vet_iva0 = 0;
+        $val_iva0 = 0;//Valor de Iva
+        $vet_iva0 = 0;//Venta total con Iva
         //TIP_NOF,NUM_NOF,FEC_VTA,COD_ART,NOM_ART,CAN_DES,P_VENTA,T_VENTA,VAL_DES,I_M_IVA,VAL_IVA
         for ($i = 0; $i < sizeof($detFact); $i++) {
             $valSinImp = floatval($detFact[$i]['T_VENTA']) - floatval($detFact[$i]['VAL_DES']);
             if ($detFact[$i]['I_M_IVA'] == '1') {
                 $val_iva12 = $val_iva12 + floatval($detFact[$i]['VAL_IVA']);
+                //$val_iva12 = $val_iva12 + (floatval($detFact[$i]['T_VENTA'])*$obj_var->valorIva);
                 $vet_iva12 = $vet_iva12 + $valSinImp;
             } else {
                 $val_iva0 = 0;
                 $vet_iva0 = $vet_iva0 + $valSinImp;
             }
-
-            $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleFactura 
-                    (CodigoPrincipal,CodigoAuxiliar,Descripcion,Cantidad,PrecioUnitario,Descuento,PrecioTotalSinImpuesto,IdFactura) VALUES (
+          
+            $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleNotaCredito
+                    (CodigoPrincipal,CodigoAuxiliar,Descripcion,Cantidad,PrecioUnitario,Descuento,PrecioTotalSinImpuesto,IdNotaCredito) VALUES (
                     '" . $detFact[$i]['COD_ART'] . "', 
                     '1',
                     '" . $detFact[$i]['NOM_ART'] . "', 
-                    '" . $detFact[$i]['CAN_DES'] . "',
+                    '" . $detFact[$i]['CAN_DEV'] . "',
                     '" . $detFact[$i]['P_VENTA'] . "',
                     '" . $detFact[$i]['VAL_DES'] . "',
                     '$valSinImp',
                     '$idCab')";
+
+            
             $command = $con->prepare($sql);
             $command->execute();
             $idDet = $con->insert_id;
+            //Inserta el IVA de cada Item devuelto
             if ($detFact[$i]['I_M_IVA'] == '1') {//Verifico si el ITEM tiene Impuesto
                 //Segun Datos Sri
-                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '2', '12', $valSinImp, $detFact[$i]['VAL_IVA']); //12%
+                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '2', '12', $valSinImp, $detFact[$i]['VAL_IVA']); //12%
             } else {//Caso Contrario no Genera Impuesto
-                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
+                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
             }
         }
+        //Inserta el Total del Iva Acumulado en el detalle
         //Insertar Datos de Iva 0%
         If ($vet_iva0 > 0) {
-            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '0', '0', $vet_iva0, $val_iva0);
+            $this->InsertarNcImpuesto($con,$obj_con, $idCab, '2', '0', '0', $vet_iva0, $val_iva0);
         }
         //Inserta Datos de Iva 12
         If ($vet_iva12 > 0) {
-            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '2', '12', $vet_iva12, $val_iva12);
+            $this->InsertarNcImpuesto($con,$obj_con, $idCab, '2', '2', '12', $vet_iva12, $val_iva12);
         }
     }
 
-    private function InsertarDetImpFactura($con,$obj_con, $idDet, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
-        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleFacturaImpuesto 
-                 (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdDetalleFactura)VALUES(
+    private function InsertarDetImpNC($con,$obj_con, $idDet, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
+        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleNotaCreditoImpuesto 
+                 (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdDetalleNotaCredito)VALUES(
                  '$codigo','$CodigoPor','$t_venta','$Tarifa','$val_iva','$idDet')";
         $command = $con->prepare($sql);
         $command->execute();
         //$command = $con->query($sql);
     }
 
-    private function InsertarFacturaImpuesto($con,$obj_con, $idCab, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
-        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeFacturaImpuesto 
-                 (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdFactura)VALUES(
+    private function InsertarNcImpuesto($con,$obj_con, $idCab, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
+        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeNotaCreditoImpuesto 
+                 (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdNotaCredito)VALUES(
                  '$codigo','$CodigoPor','$t_venta','$Tarifa','$val_iva','$idCab')";
         $command = $con->prepare($sql);
         $command->execute();
         //$command = $con->query($sql);
     }
 
-    private function InsertarFacturaDatoAdicional($con,$obj_con, $i, $cabFact, $idCab) {
+    private function InsertarNcDatoAdicional($con,$obj_con, $i, $cabFact, $idCab) {
         $direccion = $cabFact[$i]['DIR_CLI'];
-        $destino = $cabFact[$i]['LUG_DES'];
-        $contacto = $cabFact[$i]['NOM_CTO'];
-        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDatoAdicionalFactura 
-                 (Nombre,Descripcion,IdFactura)
+        $telefono = $cabFact[$i]['TEL_N01'];
+        $correo = $cabFact[$i]['CORRE_E'];
+        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDatoAdicionalNotaCredito 
+                 (Nombre,Descripcion,IdNotaCredito)
                  VALUES
-                 ('Direccion','$direccion','$idCab'),('Destino','$destino','$idCab'),('Contacto','$contacto','$idCab')";
+                 ('Direccion','$direccion','$idCab'),('Telefono','$telefono','$idCab'),('Correo','$correo','$idCab')";
         $command = $con->prepare($sql);
         $command->execute();
         //$command = $con->query($sql);
     }
     
-    private function actualizaErpCabFactura($cabFact) {
+    private function actualizaErpCabNc($cabFact) {
         $obj_con = new cls_Base();
         $conCont = $obj_con->conexionServidor();
         try {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
-                $numero = $cabFact[$i]['NUM_NOF'];
-                $tipo = $cabFact[$i]['TIP_NOF'];
+                $numero = $cabFact[$i]['NUM_DEV'];
+                $tipo = $cabFact[$i]['TIP_DEV'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
-                $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ENV_DOC='$ids'
-                        WHERE TIP_NOF='$tipo' AND NUM_NOF='$numero' AND IND_UPD='L'";
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0060 SET ENV_DOC='$ids'
+                        WHERE TIP_DEV='$tipo' AND NUM_DEV='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);
                 $command->execute();
