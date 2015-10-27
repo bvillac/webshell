@@ -105,7 +105,7 @@ class NubeNotasCredito {
             $con->commit();
             $con->close();
             $this->actualizaErpCabNc($cabFact);
-            echo "ERP Actualizado";
+            //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
             //$trans->rollback();
