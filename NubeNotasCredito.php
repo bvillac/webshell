@@ -136,7 +136,7 @@ class NubeNotasCredito {
         $TotalSinImpuesto=floatval($objEnt[$i]['BAS_IVA'])+floatval($objEnt[$i]['BAS_IV0']);//Cambio por Ajuste de Valores Byron Diferencias
         $Rise="";//Verificar cuando es RISE
         $CodDocMod="01";//Aplica a documentos de Facturas =>f4
-        $NumDocMod=$Secuencial = $objEmp['Establecimiento'] ."-" .$objEmp['PuntoEmision']."-".$valida->ajusteNumDoc($objEnt[$i]['NUM_NOF'], 9);
+        $NumDocMod = $objEmp['Establecimiento'] ."-" .$objEmp['PuntoEmision']."-".$valida->ajusteNumDoc($objEnt[$i]['NUM_NOF'], 9);
         $FecEmiDocMod=date("Y-m-d", strtotime($objEnt[$i]['FEC_NOF']));
 
         
