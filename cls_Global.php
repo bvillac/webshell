@@ -22,6 +22,8 @@ class cls_Global {
     var $limitEnv=10;
     var $limitEnvMail=1;
     var $valorIva=0.12;
+    var $Author="Utimpor";
+    var $rutaPDF="/opt/SEADOC/";
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;
@@ -88,7 +90,7 @@ class cls_Global {
         $usuNombre = $objEnt[$i]['CedRuc'];
         $RazonSoc = $objEnt[$i]['RazonSoc'];
         $correo = ($objEnt[$i]['CorreoPer']<>'')?$objEnt[$i]['CorreoPer']:$this->buscarCorreoERP($obj_con,$usuNombre,'MG0031');//Consulta Tabla Clientes
-        $pass = $this->generarCodigoKey(8);
+        $pass = $objEnt[$i]['CedRuc'];//$this->generarCodigoKey(8);
         $sql = "INSERT INTO " . $obj_con->BdAppweb . ".USUARIO
                 (PER_ID,USU_NOMBRE,USU_ALIAS,USU_CORREO,USU_PASSWORD,USU_EST_LOG,USU_FEC_CRE)VALUES
                 ($IdPer,'$usuNombre','$RazonSoc','$correo',MD5('$pass'),'1',CURRENT_TIMESTAMP()) ";

@@ -12,8 +12,10 @@ class mailSystem {
     private $noResponder='no-responder@utimpor.com';
     private $noResponderPass='F0E4CwUyWy?h';
     public $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
-    public $file_to_attach='';
+    public $file_to_attachXML='';
+    public $file_to_attachPDF='';
     public $fileXML='';
+    public $filePDF='';
     
 
     //put your code here
@@ -60,7 +62,8 @@ class mailSystem {
         //$mail->addReplyTo('byronvillacreses@gmail.com', 'First Last');
         
         //$mail->AddAttachment("archivo.zip");//adjuntos un archivo al mensaje
-        $mail->AddAttachment($this->file_to_attach.$this->fileXML,$this->fileXML);
+        $mail->AddAttachment($this->file_to_attachXML.$this->fileXML,$this->fileXML);
+        $mail->AddAttachment($this->file_to_attachPDF.$this->filePDF,$this->filePDF);
         // si el SMTP necesita autenticación
         $mail->SMTPAuth = true;
 

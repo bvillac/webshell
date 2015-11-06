@@ -6,6 +6,7 @@ include('EMPRESA.php');//para HTTP
 include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
+include('REPORTES.php');
 class NubeFactura {
     
     private function buscarFacturas() {
@@ -357,7 +358,7 @@ class NubeFactura {
         $Iva=0;
         $Ice=0;
         $IdUsuarioCreador=1;//Numero de Cedula del CLiente
-        $ArchivoXml='';
+        $ArchivoXml=$objEnt[$i]['NombreDocumento'];
         $sql = "INSERT INTO " . $obj_con->BdRad . ".VSFactura
                     (AutorizacionSRI,FechaAutorizacion,Ambiente,TipoEmision,RazonSocial,NombreComercial,
                     Ruc,ClaveAcceso,CodDoc,Estab,PtoEmi,Secuencial,DirMatriz,FechaEmision,DirEstablecimiento,
@@ -482,7 +483,9 @@ class NubeFactura {
         $obj_var = new cls_Global();
         $con = $obj_con->conexionVsRAd();
         $dataMail = new mailSystem;
-        $dataMail->file_to_attach='/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
+        $rep = new REPORTES();
+        $dataMail->file_to_attachXML='/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
+        $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
         $rutaLink='http://www.docsea.utimpor.com';
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
@@ -505,13 +508,21 @@ class NubeFactura {
             //Envia l iformacion de Correos que ya se completo
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 if(strlen($cabDoc[$i]['CorreoPer'])>0){
+                    $mPDF1=$rep->crearBaseReport();
                     //Envia Correo
                     //$htmlMail="Hola como estas 2";
                     include('mensaje.php');
                     $htmlMail=$mensaje;
                     //$htmlMail=file_get_contents('mensaje.php');
                     $dataMail->Subject='Ha Recibido un(a) Factura Nuevo(a)!!! ';
-                    $dataMail->fileXML='FACTURA-'.$cabDoc[$i]["Documento"].'.xml';
+                    $dataMail->fileXML='FACTURA-'.$cabDoc[$i]["NumDocumento"].'.xml';
+                    $dataMail->filePDF='FACTURA-'.$cabDoc[$i]["NumDocumento"].'.pdf';
+                    //CREAR PDF
+                    $mPDF1->SetTitle($dataMail->filePDF);
+                    //$mPDF1->WriteHTML(include('facturaPDF.php')); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
+                    $mPDF1->WriteHTML($mensaje);
+                    $mPDF1->Output($dataMail->filePDF, 'I');
+             
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['Estado']=6;//Correo Envia
@@ -545,7 +556,8 @@ class NubeFactura {
             $fechaIni=$obj_var->dateStartFact;
             $limitEnvMail=$obj_var->limitEnvMail;
             $sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
-                    ImporteTotal Importe,CONCAT(Estab,'-',PtoEmi,'-',Secuencial) Documento
+                    'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,
+                    ClaveAcceso,ImporteTotal Importe,CONCAT(Estab,'-',PtoEmi,'-',Secuencial) NumDocumento
             FROM " . $obj_con->BdRad . ".VSFactura WHERE Estado=2 limit $limitEnvMail ";
             //echo $sql;
             $sentencia = $con->query($sql);
