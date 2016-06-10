@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<?php $mensajePDF='
 <html>
     <head>
         <style>
@@ -52,36 +52,34 @@
 
         </style>
     </head>
-    <body>
-        <?php
+    <body>';
         $contador = count($cabDoc);
         if ($cabDoc !== null) {
-            ?>
-            <?php //echo $this->renderPartial('_barcode', array('cabFact' => $cabFact)); ?>
-            <table style="width:100%;">
+            //echo $this->renderPartial("_barcode", array("cabFact" => $cabFact));
+            $mensajePDF .= '<table style="width:100%;">
                 <tbody>
                     <tr>
                         <td style="width:50%">
-                            <?php //echo CHtml::image(Yii::app()->theme->baseUrl . '/images/plantilla/logo.png', 'Utimpor', array('width' => '300px', 'height' => '50px')); ?>
                             <img src="logo.png" style="width:300px;height:50px;">
                         </td>
-                        <td rowspan="2" style="width:50%">
-                            <?php include('_frm_CabDoc.php'); //echo $this->renderPartial('_frm_CabFact', array('cabFact' => $cabFact)); ?>
-                        </td>
+                        <td rowspan="2" style="width:50%">';
+                            include("_frm_CabDoc.php"); //echo $this->renderPartial("_frm_CabFact", array("cabFact" => $cabFact)); 
+                        $mensajePDF .= $cabDocPDF;
+                        $mensajePDF .= '</td>
                     </tr>
                     <tr>
-                        <td style="width:50%">
-                            <?php //echo $this->renderPartial('_frm_DataEmpresa'); ?>
-                        </td>
+                        <td style="width:50%">';
+                            //echo $this->renderPartial("_frm_DataEmpresa");
+                        $mensajePDF .= '</td>
                     </tr>
                 </tbody>
             </table>
             <table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td>
-                            <?php //echo $this->renderPartial('_frm_DataCliente', array('cabFact' => $cabFact)); ?>
-                        </td>
+                        <td>';
+                            //echo $this->renderPartial("_frm_DataCliente", array("cabFact" => $cabFact)); 
+                        $mensajePDF .= '</td>
                     </tr>
                 </tbody>
             </table>
@@ -89,27 +87,27 @@
             <table style="width:100%;">
                 <tbody>
                     <tr>
-
-                        <td style="width:50%">
-                            <?php //echo $this->renderPartial('_frm_DetFact', array('detFact' => $detFact)); ?>
-                        </td>
+                        <td style="width:50%">';
+                            //echo $this->renderPartial("_frm_DetFact", array("detFact" => $detFact)); 
+                        $mensajePDF .= '</td>
                     </tr>
                 </tbody>
             </table>
             <table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td style="width:70%">
-                            <?php //echo $this->renderPartial('_frm_DataAuxFact', array('adiFact' => $adiFact)); ?>
-                        </td>
+                        <td style="width:70%">';
+                            //echo $this->renderPartial("_frm_DataAuxFact", array("adiFact" => $adiFact));
+                        $mensajePDF .= '</td>
                         <td style="width:30%">
-                            <div>
-                                <?php //echo $this->renderPartial('_frm_TotFact', array('impFact' => $impFact, 'cabFact' => $cabFact)); ?>
-                            </div>
+                            <div>';
+                                //echo $this->renderPartial("_frm_TotFact", array("impFact" => $impFact, "cabFact => $cabFact));
+                            $mensajePDF .= '</div>
                         </td>
                     </tr>
                 </tbody>
-            </table>
-        <?php } ?>
-    </body>
-</html>
+            </table>';
+         } 
+    $mensajePDF .= '</body>
+</html>';
+?>

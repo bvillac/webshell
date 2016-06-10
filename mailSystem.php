@@ -23,7 +23,6 @@ class mailSystem {
         $mail = new PHPMailer();
         //$body = "Hola como estas";
         
-
         $mail->IsSMTP();
         //Para tls
         //$mail->SMTPSecure = 'tls';

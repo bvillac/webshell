@@ -482,8 +482,10 @@ class NubeFactura {
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
         $con = $obj_con->conexionVsRAd();
-        $dataMail = new mailSystem;
+        $dataMail = new mailSystem();
         $rep = new REPORTES();
+        
+     
         $dataMail->file_to_attachXML='/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
         $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
         $rutaLink='http://www.docsea.utimpor.com';
@@ -508,6 +510,7 @@ class NubeFactura {
             //Envia l iformacion de Correos que ya se completo
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 if(strlen($cabDoc[$i]['CorreoPer'])>0){
+                
                     $mPDF1=$rep->crearBaseReport();
                     //Envia Correo
                     //$htmlMail="Hola como estas 2";
@@ -519,9 +522,10 @@ class NubeFactura {
                     $dataMail->filePDF='FACTURA-'.$cabDoc[$i]["NumDocumento"].'.pdf';
                     //CREAR PDF
                     $mPDF1->SetTitle($dataMail->filePDF);
-                    //$mPDF1->WriteHTML(include('facturaPDF.php')); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
-                    $mPDF1->WriteHTML($mensaje);
-                    $mPDF1->Output($dataMail->filePDF, 'I');
+                    include('facturaPDF.php');
+                    $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
+                    //$mPDF1->WriteHTML($mensaje);
+                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
              
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
                     if($resulMail["status"]=='OK'){
@@ -538,7 +542,7 @@ class NubeFactura {
                 
             }
             $con->close();
-            $this->actualizaEnvioMailRAD($cabDoc);
+            //$this->actualizaEnvioMailRAD($cabDoc);
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {

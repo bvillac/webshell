@@ -30,7 +30,7 @@
             <div class="trow">
                 <div class="tcol-td form-group">
                     <label class="titleLabel">Documento Nº :</label>
-                    <span>'.$cabDoc[$i]["Documento"].'</span>
+                    <span>'.$cabDoc[$i]["NumDocumento"].'</span>
                 </div>
             </div>
             <div class="trow">
@@ -60,7 +60,6 @@
                         Adem&aacute;s puede realizar la impresi&oacute;n su documento accediendo a nuestro portal <a target="_blank" href="'.$rutaLink.'">aqui</a>.<br>
                         Atentamente,<br>
                         <label class="titleLabel">Utimpor S.A.</label>
-
                     </p>
                 </div>
             </div>

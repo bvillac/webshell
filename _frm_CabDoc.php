@@ -1,22 +1,23 @@
-<div>
+<?php
+$cabDocPDF = '<div>
     <table style="width:100mm" class="marcoDiv">
         <tbody>
             <tr>
                 <td>
                     <span class="titleLabel">R.U.C.:</span>
-                    <span class="titleNum_Ruc"><?php echo $cabDoc['Ruc'] ?></span>
+                    <span class="titleNum_Ruc">'. $cabDoc[$i]["Ruc"] .'</span>
                 </td>
                 
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel titleDocumento"><?php echo $cabDoc['NombreDocumento'] ?></span>
+                    <span class="titleLabel titleDocumento">'.$cabDoc[$i]["NombreDocumento"] .'</span>
                 </td>
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">Nº</span>
-                    <span class="titleNum_Ruc"><?php echo $cabDoc['NumDocumento'] ?></span>
+                    <span class="titleNum_Ruc">'. $cabDoc[$i]["NumDocumento"] .'</span>
                 </td>
               
             </tr>
@@ -27,27 +28,26 @@
             </tr>
             <tr>
                 <td>
-                    <span ><?php echo $cabDoc['AutorizacionSRI'] ?></span>
+                    <span >'.$cabDoc[$i]["AutorizacionSRI"] .'</span>
                 </td>
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">FECHA Y HORA AUTORIZACIÓN</span>
-                    <span><?php echo $cabDoc['FechaAutorizacion'];  ?></span>
+                    <span>'. $cabDoc[$i]["FechaAutorizacion"] .'</span>
                 </td>
                 
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">AMBIENTE</span>
-                    <span><?php echo ($cabDoc['Ambiente']=='1')?'PRUEBA':'PRODUCCIÓN'; ?></span>
+                    <span>'. ($cabDoc[$i]["Ambiente"]=="1")?"PRUEBA":"PRODUCCIÓN" .'</span>
                 </td>
-               
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">EMISIÓN</span>
-                    <span><?php echo ($cabDoc['TipoEmision']=='1')?'NORMAL':'INDISPONIBILIDAD DEL SISTEMA'; ?></span>
+                    <span>'.($cabDoc[$i]["TipoEmision"]=="1")?"NORMAL":"INDISPONIBILIDAD DEL SISTEMA" .'</span>
                 </td>
                 
             </tr>
@@ -57,17 +57,17 @@
                 </td>
             </tr>
             <tr>
-                <td>
-                
-                    <?php //echo CHtml::image(Yii::app()->params['seaBarra'] .$cabDoc['IdentificacionComprador']. '.png', 'Utimpor', array('width' => '280px', 'height' => '20px')); ?>
-                </td>
+                <td>';
+                    //echo CHtml::image(Yii::app()->params["seaBarra"] .$cabDoc["IdentificacionComprador"]. '.png', 'Utimpor', array('width' => '280px', 'height' => '20px')); 
+                 $cabDocPDF .= '</td>
             </tr>
             <tr>
                 <td>
-                    <span><?php echo $cabDoc['ClaveAcceso'] ?></span>
+                    <span>'. $cabDoc[$i]["ClaveAcceso"] .'</span>
                 </td>
             </tr>
         </tbody>
         
     </table>
-</div>
+</div>';
+?>

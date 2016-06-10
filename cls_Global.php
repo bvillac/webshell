@@ -18,12 +18,12 @@ class cls_Global {
     var $est_id='1';//
     var $pemi_id='1';//Punto Emision
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2015-10-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2016-06-01';//'2015-03-20';//2015-07-20
     var $limitEnv=10;
     var $limitEnvMail=1;
     var $valorIva=0.12;
     var $Author="Utimpor";
-    var $rutaPDF="/opt/SEADOC/";
+    var $rutaPDF="/opt/SEADOC/DOCPDF/";
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;

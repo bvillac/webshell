@@ -4,6 +4,7 @@ $obj = new NubeFactura();
 //$res= $obj->insertarFacturas();
 
 //$res= $obj->insertarFacturasRAD();
+
 $res= $obj->enviarMailDoc();
 
 //Enviar E-MAIL a Usuarios
