@@ -8,6 +8,7 @@ include('VSClaveAcceso.php');
 include('mailSystem.php');
 include('REPORTES.php');
 class NubeFactura {
+    private $tipoDoc='01';
     
     private function buscarFacturas() {
         try {
@@ -476,12 +477,79 @@ class NubeFactura {
     }
     
     /************************************************************/
+    /*********FUNCIONES IGUALES A LAS APLICACION WEB PARA PDF
+    /************************************************************/
+    
+    private function mostrarCabFactura($con,$obj_con,$id) {
+        $rawData = array();
+        $sql = "SELECT A.IdFactura IdDoc,A.Estado,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
+                        A.FechaAutorizacion,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
+                        CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
+                        A.ContribuyenteEspecial,A.ObligadoContabilidad,A.TipoIdentificacionComprador,
+                        A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,
+                        A.FechaEmision,A.IdentificacionComprador,A.RazonSocialComprador,
+                        A.TotalSinImpuesto,A.TotalDescuento,A.Propina,A.ImporteTotal,
+                        'FACTURA' NombreDocumento,A.AutorizacionSri,A.ClaveAcceso,A.FechaAutorizacion,
+                        A.Ambiente,A.TipoEmision,A.GuiaRemision,A.Moneda,A.Ruc,A.CodigoError
+                        FROM " . $obj_con->BdIntermedio . ".NubeFactura A
+                WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdFactura =$id ";
+            $sentencia = $con->query($sql);
+            if ($sentencia->num_rows > 0) {
+                while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                    $rawData[] = $fila;
+                }
+            }
+            //$conCont->close();
+            return $rawData;
+    }
+    private function mostrarDetFacturaImp($id) {
+        $rawData = array();
+        $con = Yii::app()->dbvsseaint;
+        $sql = "SELECT * FROM " . $con->dbname . ".NubeDetalleFactura WHERE IdFactura=$id";
+        //echo $sql;
+        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
+        $con->active = false;
+        for ($i = 0; $i < sizeof($rawData); $i++) {
+            $rawData[$i]['impuestos'] = $this->mostrarDetalleImp($rawData[$i]['IdDetalleFactura']); //Retorna el Detalle del Impuesto
+        }
+        return $rawData;
+    }
+
+    private function mostrarDetalleImp($id) {
+        $rawData = array();
+        $con = Yii::app()->dbvsseaint;
+        $sql = "SELECT * FROM " . $con->dbname . ".NubeDetalleFacturaImpuesto WHERE IdDetalleFactura=$id";
+        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
+        $con->active = false;
+        return $rawData;
+    }
+    
+    private function mostrarFacturaImp($id) {
+        $rawData = array();
+        $con = Yii::app()->dbvsseaint;
+        $sql = "SELECT * FROM " . $con->dbname . ".NubeFacturaImpuesto WHERE IdFactura=$id";
+        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
+        $con->active = false;
+        return $rawData;
+    }
+    
+    private function mostrarFacturaDataAdicional($id) {
+        $rawData = array();
+        $con = Yii::app()->dbvsseaint;
+        $sql = "SELECT * FROM " . $con->dbname . ".NubeDatoAdicionalFactura WHERE IdFactura=$id";
+        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
+        $con->active = false;
+        return $rawData;
+    }
+    
+    /************************************************************/
     /*********CONFIGURACION PARA ENVIAR CORREOS
     /************************************************************/
     public function enviarMailDoc() {
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
-        $con = $obj_con->conexionVsRAd();
+        //$con = $obj_con->conexionVsRAd();
+        $con = $obj_con->conexionIntermedio();
         $dataMail = new mailSystem();
         $rep = new REPORTES();
         
@@ -513,7 +581,7 @@ class NubeFactura {
                 
                     $mPDF1=$rep->crearBaseReport();
                     //Envia Correo
-                    //$htmlMail="Hola como estas 2";
+                    //$htmlMail="Hola como estas 2";                    
                     include('mensaje.php');
                     $htmlMail=$mensaje;
                     //$htmlMail=file_get_contents('mensaje.php');
@@ -522,6 +590,10 @@ class NubeFactura {
                     $dataMail->filePDF='FACTURA-'.$cabDoc[$i]["NumDocumento"].'.pdf';
                     //CREAR PDF
                     $mPDF1->SetTitle($dataMail->filePDF);
+                    $cabFact = $this->mostrarCabFactura($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    //$detFact = $this->mostrarDetFacturaImp($cabDoc[$i]["Ids"]);
+                    //$impFact = $this->mostrarFacturaImp($cabDoc[$i]["Ids"]);
+                    //$adiFact = $this->mostrarFacturaDataAdicional($cabDoc[$i]["Ids"]);
                     include('facturaPDF.php');
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     //$mPDF1->WriteHTML($mensaje);
@@ -559,10 +631,17 @@ class NubeFactura {
             $rawData = array();
             $fechaIni=$obj_var->dateStartFact;
             $limitEnvMail=$obj_var->limitEnvMail;
+
             $sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
                     'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,
+                    ClaveAcceso,ImporteTotal Importe,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
+                FROM " . $obj_con->dbname . ".NubeFactura WHERE EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
+            
+            /*$sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
+                    'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,
                     ClaveAcceso,ImporteTotal Importe,CONCAT(Estab,'-',PtoEmi,'-',Secuencial) NumDocumento
-            FROM " . $obj_con->BdRad . ".VSFactura WHERE Estado=2 limit $limitEnvMail ";
+                FROM " . $obj_con->BdRad . ".VSFactura WHERE Estado=2 limit $limitEnvMail ";   */         
+
             //echo $sql;
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {

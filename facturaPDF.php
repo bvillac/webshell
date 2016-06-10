@@ -1,4 +1,5 @@
-<?php $mensajePDF='
+<?php 
+$mensajePDF='
 <html>
     <head>
         <style>
