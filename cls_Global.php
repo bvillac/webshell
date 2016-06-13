@@ -24,6 +24,8 @@ class cls_Global {
     var $valorIva=0.12;
     var $Author="Utimpor";
     var $rutaPDF="/opt/SEADOC/DOCPDF/";
+    var $rutaXML="/opt/SEADOC/AUTORIZADO/";
+    var $rutaLink='http://www.docsea.utimpor.com';
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;

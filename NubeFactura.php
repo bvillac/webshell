@@ -554,9 +554,8 @@ class NubeFactura {
         $rep = new REPORTES();
         
      
-        $dataMail->file_to_attachXML='/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
+        $dataMail->file_to_attachXML=$obj_var->rutaXML.'FACTURAS/';//'/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
         $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
-        $rutaLink='http://www.docsea.utimpor.com';
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
             //Se procede a preparar con loa correos para enviar.
