@@ -56,18 +56,21 @@ $cabDocPDF = '<div>
                 </td>
             </tr>
             <tr>
-                <td>';
-                    //echo CHtml::image(Yii::app()->params["seaBarra"] .$cabFact["IdentificacionComprador"]. '.png', 'Utimpor', array('width' => '280px', 'height' => '20px')); 
-                 $cabDocPDF .= '</td>
+                <td style="width:50%">
+                            <img src="'.$obj_var->rutaPDF.$cabFact[$i]["IdentificacionComprador"].'.png" style="width:280px;height:20px;">
+                </td>
             </tr>
             <tr>
                 <td>
                     <span>'. $cabFact[$i]["ClaveAcceso"] .'</span>
                 </td>
-            </tr>
+            </tr>    
+            
         </tbody>
         
     </table>
 </div>';
+                 
+           
 
 ?>

@@ -598,12 +598,12 @@ class NubeFactura {
                     //$mPDF1->WriteHTML($mensaje);
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
              
-                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
+                    /*$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['Estado']=6;//Correo Envia
                     }else{
                         $cabDoc[$i]['Estado']=7;//Correo No enviado
-                    }
+                    }*/
                     
                 }else{
                     //No envia Correo 
