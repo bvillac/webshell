@@ -502,43 +502,54 @@ class NubeFactura {
             //$conCont->close();
             return $rawData;
     }
-    private function mostrarDetFacturaImp($id) {
+    private function mostrarDetFacturaImp($con,$obj_con,$id) {
         $rawData = array();
-        $con = Yii::app()->dbvsseaint;
-        $sql = "SELECT * FROM " . $con->dbname . ".NubeDetalleFactura WHERE IdFactura=$id";
-        //echo $sql;
-        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
-        $con->active = false;
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDetalleFactura WHERE IdFactura=$id";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
         for ($i = 0; $i < sizeof($rawData); $i++) {
-            $rawData[$i]['impuestos'] = $this->mostrarDetalleImp($rawData[$i]['IdDetalleFactura']); //Retorna el Detalle del Impuesto
+            $rawData[$i]['impuestos'] = $this->mostrarDetalleImp($con,$obj_con,$rawData[$i]['IdDetalleFactura']); //Retorna el Detalle del Impuesto
         }
         return $rawData;
     }
 
-    private function mostrarDetalleImp($id) {
+    private function mostrarDetalleImp($con,$obj_con,$id) {
         $rawData = array();
-        $con = Yii::app()->dbvsseaint;
-        $sql = "SELECT * FROM " . $con->dbname . ".NubeDetalleFacturaImpuesto WHERE IdDetalleFactura=$id";
-        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
-        $con->active = false;
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio. ".NubeDetalleFacturaImpuesto WHERE IdDetalleFactura=$id";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
         return $rawData;
     }
     
-    private function mostrarFacturaImp($id) {
+    private function mostrarFacturaImp($con,$obj_con,$id) {
         $rawData = array();
-        $con = Yii::app()->dbvsseaint;
-        $sql = "SELECT * FROM " . $con->dbname . ".NubeFacturaImpuesto WHERE IdFactura=$id";
-        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
-        $con->active = false;
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeFacturaImpuesto WHERE IdFactura=$id";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
         return $rawData;
     }
     
-    private function mostrarFacturaDataAdicional($id) {
+    private function mostrarFacturaDataAdicional($con,$obj_con,$id) {
         $rawData = array();
-        $con = Yii::app()->dbvsseaint;
-        $sql = "SELECT * FROM " . $con->dbname . ".NubeDatoAdicionalFactura WHERE IdFactura=$id";
-        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
-        $con->active = false;
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDatoAdicionalFactura WHERE IdFactura=$id";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
         return $rawData;
     }
     
@@ -548,13 +559,14 @@ class NubeFactura {
     public function enviarMailDoc() {
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
-        //$con = $obj_con->conexionVsRAd();
-        $con = $obj_con->conexionIntermedio();
+        $objEmpData= new EMPRESA();
         $dataMail = new mailSystem();
         $rep = new REPORTES();
-        
+        //$con = $obj_con->conexionVsRAd();
+        $objEmp=$objEmpData->buscarDataEmpresa($obj_var->emp_id,$obj_var->est_id,$obj_var->pemi_id);//recuperar info deL Contribuyente
+        $con = $obj_con->conexionIntermedio();
      
-        $dataMail->file_to_attachXML=$obj_var->rutaXML.'FACTURAS/';//'/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
+        $dataMail->file_to_attachXML=$obj_var->rutaXML.'FACTURAS/';//Rutas FACTURAS
         $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
@@ -576,11 +588,9 @@ class NubeFactura {
             }
             //Envia l iformacion de Correos que ya se completo
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                if(strlen($cabDoc[$i]['CorreoPer'])>0){
-                
+                if(strlen($cabDoc[$i]['CorreoPer'])>0){                
                     $mPDF1=$rep->crearBaseReport();
-                    //Envia Correo
-                    //$htmlMail="Hola como estas 2";                    
+                    //Envia Correo                   
                     include('mensaje.php');
                     $htmlMail=$mensaje;
                     //$htmlMail=file_get_contents('mensaje.php');
@@ -590,10 +600,10 @@ class NubeFactura {
                     //CREAR PDF
                     $mPDF1->SetTitle($dataMail->filePDF);
                     $cabFact = $this->mostrarCabFactura($con,$obj_con,$cabDoc[$i]["Ids"]);
-                    //$detFact = $this->mostrarDetFacturaImp($cabDoc[$i]["Ids"]);
-                    //$impFact = $this->mostrarFacturaImp($cabDoc[$i]["Ids"]);
-                    //$adiFact = $this->mostrarFacturaDataAdicional($cabDoc[$i]["Ids"]);
-                    include('facturaPDF.php');
+                    $detFact = $this->mostrarDetFacturaImp($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $impFact = $this->mostrarFacturaImp($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $adiFact = $this->mostrarFacturaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    include('formatFact/facturaPDF.php');
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     //$mPDF1->WriteHTML($mensaje);
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
