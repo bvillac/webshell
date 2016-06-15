@@ -58,9 +58,9 @@ $mensajePDF='
         if ($cabDoc !== null) {
             //echo $this->renderPartial("_barcode", array("cabFact" => $cabFact));
             require_once('barcode.inc.php'); 
-            $code_number = $cabFact[$i]["ClaveAcceso"];//Generamos Clave de Acceso
+            $code_number = $cabFact[0]["ClaveAcceso"];//Generamos Clave de Acceso
             //opcion 1 permite Guardar en una rutas y 0 Presenta por apantalla,   false=no muestro los numeros abajo.
-            new barCodeGenrator($code_number,1,$obj_var->rutaPDF.$cabFact[$i]['IdentificacionComprador'].'.png', 280, 150, false);
+            new barCodeGenrator($code_number,1,$obj_var->rutaPDF.$cabFact[0]['IdentificacionComprador'].'.png', 280, 150, false);
             $mensajePDF .= '<table style="width:100%;">
                 <tbody>
                     <tr>

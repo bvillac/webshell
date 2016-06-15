@@ -5,19 +5,19 @@ $cabDocPDF = '<div>
             <tr>
                 <td>
                     <span class="titleLabel">R.U.C.:</span>
-                    <span class="titleNum_Ruc">'. $cabFact[$i]["Ruc"] .'</span>
+                    <span class="titleNum_Ruc">'. $cabFact[0]["Ruc"] .'</span>
                 </td>
                 
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel titleDocumento">'.$cabFact[$i]["NombreDocumento"] .'</span>
+                    <span class="titleLabel titleDocumento">'.$cabFact[0]["NombreDocumento"] .'</span>
                 </td>
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">Nº</span>
-                    <span class="titleNum_Ruc">'. $cabFact[$i]["NumDocumento"] .'</span>
+                    <span class="titleNum_Ruc">'. $cabFact[0]["NumDocumento"] .'</span>
                 </td>
               
             </tr>
@@ -28,26 +28,26 @@ $cabDocPDF = '<div>
             </tr>
             <tr>
                 <td>
-                    <span >'.$cabFact[$i]["AutorizacionSRI"] .'</span>
+                    <span >'.$cabFact[0]["AutorizacionSRI"] .'</span>
                 </td>
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">FECHA Y HORA AUTORIZACIÓN</span>
-                    <span>'. $cabFact[$i]["FechaAutorizacion"] .'</span>
+                    <span>'. $cabFact[0]["FechaAutorizacion"] .'</span>
                 </td>
                 
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">AMBIENTE</span>
-                    <span>'; $cabDocPDF .= ($cabFact[$i]["Ambiente"]=="1")? "PRUEBA":"PRODUCCIÓN"; $cabDocPDF .= '</span>
+                    <span>'; $cabDocPDF .= ($cabFact[0]["Ambiente"]=="1")? "PRUEBA":"PRODUCCIÓN"; $cabDocPDF .= '</span>
                 </td>
             </tr>
             <tr>
                 <td>
                     <span class="titleLabel">EMISIÓN</span>
-                    <span>'; $cabDocPDF .= ($cabFact[$i]["TipoEmision"]=="1")?"NORMAL":"INDISPONIBILIDAD DEL SISTEMA"; $cabDocPDF .= '</span>
+                    <span>'; $cabDocPDF .= ($cabFact[0]["TipoEmision"]=="1")?"NORMAL":"INDISPONIBILIDAD DEL SISTEMA"; $cabDocPDF .= '</span>
                 </td>
             </tr>
             <tr>
@@ -57,12 +57,12 @@ $cabDocPDF = '<div>
             </tr>
             <tr>
                 <td style="width:50%">
-                            <img src="'.$obj_var->rutaPDF.$cabFact[$i]["IdentificacionComprador"].'.png" style="width:280px;height:20px;">
+                            <img src="'.$obj_var->rutaPDF.$cabFact[0]["IdentificacionComprador"].'.png" style="width:280px;height:20px;">
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span>'. $cabFact[$i]["ClaveAcceso"] .'</span>
+                    <span>'. $cabFact[0]["ClaveAcceso"] .'</span>
                 </td>
             </tr>    
             

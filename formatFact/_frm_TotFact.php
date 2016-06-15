@@ -62,7 +62,7 @@ $cabDocPDF = '<table class="tabDetalle" style="width:100mm" >
                 <span>DESCUENTO </span>
             </td>
             <td class="marcoCel dataNumber">
-                <span>'. number_format($cabFact[$i]["TotalDescuento"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
+                <span>'. number_format($cabFact[0]["TotalDescuento"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
             </td>
         </tr>
         <tr>
@@ -94,7 +94,7 @@ $cabDocPDF = '<table class="tabDetalle" style="width:100mm" >
                 <span>PROPINA </span>
             </td>
             <td class="marcoCel dataNumber">
-                <span>'. number_format($cabFact[$i]["Propina"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
+                <span>'. number_format($cabFact[0]["Propina"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
             </td>
         </tr>
         <tr>
@@ -102,7 +102,7 @@ $cabDocPDF = '<table class="tabDetalle" style="width:100mm" >
                 <span>VALOR TOTAL</span>
             </td>
             <td class="marcoCel dataNumber">
-                <span>'. number_format($cabFact[$i]["ImporteTotal"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
+                <span>'. number_format($cabFact[0]["ImporteTotal"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
             </td>
         </tr>
 

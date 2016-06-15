@@ -1,5 +1,5 @@
 <?php
-$cabDocPDF = '<table style="width:200mm" class="tabDetalle">
+$cabDocPDF = '<table style="width:100%" class="tabDetalle">
     <tbody>
         <tr>
             <td class="marcoCel titleDetalle">

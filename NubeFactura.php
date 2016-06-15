@@ -644,7 +644,7 @@ class NubeFactura {
             $sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
                     'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,EstadoEnv,
                     ClaveAcceso,ImporteTotal Importe,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
-                FROM " . $obj_con->dbname . ".NubeFactura WHERE EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
+                FROM " . $obj_con->dbname . ".NubeFactura WHERE Estado=2 AND EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
             
             /*$sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
                     'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,
