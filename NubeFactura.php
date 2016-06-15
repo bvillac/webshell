@@ -482,7 +482,7 @@ class NubeFactura {
     
     private function mostrarCabFactura($con,$obj_con,$id) {
         $rawData = array();
-        $sql = "SELECT A.IdFactura IdDoc,A.Estado,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
+        $sql = "SELECT A.IdFactura IdDoc,A.Estado,A.EstadoEnv,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
                         A.FechaAutorizacion,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
                         CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
                         A.ContribuyenteEspecial,A.ObligadoContabilidad,A.TipoIdentificacionComprador,
@@ -607,23 +607,23 @@ class NubeFactura {
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     //$mPDF1->WriteHTML($mensaje);
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
-             
-                    /*$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
+           
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
                     if($resulMail["status"]=='OK'){
-                        $cabDoc[$i]['Estado']=6;//Correo Envia
+                        $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
-                        $cabDoc[$i]['Estado']=7;//Correo No enviado
-                    }*/
+                        $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
+                    }
                     
                 }else{
                     //No envia Correo 
                     //Error COrreo no EXISTE
-                    $cabDoc[$i]['Estado']=7;//Correo No enviado
+                    $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
                 }
                 
             }
             $con->close();
-            //$this->actualizaEnvioMailRAD($cabDoc);
+            $this->actualizaEnvioMailRAD($cabDoc);
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -642,7 +642,7 @@ class NubeFactura {
             $limitEnvMail=$obj_var->limitEnvMail;
 
             $sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
-                    'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,
+                    'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,EstadoEnv,
                     ClaveAcceso,ImporteTotal Importe,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
                 FROM " . $obj_con->dbname . ".NubeFactura WHERE EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
             
@@ -665,12 +665,14 @@ class NubeFactura {
     
     private function actualizaEnvioMailRAD($cabFact) {
         $obj_con = new cls_Base();
-        $conCont = $obj_con->conexionVsRAd();
+        //$conCont = $obj_con->conexionVsRAd();
+        $conCont = $obj_con->conexionIntermedio();
         try {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
-                $Estado=$cabFact[$i]['Estado'];//Contine el IDs del Tabla Autorizacion
+                $Estado=$cabFact[$i]['EstadoEnv'];//Contine el IDs del Tabla Autorizacion
                 $Ids=$cabFact[$i]['Ids'];
-                $sql = "UPDATE " . $obj_con->BdRad . ".VSFactura SET Estado='$Estado' WHERE IdFactura='$Ids';";
+                //$sql = "UPDATE " . $obj_con->BdRad . ".VSFactura SET Estado='$Estado' WHERE IdFactura='$Ids';";
+                $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
                 //echo $sql;
                 $command = $conCont->prepare($sql);
                 $command->execute();

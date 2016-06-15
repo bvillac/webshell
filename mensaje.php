@@ -23,8 +23,8 @@
         <div id="div-table">
             <div class="trow">
                 <p>
-                    <label class="titleLabel">Estimad@:</label><br><span class="titleName">'.$cabDoc[$i]["RazonSoc"].'</span><br> 
-                    Ha recibido un documendo electronico de UTIMPOR S.A.
+                    <label class="titleLabel">Estimad@:</label><br><span class="titleName">'.utf8_encode($cabDoc[$i]["RazonSoc"]).'</span><br> 
+                    Ha recibido un documendo electronico de <label class="titleLabel">'.strtoupper($objEmp["RazonSocial"]) .'</label>
                 </p>
             </div>
             <div class="trow">
@@ -59,7 +59,7 @@
                     <p>
                         Adem&aacute;s puede realizar la impresi&oacute;n su documento accediendo a nuestro portal <a target="_blank" href="'.$obj_var->rutaLink.'">aqui</a>.<br>
                         Atentamente,<br>
-                        <label class="titleLabel">Utimpor S.A.</label>
+                        <label class="titleLabel">'.strtoupper($objEmp["RazonSocial"]) .'</label>
                     </p>
                 </div>
             </div>

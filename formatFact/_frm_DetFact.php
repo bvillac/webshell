@@ -29,22 +29,20 @@ $cabDocPDF = '<table style="width:200mm" class="tabDetalle">
             <td class="marcoCel titleDetalle">
                 <span>Precio Total</span>
             </td>
-        </tr>
-        <?php
-        for ($i = 0; $i < sizeof($detFact); $i++) {
-            ?>
-            <tr>
-                <td class="marcoCel">'.$detFact[$i]['CodigoPrincipal'] .'</td>
-                <td class="marcoCel">'.$detFact[$i]['CodigoAuxiliar'] .'</td>
-                <td class="marcoCel dataNumber">'.intval($detFact[$i]['Cantidad']).'</td>
-                <td class="marcoCel">'.$detFact[$i]['Descripcion'] .'</td>
+        </tr>';
+        for ($fil = 0; $fil < sizeof($detFact); $fil++) {
+            $cabDocPDF .= '<tr>
+                <td class="marcoCel">'.$detFact[$fil]['CodigoPrincipal'] .'</td>
+                <td class="marcoCel">'.$detFact[$fil]['CodigoAuxiliar'] .'</td>
+                <td class="marcoCel dataNumber">'.intval($detFact[$fil]['Cantidad']).'</td>
+                <td class="marcoCel">'.$detFact[$fil]['Descripcion'] .'</td>
                 <td class="marcoCel"></td>
                 <td class="marcoCel"></td>                
-                <td class="marcoCel dataNumber">'.$detFact[$i]['PrecioUnitario'] .'</td>
-                <td class="marcoCel dataNumber">'. number_format($detFact[$i]['Descuento'], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</td>
-                <td class="marcoCel dataNumber">'. number_format($detFact[$i]['PrecioTotalSinImpuesto'], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '') .'</td>
-            </tr>
-        <?php } ?>
-    </tbody>
+                <td class="marcoCel dataNumber">'.$detFact[$fil]['PrecioUnitario'] .'</td>
+                <td class="marcoCel dataNumber">'. number_format($detFact[$fil]['Descuento'], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</td>
+                <td class="marcoCel dataNumber">'. number_format($detFact[$fil]['PrecioTotalSinImpuesto'], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '') .'</td>
+            </tr>';
+        }
+    $cabDocPDF .= '</tbody>
 </table>';
 ?>

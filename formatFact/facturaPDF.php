@@ -83,7 +83,7 @@ $mensajePDF='
             <table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td>';
+                        <td style="width:100%">';
                         include("formatFact/_frm_DataCliente.php");//echo $this->renderPartial("_frm_DataCliente", array("cabFact" => $cabFact)); 
                         $mensajePDF .= $cabDocPDF;
                         $mensajePDF .= '</td>
@@ -105,11 +105,13 @@ $mensajePDF='
                 <tbody>
                     <tr>
                         <td style="width:70%">';
-                            //echo $this->renderPartial("_frm_DataAuxFact", array("adiFact" => $adiFact));
+                        include("formatFact/_frm_DataAuxFact.php");//echo $this->renderPartial("_frm_DataAuxFact", array("adiFact" => $adiFact));
+                        $mensajePDF .= $cabDocPDF;
                         $mensajePDF .= '</td>
                         <td style="width:30%">
                             <div>';
-                                //echo $this->renderPartial("_frm_TotFact", array("impFact" => $impFact, "cabFact => $cabFact));
+                            include("formatFact/_frm_TotFact.php");    //echo $this->renderPartial("_frm_TotFact", array("impFact" => $impFact, "cabFact => $cabFact));
+                            $mensajePDF .= $cabDocPDF;
                             $mensajePDF .= '</div>
                         </td>
                     </tr>

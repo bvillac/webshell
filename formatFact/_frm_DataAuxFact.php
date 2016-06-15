@@ -1,26 +1,23 @@
-<div>
+<?php
+$cabDocPDF = '<div>
     <table style="width:100mm;" class="marcoDiv">
         <tbody>
             <tr>
                 <td class="titleDetalle">
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Additional Information') ?></span>
+                    <span class="titleLabel">Información Adicional</span>
                 </td>
-            </tr>
-            <?php
-            for ($i = 0; $i < sizeof($adiFact); $i++) {
-                if($adiFact[$i]['Descripcion']<>''){
-                ?>
-                <tr>
+            </tr>';
+            for ($ix = 0; $ix < sizeof($adiFact); $ix++) {
+                if($adiFact[$ix]['Descripcion']<>''){
+                $cabDocPDF .= '<tr>
                     <td>
-                        <span class="titleLabel"><?php echo $adiFact[$i]['Nombre'] ?></span>
-                        <span><?php echo $adiFact[$i]['Descripcion'] ?></span>
+                        <span class="titleLabel">'.$adiFact[$ix]['Nombre'].'</span>
+                        <span>'.utf8_encode($adiFact[$ix]['Descripcion']) .'</span>
                     </td>
-                </tr>
-            <?php 
+                </tr>';
                 }
-            } ?>
-
-
-        </tbody>
+            }
+        $cabDocPDF .= '</tbody>
     </table>
-</div>
+</div>';
+?>
