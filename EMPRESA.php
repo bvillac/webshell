@@ -25,4 +25,14 @@ class EMPRESA {
         $sentencia = $conApp->query($sql);
         return $sentencia->fetch_assoc();
     }
+    
+    public function buscarDatoVendedor($vend_id) {
+        $obj_con = new cls_Base();
+        $conApp = $obj_con->conexionAppWeb();
+        //$rawData = array();
+        $sql = "SELECT USU_NOMBRE NombreUser,USU_CORREO CorreoUser FROM " . $obj_con->BdAppweb . ".USUARIO WHERE USU_ID='$vend_id';";
+        $sentencia = $conApp->query($sql);
+        $conApp->close();
+        return $sentencia->fetch_assoc();
+    }
 }

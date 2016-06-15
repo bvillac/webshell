@@ -150,15 +150,6 @@ class NubeFactura {
                             '" . $objEnt[$i]['ATIENDE'] . "',
                             '1',CURRENT_TIMESTAMP() )";
 
-
-        //"@Ambiente,@TipoEmision,@RazonSocial,@NombreComercial,@Ruc,@CodigoDocumento,@Establecimiento, " &
-        //"@PuntoEmision,@Secuencial,@DireccionMatriz,@FechaEmision,@DireccionEstablecimiento,@ContribuyenteEspecial, " &
-        //"@ObligadoContabilidad,@TipoIdentificacionComprador,@GuiaRemision,@RazonSocialComprador,@IdentificacionComprador," &
-        //"@TotalSinImpuesto,@TotalDescuento,@Propina,@ImporteTotal,@Moneda,@SecuencialERP,@CodigoTransaccionERP,@Estado,GETDATE()) " &
-        //" SELECT @@IDENTITY";
-        //DATE(" . $cabOrden[0]['CDOR_FECHA_INGRESO'] . "),
-        //$sql .= "AND DATE(A.CDOR_FECHA_INGRESO) BETWEEN '" . date("Y-m-d", strtotime($control[0]['F_INI'])) . "' AND '" . date("Y-m-d", strtotime($control[0]['F_FIN'])) . "' ";
-        //echo $sql;
         $command = $con->prepare($sql);
         $command->execute();
         //$command = $con->query($sql);
@@ -488,9 +479,8 @@ class NubeFactura {
                         A.ContribuyenteEspecial,A.ObligadoContabilidad,A.TipoIdentificacionComprador,
                         A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,
                         A.FechaEmision,A.IdentificacionComprador,A.RazonSocialComprador,
-                        A.TotalSinImpuesto,A.TotalDescuento,A.Propina,A.ImporteTotal,
-                        'FACTURA' NombreDocumento,A.AutorizacionSri,A.ClaveAcceso,A.FechaAutorizacion,
-                        A.Ambiente,A.TipoEmision,A.GuiaRemision,A.Moneda,A.Ruc,A.CodigoError
+                        A.TotalSinImpuesto,A.TotalDescuento,A.Propina,A.ImporteTotal,A.USU_ID,
+                        'FACTURA' NombreDocumento,A.ClaveAcceso,A.Ambiente,A.TipoEmision,A.GuiaRemision,A.Moneda,A.Ruc,A.CodigoError
                         FROM " . $obj_con->BdIntermedio . ".NubeFactura A
                 WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdFactura =$id ";
             $sentencia = $con->query($sql);
@@ -607,8 +597,10 @@ class NubeFactura {
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     //$mPDF1->WriteHTML($mensaje);
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
-           
-                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
+                    
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
+                    
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{

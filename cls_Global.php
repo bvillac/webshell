@@ -18,13 +18,13 @@ class cls_Global {
     var $est_id='1';//Establecimiento
     var $pemi_id='1';//Punto Emision
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2016-06-10';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2016-06-15';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     var $decimalPDF=2;
     var $SepdecimalPDF='.';
     var $limitEnv=10;
     var $limitEnvMail=2;
-    var $valorIva=0.12;
+    //var $valorIva=0.12;
     var $textIva='14%';
     var $Author="Utimpor";
     var $rutaPDF="/opt/SEADOC/DOCPDF/";
