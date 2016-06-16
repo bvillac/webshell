@@ -58,7 +58,7 @@ class mailSystem {
         //$mail->addBCC('yalava@utimpor.com', 'Ventas Utimpor'); //Para copia Oculta
         
         //$mail->addBCC('byronvillacreses@gmail.com', 'Byron Villa'); //Para con copia
-        $mail->addCC("bvillacreses@utimpor.com", "Byron Villa");
+        //$mail->addCC("bvillacreses@utimpor.com", "Byron Villa");
         //$mail->addCC("byron_villacresesf@hotmail.com", "Byron Villa");
         //$mail->addCC('byronvillacreses@gmail.com', 'ByronV'); //Para con copia
         //$mail->addReplyTo('byronvillacreses@gmail.com', 'First Last');
