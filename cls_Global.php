@@ -133,5 +133,12 @@ class cls_Global {
         return $rawData;
     }
     
+    public function limpioCaracteresXML($cadena) {
+        $search = array("<", ">", "&", "'");
+        $replace = array("&lt;", "&gt", "&amp;", "&apos");
+        $final = str_replace($search, $replace, $cadena);
+        return $final;
+    }
+    
 
 }

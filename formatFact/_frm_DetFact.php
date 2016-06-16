@@ -35,7 +35,7 @@ $cabDocPDF = '<table style="width:100%" class="tabDetalle">
                 <td class="marcoCel">'.$detFact[$fil]['CodigoPrincipal'] .'</td>
                 <td class="marcoCel">'.$detFact[$fil]['CodigoAuxiliar'] .'</td>
                 <td class="marcoCel dataNumber">'.intval($detFact[$fil]['Cantidad']).'</td>
-                <td class="marcoCel">'.$detFact[$fil]['Descripcion'] .'</td>
+                <td class="marcoCel">'. utf8_encode($obj_var->limpioCaracteresXML(trim($detFact[$fil]['Descripcion']))) .'</td>
                 <td class="marcoCel"></td>
                 <td class="marcoCel"></td>                
                 <td class="marcoCel dataNumber">'.$detFact[$fil]['PrecioUnitario'] .'</td>

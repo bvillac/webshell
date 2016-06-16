@@ -12,7 +12,7 @@ $cabDocPDF = '<div>
                 $cabDocPDF .= '<tr>
                     <td>
                         <span class="titleLabel">'.$adiFact[$ix]['Nombre'].'</span>
-                        <span>'.utf8_encode($adiFact[$ix]['Descripcion']) .'</span>
+                        <span>'.$obj_var->limpioCaracteresXML($adiFact[$ix]['Descripcion']) .'</span>
                     </td>
                 </tr>';
                 }
