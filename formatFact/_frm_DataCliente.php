@@ -5,7 +5,7 @@ $cabDocPDF='<div>
             <tr>
                 <td>
                     <span class="titleLabel">Razón Social/Nombre y Apellido:</span>
-                    <span>'.utf8_encode($cabFact[0]["RazonSocialComprador"]).'</span>
+                    <span>'.utf8_encode($obj_var->limpioCaracteresXML($cabFact[0]["RazonSocialComprador"])).'</span>
                 </td>
                 <td>
                     <span class="titleLabel">Identificación:</span>
