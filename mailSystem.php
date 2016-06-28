@@ -83,5 +83,43 @@ class mailSystem {
             return $obj_var->messageSystem('OK', "¡¡Enviado!!", null, null, null);
         }
     }
+    
+    public function enviarMailError($DocData) {
+        $mail = new PHPMailer();
+        $body = 'Error en Documento '.$DocData["tipo"].'-'.$DocData["NumDoc"].'<BR>';
+        $body .= 'Error '.$DocData["Error"];
+        
+        $mail->IsSMTP();
+        $mail->SMTPSecure = "ssl";
+        $mail->Port = 465;
+        $mail->Host = $this->mailSMTP;//"mail.utimpor.com";
+        $mail->setFrom($this->noResponder, 'Error Servicio de envío automático '.$this->domEmpresa);
+
+        // asunto y cuerpo alternativo del mensaje
+        $mail->Subject = $this->Subject;
+        $mail->AltBody = "Data alternativao";
+
+        // si el cuerpo del mensaje es HTML
+        $mail->MsgHTML($body);
+        $mail->AddAddress("bvillacreses@utimpor.com", "Ing.Byron Villa");
+
+        $mail->SMTPAuth = true;
+
+        // credenciales usuario
+        $mail->Username = $this->noResponder;
+        $mail->Password = $this->noResponderPass;
+        $mail->CharSet = 'UTF-8';
+        //$mail->SMTPDebug = 1;//Muestra el Error
+        
+        $mail->Send();
+
+        /*if (!$mail->Send()) {
+            //echo "Error enviando: " . $mail->ErrorInfo;
+            return $obj_var->messageSystem('NO_OK', "Error enviando: " . $mail->ErrorInfo, null, null, null);
+        } else {
+            //echo "¡¡Enviado!!";
+            return $obj_var->messageSystem('OK', "¡¡Enviado!!", null, null, null);
+        }*/
+    }
 
 }

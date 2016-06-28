@@ -30,6 +30,8 @@ class cls_Global {
     var $rutaPDF="/opt/SEADOC/DOCPDF/";
     var $rutaXML="/opt/SEADOC/AUTORIZADO/";
     var $rutaLink='http://www.docsea.utimpor.com';
+    var $tipoFacLocal='F4';
+    var $tipoGuiLocal='GR';
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;
@@ -136,6 +138,13 @@ class cls_Global {
     public function limpioCaracteresXML($cadena) {
         $search = array("<", ">", "&", "'");
         $replace = array("&lt;", "&gt", "&amp;", "&apos");
+        $final = str_replace($search, $replace, $cadena);
+        return $final;
+    }
+    
+    public function limpioCaracteresSQL($cadena) {
+        $search = array("'");
+        $replace = array("`");
         $final = str_replace($search, $replace, $cadena);
         return $final;
     }

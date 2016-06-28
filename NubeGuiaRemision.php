@@ -4,6 +4,7 @@ include('cls_Global.php');//para HTTP
 include('EMPRESA.php');//para HTTP
 include('VSValidador.php');
 include('VSClaveAcceso.php');
+include('mailSystem.php');
 class NubeGuiaRemision {
     //put your code here
     private function buscarGuias($op,$NumPed) {
@@ -79,6 +80,7 @@ class NubeGuiaRemision {
         $obj_var = new cls_Global();
         $con = $obj_con->conexionIntermedio();
         $objEmpData= new EMPRESA();
+        $dataMail = new mailSystem();
         /****VARIBLES DE SESION*******/
         $emp_id=$obj_var->emp_id;
         $est_id=$obj_var->est_id;
@@ -88,14 +90,14 @@ class NubeGuiaRemision {
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
             $codDoc='06';//GUIAS DE REMISION
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                $this->InsertarCabGuia($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
+                $this->InsertarCabGuia($con,$obj_con,$obj_var,$cabDoc, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
-                $this->InsertarDestinatarioGuia($con,$obj_con,$cabDoc,$empresaEnt,$idCab,$i);
+                $this->InsertarDestinatarioGuia($con,$obj_con,$obj_var,$cabDoc,$empresaEnt,$idCab,$i);
                 $idDestino = $con->insert_id;
-                $detDoc=$this->buscarDetGuia('GU',$cabDoc[$i]['NUM_GUI']);
-                $this->InsertarDetGuia($con,$obj_con,$detDoc,$idDestino);
+                $detDoc=$this->buscarDetGuia($obj_var->tipoGuiLocal,$cabDoc[$i]['NUM_GUI']);
+                $this->InsertarDetGuia($con,$obj_con,$obj_var,$detDoc,$idDestino);
                 //Descomentar si se desea Agregar Datos Adicional
-                $this->InsertarGuiaDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
+                $this->InsertarGuiaDatoAdicional($con,$obj_con,$obj_var,$i,$cabDoc,$idCab);
                 $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
             $con->commit();
@@ -104,17 +106,19 @@ class NubeGuiaRemision {
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
-            //$trans->rollback();
-            //$con->active = false;
             $con->rollback();
             $con->close();
-            throw $e;
+            //throw $e;
+            //$DocData["tipo"] = $obj_var->tipoGuiLocal;
+            //$DocData["NumDoc"] = $cabDoc[$i]['NUM_GUI'];
+            //$DocData["Error"] = $e;
+            //$dataMail->enviarMailError($DocData);
             return false;
         }   
     }
     
     
-    private function InsertarCabGuia($con,$obj_con, $objEnt, $objEmp, $codDoc, $i) {
+    private function InsertarCabGuia($con,$obj_con,$obj_var, $objEnt, $objEmp, $codDoc, $i) {
         $valida = new VSValidador();
         $tip_iden = $valida->tipoIdent($objEnt[$i]['CED_RUC']);
         $Secuencial = $valida->ajusteNumDoc($objEnt[$i]['NUM_GUI'], 9);
@@ -127,7 +131,7 @@ class NubeGuiaRemision {
         //$perFiscal = date("m/Y", strtotime($objEnt[$i]['FEC_GUI']));
         $ClaveAcceso = $objCla->claveAcceso($codDoc, $fec_doc, $objEmp['Ruc'], $objEmp['Ambiente'], $serie, $Secuencial, $objEmp['TipoEmision']);
         /** ********************** */
-        $razonSocialDoc=str_replace("'","`",$objEnt[$i]['NOM_CLI']);// Error del ' en el Text se lo Reemplaza `
+        $razonSocialDoc=$obj_var->limpioCaracteresSQL($objEnt[$i]['NOM_CLI']);// Error del ' en el Text se lo Reemplaza `
         //$nomCliente=$objEnt[$i]['NOM_PRO'];// Error del ' en el Text
         
         //DATOS IMPORTANTES DE GUIA OBLIGATORIOS
@@ -144,7 +148,7 @@ class NubeGuiaRemision {
         
         $Rise="";//Verificar cuando es RISE
         $Placa=(strlen($objEnt[$i]['PLK_TRA'])>0)?trim($objEnt[$i]['PLK_TRA']):'Utimpor';//$objEnt[$i]['PLK_TRA'];//Dato Obligatorio
-        $NombreDocumento='GU';
+        $NombreDocumento=$obj_var->tipoGuiLocal;
         /*Configuracion para Usuario ATIENDE, se reempla la v16->16 ->20-08-2015
          * es decir solo para usuario Utimpor que en la tablas guarda la V16,V03 etc
          */
@@ -187,7 +191,7 @@ class NubeGuiaRemision {
 
     }
     
-    private function InsertarDestinatarioGuia($con,$obj_con, $cabDoc,$objEmp, $idCab,$i) {
+    private function InsertarDestinatarioGuia($con,$obj_con,$obj_var,$cabDoc,$objEmp, $idCab,$i) {
         $valida = new VSValidador();
         //Datos Destinatario
         $MotivoTraslado=$this->motivoTransporte($cabDoc[$i]['MOT_TRA']);
@@ -198,10 +202,11 @@ class NubeGuiaRemision {
         $NumDocSustento='';
         $NumAutDocSustento='';
         $FechaEmisionDocSustento='';
+        $RazonSocialDestinatario=$obj_var->limpioCaracteresSQL($cabDoc[$i]['NOM_CLI']);// Error del ' en el Text se lo Reemplaza 
         //Solo Ingresa cuando el tipo es F4 ose factura 
-        IF($cabDoc[$i]['TIP_NOF']=='F4'){//Estos Datos son Obligatorios si el Doc es una Factura
+        IF($cabDoc[$i]['TIP_NOF']==$obj_var->tipoFacLocal){//Estos Datos son Obligatorios si el Doc es una Factura
             $serie = $objEmp['Establecimiento'] .'-'. $objEmp['PuntoEmision'];
-            $CodDocSustento=($cabDoc[$i]['TIP_NOF']=='F4')?'01':'';//Obligatorio cuando correponda dependiendo Doc FACT, NC,ND,RE tABLA 4
+            $CodDocSustento=($cabDoc[$i]['TIP_NOF']==$obj_var->tipoFacLocal)?'01':'';//Obligatorio cuando correponda dependiendo Doc FACT, NC,ND,RE tABLA 4
             $NumDocSustento=$serie.'-'.$valida->ajusteNumDoc($cabDoc[$i]['NUM_NOF'], 9);//Obligatorio cuando correponda Formato  002-001-000000001
             $NumAutDocSustento='';//Autorizacon por SRI eje 2110201116302517921467390011234567891
             $FechaEmisionDocSustento='';//Fecha de Autorizacion del DOc 21/10/2011
@@ -213,7 +218,7 @@ class NubeGuiaRemision {
                 MotivoTraslado,DocAduaneroUnico,CodEstabDestino,Ruta,CodDocSustento,NumDocSustento,NumAutDocSustento,
                 FechaEmisionDocSustento,IdGuiaRemision)VALUES(
                 '" . $cabDoc[$i]['CED_RUC'] . "',
-                '" . $cabDoc[$i]['NOM_CLI'] . "',
+                '$RazonSocialDestinatario',
                 '" . $cabDoc[$i]['DIR_CLI'] . "',
                 '$MotivoTraslado',
                 '$DocAduaneroUnico',
@@ -228,14 +233,15 @@ class NubeGuiaRemision {
         $command->execute();
     }
     
-    private function InsertarDetGuia($con,$obj_con, $detDoc, $idCab) {
+    private function InsertarDetGuia($con,$obj_con,$obj_var, $detDoc, $idCab) {
         for ($i = 0; $i < sizeof($detDoc); $i++) {
             $CodigoAdicional='';
+            $Descripcion=$obj_var->limpioCaracteresSQL($detDoc[$i]['NOM_ART']);
             $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDetalle
                     (CodigoInterno,CodigoAdicional,Descripcion,Cantidad,IdGuiaRemisionDestinatario)VALUES(
                     '" . $detDoc[$i]['COD_ART'] . "',
                     '$CodigoAdicional',
-                    '" . $detDoc[$i]['NOM_ART'] . "',
+                    '$Descripcion',
                     '" . $detDoc[$i]['CAN_DES'] . "',
                     '$idCab') ";
             $command = $con->prepare($sql);
@@ -246,7 +252,7 @@ class NubeGuiaRemision {
         }
     }
     
-    private function InsertarGuiaDatoAdicional($con,$obj_con, $i, $cabDoc, $idCab) {
+    private function InsertarGuiaDatoAdicional($con,$obj_con,$obj_var,$i, $cabDoc, $idCab) {
         $direccion = $cabDoc[$i]['DIR_CLI'];
         $correo = $cabDoc[$i]['CORRE_E'];
         $contacto = $cabDoc[$i]['NOM_CTO'];
