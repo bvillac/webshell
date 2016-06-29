@@ -81,8 +81,8 @@ class cls_Base {
     //SERVIDOR REMOTO VSSEARAD
     public function conexionVsRAd() {
         //Configuracion Local
-        //$bd_host = "192.168.10.200";
-        $bd_host = "localhost";
+        $bd_host = "192.168.10.200";
+        //$bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = "root00";
         $bd_base = $this->BdRad;
