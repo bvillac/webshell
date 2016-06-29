@@ -1,2 +1,3 @@
-/nbproject/private/
-cls_Base.php
+nbproject/*
+mpdf/*
+/cls_Base.php
