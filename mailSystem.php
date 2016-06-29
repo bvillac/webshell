@@ -19,7 +19,7 @@ class mailSystem {
     
 
     //put your code here
-    public function enviarMail($body,$CabPed,$obj_var,$usuData) {
+    public function enviarMail($body,$CabPed,$obj_var,$usuData,$fil) {
         $mail = new PHPMailer();
         //$body = "Hola como estas";
         
@@ -44,23 +44,25 @@ class mailSystem {
 
         // si el cuerpo del mensaje es HTML
         $mail->MsgHTML($body);
-
+        
+        //##############################################
+        //Separa en Array los Correos Ingresados para enviar
+        /*$DataCorreos = explode(";",$CabPed[$fil]["CorreoUser"]);
+        for ($icor = 0; $icor < count($DataCorreos); $icor++) {
+            //$DataCorreos[$icor];
+            $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
+        }*/
+        $mail->AddAddress($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
+        //##############################################
         // podemos hacer varios AddAdress 
         //$mail->AddAddress($CabPed[0]["CorreoUser"], $CabPed[0]["NombreUser"]);//Usuario Autoriza Pedido
         //$mail->AddAddress($CabPed[0]["CorreoPersona"], $CabPed[0]["NombrePersona"]);//Usuario Genera Pedido CorreoUser
-        //$mail->AddAddress("byron_villacresesf@hotmail.com", "Byron Villa");
-        $mail->AddAddress($usuData["CorreoUser"], $usuData["NombreUser"]);
+        //$mail->AddAddress("byron_villacresesf@hotmail.com", "Byron Villa");        
         //$mail->AddAddress("byronvillacreses@gmail.com", "Byron Villa");
         
         /******** COPIA OCULTA PARA VENTAS  ***************/
-        //$mail->addBCC('ventas@utimpor.com', 'Ventas Utimpor'); //Para copia Oculta
-        //$mail->addBCC('ventas2@utimpor.com', 'Ventas Utimpor'); //Para copia Oculta
-        //$mail->addBCC('yalava@utimpor.com', 'Ventas Utimpor'); //Para copia Oculta
-        
         //$mail->addBCC('byronvillacreses@gmail.com', 'Byron Villa'); //Para con copia
-        //$mail->addCC("bvillacreses@utimpor.com", "Byron Villa");
-        //$mail->addCC("byron_villacresesf@hotmail.com", "Byron Villa");
-        //$mail->addCC('byronvillacreses@gmail.com', 'ByronV'); //Para con copia
+        $mail->addCC("bvillacreses@utimpor.com", "Byron Villa");
         //$mail->addReplyTo('byronvillacreses@gmail.com', 'First Last');
         
         //$mail->AddAttachment("archivo.zip");//adjuntos un archivo al mensaje

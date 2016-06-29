@@ -24,7 +24,6 @@ class cls_Base {
         $bd_usuario = "root";
         $bd_password = "root00";
         $bd_base = $this->BdServidor;
-        //$bd_base = "utimpor2014";
         //$con = mysql_connect($bd_host, $bd_usuario, $bd_password) or die("Error en la conexión a MySql");
         //Creando la conexión, nuevo objeto mysqli
         $con = new mysqli($bd_host,$bd_usuario,$bd_password,$bd_base);
@@ -43,8 +42,8 @@ class cls_Base {
     //SERVIDOR REMOTO WEBAPP
     public function conexionIntermedio() {
         //Configuracion Local
-        $bd_host = "192.168.10.200";
-        //$bd_host = "localhost";
+        //$bd_host = "192.168.10.200";
+        $bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = "root00";
         $bd_base = $this->BdIntermedio;
@@ -62,8 +61,8 @@ class cls_Base {
     //SERVIDOR REMOTO WEBAPP
     public function conexionAppWeb() {
         //Configuracion Local
-        $bd_host = "192.168.10.200";
-        //$bd_host = "localhost";
+        //$bd_host = "192.168.10.200";
+        $bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = "root00";
         $bd_base = $this->BdAppweb;
@@ -81,8 +80,8 @@ class cls_Base {
     //SERVIDOR REMOTO VSSEARAD
     public function conexionVsRAd() {
         //Configuracion Local
-        $bd_host = "192.168.10.200";
-        //$bd_host = "localhost";
+        //$bd_host = "192.168.10.200";
+        $bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = "root00";
         $bd_base = $this->BdRad;

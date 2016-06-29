@@ -129,7 +129,7 @@ class cls_Global {
         $sentencia = $conCont->query($sql);
         if ($sentencia->num_rows > 0) {
             $fila = $sentencia->fetch_assoc();
-            $rawData= $fila["CorreoPer"];
+            $rawData= str_replace(",", ";", $fila["CorreoPer"]);//Remplaza las "," por el ";" Para poder enviar.
         }
         $conCont->close();
         return $rawData;

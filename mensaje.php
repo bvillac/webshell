@@ -54,6 +54,15 @@
                                 </div>
                             </div>';
             }
+            //Datos de prueba
+            $DataCorreos = explode(";",$cabDoc[$i]["CorreoPer"]);
+            for ($icor = 0; $icor < count($DataCorreos); $icor++) {
+                $mensaje.='<div class="trow">
+                                <div class="tcol-td form-group">
+                                    <span> Correo :'.trim($DataCorreos[$icor]).'- Para :'.trim($cabDoc[$i]["RazonSoc"]).'</span><br>
+                                </div>
+                            </div>';
+            }
             $mensaje.='<div class="trow">
                 <div class="tcol-td form-group">
                     <p>

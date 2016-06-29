@@ -560,8 +560,9 @@ class NubeFactura {
         $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
-            //Se procede a preparar con loa correos para enviar.
+            //Se procede a preparar con los correos para enviar.
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                //Retorna Informacion de Correos
                 $rowUser=$obj_var->buscarCedRuc($cabDoc[$i]['CedRuc']);//Verifico si Existe la Cedula o Ruc
                 if($rowUser['status'] == 'OK'){
                     //Existe el Usuario y su Correo Listo para enviar
@@ -600,7 +601,7 @@ class NubeFactura {
                     
                     $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
                     
-                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData);
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
