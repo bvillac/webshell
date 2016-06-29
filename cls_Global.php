@@ -135,6 +135,45 @@ class cls_Global {
         return $rawData;
     }
     
+    public function actualizaEnvioMailRAD($docDat,$tipDoc) {
+        $obj_con = new cls_Base();
+        //$conCont = $obj_con->conexionVsRAd();
+        $conCont = $obj_con->conexionIntermedio();
+        try {
+            for ($i = 0; $i < sizeof($cabFact); $i++) {
+                $Estado=$docDat[$i]['EstadoEnv'];//Contine el IDs del Tabla Autorizacion
+                $Ids=$docDat[$i]['Ids'];
+                switch ($tipDoc) {
+                    Case "FA":
+                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
+                        break;
+                    Case "GR":
+                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeGuiaRemision SET EstadoEnv='$Estado' WHERE IdGuiaRemision='$Ids';";
+                        break;
+                    Case "RT":
+                        //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
+                        break;
+                    Case "NC":
+                        //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
+                        break;
+                    Case "ND":
+                        //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
+                        break;
+                }
+                $command = $conCont->prepare($sql);
+                $command->execute();
+            }
+            $conCont->commit();
+            $conCont->close();
+            return true;
+        } catch (Exception $e) {
+            $conCont->rollback();
+            $conCont->close();
+            throw $e;
+            return false;
+        }
+    }
+    
     public function limpioCaracteresXML($cadena) {
         $search = array("<", ">", "&", "'");
         $replace = array("&lt;", "&gt", "&amp;", "&apos");

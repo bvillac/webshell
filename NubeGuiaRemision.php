@@ -5,6 +5,7 @@ include('EMPRESA.php');//para HTTP
 include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
+include('REPORTES.php');
 class NubeGuiaRemision {
     //put your code here
     private function buscarGuias($op,$NumPed) {
@@ -339,4 +340,175 @@ class NubeGuiaRemision {
         Return $motivo;
     }
     
+    /************************************************************/
+    /*********CONFIGURACION PARA ENVIAR CORREOS
+    /************************************************************/
+    public function enviarMailDoc() {
+        $obj_con = new cls_Base();
+        $obj_var = new cls_Global();
+        $objEmpData= new EMPRESA();
+        $dataMail = new mailSystem();
+        $rep = new REPORTES();
+        //$con = $obj_con->conexionVsRAd();
+        $objEmp=$objEmpData->buscarDataEmpresa($obj_var->emp_id,$obj_var->est_id,$obj_var->pemi_id);//recuperar info deL Contribuyente
+        $con = $obj_con->conexionIntermedio();
+     
+        $dataMail->file_to_attachXML=$obj_var->rutaXML.'GUIAS/';//Rutas FACTURAS
+        $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
+        try {
+            $cabDoc = $this->buscarMailGuiasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
+            //Se procede a preparar con los correos para enviar.
+            for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                //Retorna Informacion de Correos
+                $rowUser=$obj_var->buscarCedRuc($cabDoc[$i]['CedRuc']);//Verifico si Existe la Cedula o Ruc
+                if($rowUser['status'] == 'OK'){
+                    //Existe el Usuario y su Correo Listo para enviar
+                    $row=$rowUser['data'];
+                    $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
+                    $cabDoc[$i]['Clave']='';//No genera Clave
+                }else{
+                    //No Existe y se crea uno nuevo
+                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,$i);
+                    $row=$rowUser['data'];
+                    $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
+                    $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada
+                }
+            }
+            //Envia l iformacion de Correos que ya se completo
+            for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                if(strlen($cabDoc[$i]['CorreoPer'])>0){                
+                    $mPDF1=$rep->crearBaseReport();
+                    //Envia Correo                   
+                    include('mensaje.php');
+                    $htmlMail=$mensaje;
+
+                    $dataMail->Subject='Ha Recibido un(a) Factura Nuevo(a)!!! ';
+                    $dataMail->fileXML='GUIA-'.$cabDoc[$i]["NumDocumento"].'.xml';
+                    $dataMail->filePDF='GUIA-'.$cabDoc[$i]["NumDocumento"].'.pdf';
+                    //CREAR PDF
+                    $mPDF1->SetTitle($dataMail->filePDF);
+                    $cabFact = $this->mostrarCabGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $destDoc = $this->mostrarDestinoGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $adiFact = $this->mostrarCabGuiaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
+                    //include('formatGuia/guiaremiPDF.php');
+                    $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
+                    //$mPDF1->WriteHTML($mensaje);
+                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
+                    
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
+                    
+                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    if($resulMail["status"]=='OK'){
+                        $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
+                    }else{
+                        $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
+                    }
+                    
+                }else{
+                    //No envia Correo 
+                    //Error COrreo no EXISTE
+                    $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
+                }
+                
+            }
+            $con->close();
+            //$obj_var->actualizaEnvioMailRAD($cabDoc,"GR");
+            //echo "ERP Actualizado";
+            return true;
+        } catch (Exception $e) {
+            //$trans->rollback();
+            //$con->active = false;
+            $con->rollback();
+            $con->close();
+            throw $e;
+            return false;
+        }   
+    }
+    
+    
+    private function buscarMailGuiasRAD($con,$obj_var,$obj_con) {
+            $rawData = array();
+            $fechaIni=$obj_var->dateStartFact;
+            $limitEnvMail=$obj_var->limitEnvMail;
+
+            $sql = "SELECT IdGuiaRemision Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
+                    'GUIAS' NombreDocumento,Ruc,Ambiente,TipoEmision,EstadoEnv,
+                    ClaveAcceso,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
+                FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision WHERE Estado=2 "
+                    . "AND EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
+            
+            $sentencia = $con->query($sql);
+            if ($sentencia->num_rows > 0) {
+                while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                    $rawData[] = $fila;
+                }
+            }
+            //$conCont->close();
+            return $rawData;
+       
+    }
+    
+    
+    public function mostrarCabGuia($con, $obj_con, $id) {
+        $rawData = array();
+        $sql = "SELECT A.IdGuiaRemision IdDoc,A.Estado,A.SecuencialERP,A.UsuarioCreador,
+                    A.FechaAutorizacion,A.AutorizacionSRI,A.ClaveAcceso,A.Ambiente,A.TipoEmision,
+                    CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
+                    A.DireccionPartida,A.RazonSocialTransportista,A.IdentificacionTransportista,
+                    A.FechaInicioTransporte,A.FechaFinTransporte,A.Placa,A.DireccionEstablecimiento,
+                    'GUIA DE REMISION' NombreDocumento,A.TipoIdentificacionTransportista,A.Rise,A.CodigoDocumento,A.FechaEmisionErp,
+                    A.Establecimiento,A.PuntoEmision,A.Secuencial,A.DireccionMatriz,A.ObligadoContabilidad,A.ContribuyenteEspecial
+                    FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A
+            WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdGuiaRemision =$id ";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+    }
+    
+    public function mostrarDestinoGuia($con, $obj_con, $id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDestinatario WHERE IdGuiaRemision=$id";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            $rawData = $sentencia->fetch_assoc();
+            for ($i = 0; $i < sizeof($rawData); $i++) {
+                $rawData[$i]['GuiaDet'] = $this->mostrarDetGuia($con, $obj_con,$rawData[$i]['IdGuiaRemisionDestinatario']); //Retorna el Detalle del Impuesto
+            }
+        }
+        return $rawData;
+    }
+    
+    private function mostrarDetGuia($con, $obj_con, $id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDetalle WHERE IdGuiaRemisionDestinatario=$id";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            $rawData = $sentencia->fetch_assoc();
+            for ($i = 0; $i < sizeof($rawData); $i++) {
+                $rawData[$i]['GuiaDetAdi'] = $this->mostrarDetGuiaDatoAdi($con, $obj_con,$rawData[$i]['IdGuiaRemisionDetalle']); //Retorna el Detalle del Impuesto
+            }
+        }
+        return $rawData;
+    }
+    
+    private function mostrarDetGuiaDatoAdi($con, $obj_con, $id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDatoAdicionalGuiaRemisionDetalle WHERE IdGuiaRemisionDetalle=$id";
+        $sentencia = $con->query($sql); 
+        $rawData = $sentencia->fetch_assoc();
+        return $rawData;
+    }
+    
+    public function mostrarCabGuiaDataAdicional($con, $obj_con, $id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDatoAdicionalGuiaRemision WHERE IdGuiaRemision=$id";
+        $sentencia = $con->query($sql);
+        $rawData = $sentencia->fetch_assoc();
+        return $rawData;
+    }
+
 }

@@ -47,7 +47,7 @@ class mailSystem {
         
         //##############################################
         //Separa en Array los Correos Ingresados para enviar
-        /*$DataCorreos = explode(";",$CabPed[$fil]["CorreoUser"]);
+        /*$DataCorreos = explode(";",$CabPed[$fil]["CorreoPer"]);
         for ($icor = 0; $icor < count($DataCorreos); $icor++) {
             //$DataCorreos[$icor];
             $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
