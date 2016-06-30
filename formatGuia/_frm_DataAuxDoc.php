@@ -1,28 +1,25 @@
-<div>
-    <?php if(sizeof($adiDoc)>0){ ?>
-    <table style="width:100mm;" class="marcoDiv">
+<?php
+$cabDocPDF = '<div>';
+if(sizeof($adiDoc)>0){
+    $cabDocPDF .= '<table style="width:100mm;" class="marcoDiv">
         <tbody>
             <tr>
                 <td class="titleDetalle">
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Additional Information') ?></span>
+                    <span class="titleLabel">Información Adicional</span>
                 </td>
-            </tr>
-            <?php
-            for ($i = 0; $i < sizeof($adiDoc); $i++) {
-                if($adiDoc[$i]['Descripcion']<>''){
-                ?>
-                <tr>
+            </tr>';
+            for ($ix = 0; $ix < sizeof($adiDoc); $ix++) {
+                if($adiDoc[$ix]['Descripcion']<>''){
+                $cabDocPDF .= '<tr>
                     <td>
-                        <span class="titleLabel"><?php echo $adiDoc[$i]['Nombre'] ?></span>
-                        <span><?php echo $adiDoc[$i]['Descripcion'] ?></span>
+                        <span class="titleLabel">'.utf8_encode($adiDoc[$ix]['Nombre']).'</span>
+                        <span>'.utf8_encode($obj_var->limpioCaracteresXML($adiDoc[$ix]['Descripcion'])) .'</span>
                     </td>
-                </tr>
-            <?php 
+                </tr>';
                 }
-            } ?>
-
-
-        </tbody>
-    </table>
-    <?php } ?>
-</div>
+            }
+        $cabDocPDF .= '</tbody>
+    </table>';
+ } 
+ $cabDocPDF .= '</div>';
+ ?>

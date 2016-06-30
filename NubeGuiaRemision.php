@@ -7,6 +7,7 @@ include('VSClaveAcceso.php');
 include('mailSystem.php');
 include('REPORTES.php');
 class NubeGuiaRemision {
+    private $tipoDoc='06';
     //put your code here
     private function buscarGuias($op,$NumPed) {
         try {
@@ -210,7 +211,7 @@ class NubeGuiaRemision {
             $CodDocSustento=($cabDoc[$i]['TIP_NOF']==$obj_var->tipoFacLocal)?'01':'';//Obligatorio cuando correponda dependiendo Doc FACT, NC,ND,RE tABLA 4
             $NumDocSustento=$serie.'-'.$valida->ajusteNumDoc($cabDoc[$i]['NUM_NOF'], 9);//Obligatorio cuando correponda Formato  002-001-000000001
             $NumAutDocSustento='';//Autorizacon por SRI eje 2110201116302517921467390011234567891
-            $FechaEmisionDocSustento='';//Fecha de Autorizacion del DOc 21/10/2011
+            $FechaEmisionDocSustento=$cabDoc[$i]['FEC_VTA'];//Fecha de Autorizacion del DOc 21/10/2011
         }
        
         
@@ -383,16 +384,15 @@ class NubeGuiaRemision {
                     $htmlMail=$mensaje;
 
                     $dataMail->Subject='Ha Recibido un(a) Factura Nuevo(a)!!! ';
-                    $dataMail->fileXML='GUIA-'.$cabDoc[$i]["NumDocumento"].'.xml';
-                    $dataMail->filePDF='GUIA-'.$cabDoc[$i]["NumDocumento"].'.pdf';
+                    $dataMail->fileXML='GUIA DE REMISION-'.$cabDoc[$i]["NumDocumento"].'.xml';
+                    $dataMail->filePDF='GUIA DE REMISION-'.$cabDoc[$i]["NumDocumento"].'.pdf';
                     //CREAR PDF
                     $mPDF1->SetTitle($dataMail->filePDF);
                     $cabFact = $this->mostrarCabGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $destDoc = $this->mostrarDestinoGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $adiFact = $this->mostrarCabGuiaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
-                    //include('formatGuia/guiaremiPDF.php');
+                    include('formatGuia/guiaremiPDF.php');
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
-                    //$mPDF1->WriteHTML($mensaje);
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
                     
                     $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
@@ -430,13 +430,12 @@ class NubeGuiaRemision {
             $rawData = array();
             $fechaIni=$obj_var->dateStartFact;
             $limitEnvMail=$obj_var->limitEnvMail;
-
-            $sql = "SELECT IdGuiaRemision Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
-                    'GUIAS' NombreDocumento,Ruc,Ambiente,TipoEmision,EstadoEnv,
-                    ClaveAcceso,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
-                FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision WHERE Estado=2 "
-                    . "AND EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
-            
+            $sql = "SELECT A.IdGuiaRemision Ids,A.AutorizacionSRI,A.FechaAutorizacion,B.IdentificacionDestinatario CedRuc,B.RazonSocialDestinatario RazonSoc,
+                    'GUIAS' NombreDocumento,A.Ruc,A.Ambiente,A.TipoEmision,A.EstadoEnv,
+                    ClaveAcceso,CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento
+                FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A"
+                    ." INNER JOIN " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDestinatario B ON A.IdGuiaRemision=B.IdGuiaRemision "
+                    . " WHERE A.Estado=2 AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
@@ -451,7 +450,7 @@ class NubeGuiaRemision {
     
     public function mostrarCabGuia($con, $obj_con, $id) {
         $rawData = array();
-        $sql = "SELECT A.IdGuiaRemision IdDoc,A.Estado,A.SecuencialERP,A.UsuarioCreador,
+        $sql = "SELECT A.IdGuiaRemision IdDoc,A.Estado,A.SecuencialERP,A.UsuarioCreador,A.Ruc,
                     A.FechaAutorizacion,A.AutorizacionSRI,A.ClaveAcceso,A.Ambiente,A.TipoEmision,
                     CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
                     A.DireccionPartida,A.RazonSocialTransportista,A.IdentificacionTransportista,
@@ -474,7 +473,10 @@ class NubeGuiaRemision {
         $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDestinatario WHERE IdGuiaRemision=$id";
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
-            $rawData = $sentencia->fetch_assoc();
+            //$rawData = $sentencia->fetch_assoc();
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
             for ($i = 0; $i < sizeof($rawData); $i++) {
                 $rawData[$i]['GuiaDet'] = $this->mostrarDetGuia($con, $obj_con,$rawData[$i]['IdGuiaRemisionDestinatario']); //Retorna el Detalle del Impuesto
             }
@@ -487,7 +489,10 @@ class NubeGuiaRemision {
         $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDetalle WHERE IdGuiaRemisionDestinatario=$id";
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
-            $rawData = $sentencia->fetch_assoc();
+            //$rawData = $sentencia->fetch_assoc();
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
             for ($i = 0; $i < sizeof($rawData); $i++) {
                 $rawData[$i]['GuiaDetAdi'] = $this->mostrarDetGuiaDatoAdi($con, $obj_con,$rawData[$i]['IdGuiaRemisionDetalle']); //Retorna el Detalle del Impuesto
             }

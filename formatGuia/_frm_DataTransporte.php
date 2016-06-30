@@ -1,38 +1,40 @@
-<div>
-    <table style="width:200mm;" class="marcoDiv">
+<?php 
+$cabDocPDF='<div>
+    <table style="width:100%;" class="marcoDiv">
         <tbody>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Carrier Identification') ?></span>
-                    <span><?php echo $cabDoc['IdentificacionTransportista'] ?></span>
+                    <span class="titleLabel">Identificación (Transportista): </span>
+                    <span>'.$cabFact[0]["IdentificacionTransportista"].'</span>
                 </td>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Start date') ?></span>
-                    <span><?php echo date(Yii::app()->params["datebydefault"],strtotime($cabDoc['FechaInicioTransporte'])) ?></span>
-                </td>
-                
-            </tr>
-            <tr>
-                <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Social reason and last name') ?></span>
-                    <span><?php echo $cabDoc['RazonSocialTransportista'] ?></span>
-                </td>
-                <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'End date') ?></span>
-                    <span><?php echo date(Yii::app()->params["datebydefault"],strtotime($cabDoc['FechaFinTransporte'])) ?></span>
+                    <span class="titleLabel">Fecha Inicio Transporte: </span>
+                    <span>'.date($obj_var->datebydefault,strtotime($cabFact[0]["FechaInicioTransporte"])).'</span>
                 </td>
                 
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Starting point') ?></span>
-                    <span><?php echo $cabDoc['DireccionPartida'] ?></span>
+                    <span class="titleLabel">Razón Social/Nombre y Apellido: </span>
+                    <span>'.utf8_encode($obj_var->limpioCaracteresXML($cabFact[0]["RazonSocialTransportista"])) .'</span>
                 </td>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Plate') ?></span>
-                    <span><?php echo $cabDoc['Placa'] ?></span>
+                    <span class="titleLabel">Fecha Fin Transporte:</span>
+                    <span>'.date($obj_var->datebydefault,strtotime($cabFact[0]["FechaFinTransporte"])).'</span>
+                </td>
+                
+            </tr>
+            <tr>
+                <td>
+                    <span class="titleLabel">Punto de partida: </span>
+                    <span>'.utf8_encode($obj_var->limpioCaracteresXML($cabFact[0]["DireccionPartida"])) .'</span>
+                </td>
+                <td>
+                    <span class="titleLabel">Placa: </span>
+                    <span>'.utf8_encode($obj_var->limpioCaracteresXML($cabFact[0]["Placa"])) .'</span>
                 </td>
             </tr>
         </tbody>
     </table>
-</div>
+</div>';
+?>

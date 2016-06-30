@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<?php 
+$mensajePDF='
 <html>
     <head>
         <style>
@@ -58,35 +59,40 @@
             }
         </style>
     </head>
-    <body>
-        <?php
+    <body>';
         $contador = count($cabDoc);
         if ($cabDoc !== null) {
-            ?>
-            <?php echo $this->renderPartial('_barcode', array('ClaveAcceso' => $cabDoc['ClaveAcceso'],'Identificacion' => $cabDoc['IdentificacionSujetoRetenido'])); ?>
-            <table style="width:100%;">
+            //echo $this->renderPartial('_barcode', array('ClaveAcceso' => $cabDoc['ClaveAcceso'],'Identificacion' => $cabDoc['IdentificacionSujetoRetenido']));
+            require_once('barcode.inc.php'); 
+            $code_number = $cabFact[0]["ClaveAcceso"];//Generamos Clave de Acceso
+            //opcion 1 permite Guardar en una rutas y 0 Presenta por apantalla,   false=no muestro los numeros abajo.
+            new barCodeGenrator($code_number,1,$obj_var->rutaPDF.$cabDoc[$i]['CedRuc'].'.png', 280, 150, false);
+            $mensajePDF .= '<table style="width:100%;">
                 <tbody>
                     <tr>
                         <td style="width:50%">
-                            <?php echo CHtml::image(Yii::app()->theme->baseUrl . '/images/plantilla/logo.png', 'Utimpor', array('width' => '300px', 'height' => '50px')); ?>
+                            <img src="logo.png" style="width:300px;height:50px;">
                         </td>
-                        <td rowspan="2" style="width:50%">
-                            <?php echo $this->renderPartial('_frm_CabDoc', array('cabDoc' => $cabDoc)); ?>
-                        </td>
+                        <td rowspan="2" style="width:50%">';
+                        include("formatGuia/_frm_CabDoc.php"); //echo $this->renderPartial("_frm_CabFact", array("cabFact" => $cabFact)); 
+                        $mensajePDF .= $cabDocPDF;
+                        $mensajePDF .= '</td>                        
                     </tr>
                     <tr>
-                        <td style="width:50%">
-                            <?php echo $this->renderPartial('_frm_DataEmpresa'); ?>
-                        </td>
+                        <td style="width:50%">';
+                        include("formatFact/_frm_DataEmpresa.php");//echo $this->renderPartial("_frm_DataEmpresa");
+                        $mensajePDF .= $cabDocPDF;
+                        $mensajePDF .= '</td>
                     </tr>
                 </tbody>
             </table>
             <table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td>
-                            <?php echo $this->renderPartial('_frm_DataTransporte', array('cabDoc' => $cabDoc)); ?>
-                        </td>
+                        <td style="width:100%">';
+                        include("formatGuia/_frm_DataTransporte.php");//echo $this->renderPartial('_frm_DataTransporte', array('cabDoc' => $cabDoc)); 
+                        $mensajePDF .= $cabDocPDF;
+                        $mensajePDF .= '</td>                        
                     </tr>
                 </tbody>
             </table>           
@@ -94,27 +100,30 @@
         <table style="width:100%;" class="marcoCel">
                 <tbody>
                     <tr>
-                        <td>
-                            <?php echo $this->renderPartial('_frm_DataCliente', array('destDoc' => $destDoc)); ?>
-                        </td>
+                        <td style="width:100%">';
+                        include("formatGuia/_frm_DataCliente.php");//echo $this->renderPartial('_frm_DataCliente', array('destDoc' => $destDoc));
+                        $mensajePDF .= $cabDocPDF;
+                        $mensajePDF .= '</td>  
                     </tr>
                     <tr>
-                        <td>
-                            <?php echo $this->renderPartial('_frm_DetDoc', array('destDoc' => $destDoc[0]['GuiaDet'])); ?>
-                        </td>
+                        <td style="width:100%">';
+                        include("formatGuia/_frm_DetDoc.php");//echo $this->renderPartial('_frm_DetDoc', array('destDoc' => $destDoc[0]['GuiaDet']));
+                        $mensajePDF .= $cabDocPDF;
+                        $mensajePDF .= '</td>
                     </tr>
                 </tbody>
             </table>
             <table style="width:100%">
                 <tbody>
                     <tr>
-                        <td style="width:70%">
-                            <?php echo $this->renderPartial('_frm_DataAuxDoc', array('adiDoc' => $adiDoc)); ?>
-                        </td>
-                        
+                        <td style="width:70%">';
+                        include("formatGuia/_frm_DataAuxDoc.php");//echo $this->renderPartial('_frm_DataAuxDoc', array('adiDoc' => $adiDoc));
+                        $mensajePDF .= $cabDocPDF;
+                        $mensajePDF .= '</td>                        
                     </tr>
                 </tbody>
-            </table>
-        <?php } ?>
-    </body>
-</html>
+            </table>';
+          } 
+    $mensajePDF .= '</body>
+</html>';
+?>

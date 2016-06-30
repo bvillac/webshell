@@ -1,29 +1,32 @@
-<table style="width:200mm" class="tabDetalle">
+<?php
+$cabDocPDF = '<table style="width:100%" class="tabDetalle">
     <tbody>
         <tr>
             <td class="marcoCel titleDetalle">
-                <span><?php echo Yii::t('DOCUMENTOS', 'Quantity2') ?></span>
+                <span>Cantidad</span>
             </td>
             <td class="marcoCel titleDetalle">
-                <span><?php echo Yii::t('DOCUMENTOS', 'Description') ?></span>
+                <span>Descripción</span>
             </td>
             <td class="marcoCel titleDetalle">
-                <span><?php echo Yii::t('DOCUMENTOS', 'Main code2') ?></span>
+                <span>Código Principal</span>
             </td>
             <td class="marcoCel titleDetalle">
-                <span><?php echo Yii::t('DOCUMENTOS', 'Seconds code') ?></span>
-            </td>
+                <span>Código Secundarío</span>
+            </td>            
+        </tr>';
+        for ($filx = 0; $filx < sizeof($destDoc); $filx++) {
+            $destaDoc=$destDoc[$filx]['GuiaDet'];
+            for ($fil = 0; $fil < sizeof($destaDoc); $fil++) {
+                $cabDocPDF .= '<tr>
+                    <td class="marcoCel dataNumber">'.intval($destaDoc[$fil]['Cantidad']).'</td>
+                    <td class="marcoCel">'. utf8_encode($obj_var->limpioCaracteresXML(trim($destaDoc[$fil]['Descripcion']))) .'</td>
+                    <td class="marcoCel campoAux">'.$destaDoc[$fil]['CodigoInterno'].'</td>
+                    <td class="marcoCel campoAux">'.$destaDoc[$fil]['CodigoAdicional'].'</td>
+                </tr>';
+            }
             
-        </tr>
-        <?php
-        for ($i = 0; $i < sizeof($destDoc); $i++) {
-            ?>
-            <tr>
-                <td class="marcoCel dataNumber"><?php echo intval($destDoc[$i]['Cantidad']) ?></td>
-                <td class="marcoCel"><?php echo $destDoc[$i]['Descripcion'] ?></td>
-                <td class="marcoCel campoAux"><?php echo $destDoc[$i]['CodigoInterno'] ?></td>
-                <td class="marcoCel campoAux"><?php echo $destDoc[$i]['CodigoAdicional'] ?></td>
-            </tr>
-        <?php } ?>
-    </tbody>
-</table>
+        }
+    $cabDocPDF .= '</tbody>
+</table>';
+?>

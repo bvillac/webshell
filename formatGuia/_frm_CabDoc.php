@@ -1,73 +1,73 @@
-<div>
+<?php
+$cabDocPDF = '<div>
     <table style="width:100mm" class="marcoDiv">
         <tbody>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'DNI') ?></span>
-                    <span class="titleNum_Ruc"><?php echo Yii::app()->getSession()->get('Ruc', FALSE) ?></span>
-                </td>
-                
-            </tr>
-            <tr>
-                <td>
-                    <span class="titleLabel titleDocumento"><?php echo $cabDoc['NombreDocumento'] ?></span>
+                    <span class="titleLabel">R.U.C.:</span>
+                    <span class="titleNum_Ruc">'. $cabFact[0]["Ruc"] .'</span>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Number') ?></span>
-                    <span class="titleNum_Ruc"><?php echo $cabDoc['NumDocumento'] ?></span>
+                    <span class="titleLabel titleDocumento">'.$cabFact[0]["NombreDocumento"] .'</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="titleLabel">Nº</span>
+                    <span class="titleNum_Ruc">'. $cabFact[0]["NumDocumento"] .'</span>
                 </td>
               
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Authorization number') ?></span>
+                    <span class="titleLabel">NÚMERO DE AUTORIZACIÓN</span>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span ><?php echo $cabDoc['AutorizacionSRI'] ?></span>
+                    <span >'.$cabFact[0]["AutorizacionSRI"] .'</span>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'DATE AND TIME AUTHORIZATION') ?></span>
-                    <span><?php echo ($cabDoc['FechaAutorizacion']<>'')?date(Yii::app()->params["datebytime"],strtotime($cabDoc['FechaAutorizacion'])):'';  ?></span>
+                    <span class="titleLabel">FECHA Y HORA AUTORIZACIÓN</span>
+                    <span>'. $cabFact[0]["FechaAutorizacion"] .'</span>
                 </td>
                 
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'ENVIRONMENT') ?></span>
-                    <span><?php echo ($cabDoc['Ambiente']=='1')?Yii::t('DOCUMENTOS', 'TEST'):Yii::t('DOCUMENTOS', 'PRODUCTION'); ?></span>
+                    <span class="titleLabel">AMBIENTE</span>
+                    <span>'; $cabDocPDF .= ($cabFact[0]["Ambiente"]=="1")? "PRUEBA":"PRODUCCIÓN"; $cabDocPDF .= '</span>
                 </td>
                
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'BROADCASTING') ?></span>
-                    <span><?php echo ($cabDoc['TipoEmision']=='1')?Yii::t('DOCUMENTOS', 'NORMAL'):Yii::t('DOCUMENTOS', 'SYSTEM UNAVAILABLE'); ?></span>
+                    <span class="titleLabel">EMISIÓN</span>
+                    <span>'; $cabDocPDF .= ($cabFact[0]["TipoEmision"]=="1")?"NORMAL":"INDISPONIBILIDAD DEL SISTEMA"; $cabDocPDF .= '</span>
                 </td>
                 
             </tr>
             <tr>
                 <td >
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'PASSWORD') ?></span>
+                    <span class="titleLabel">CLAVE DE ACCESO</span>
+                </td>
+            </tr>
+            <tr>
+                <td style="width:50%">
+                    <img src="'.$obj_var->rutaPDF.$cabDoc[$i]["CedRuc"].'.png" style="width:280px;height:20px;">
                 </td>
             </tr>
             <tr>
                 <td>
-                
-                    <?php echo CHtml::image(Yii::app()->params['seaBarra'] .$cabDoc['IdentificacionSujetoRetenido']. '.png', 'Utimpor', array('width' => '280px', 'height' => '20px')); ?>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span><?php echo $cabDoc['ClaveAcceso'] ?></span>
+                    <span>'. $cabFact[0]["ClaveAcceso"] .'</span>
                 </td>
             </tr>
         </tbody>
         
     </table>
-</div>
+</div>';
+?>
