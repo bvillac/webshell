@@ -90,7 +90,7 @@ class NubeGuiaRemision {
         try {
             $cabDoc = $this->buscarGuias($op,$NumPed);//Guias de Remision
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
-            $codDoc='06';//GUIAS DE REMISION
+            $codDoc=$this->tipoDoc;//GUIAS DE REMISION
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 $this->InsertarCabGuia($con,$obj_con,$obj_var,$cabDoc, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
@@ -383,21 +383,21 @@ class NubeGuiaRemision {
                     include('mensaje.php');
                     $htmlMail=$mensaje;
 
-                    $dataMail->Subject='Ha Recibido un(a) Factura Nuevo(a)!!! ';
+                    $dataMail->Subject='Ha Recibido un(a) Documento Nuevo(a)!!! ';
                     $dataMail->fileXML='GUIA DE REMISION-'.$cabDoc[$i]["NumDocumento"].'.xml';
                     $dataMail->filePDF='GUIA DE REMISION-'.$cabDoc[$i]["NumDocumento"].'.pdf';
                     //CREAR PDF
                     $mPDF1->SetTitle($dataMail->filePDF);
                     $cabFact = $this->mostrarCabGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $destDoc = $this->mostrarDestinoGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
-                    $adiFact = $this->mostrarCabGuiaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
+                    $adiDoc = $this->mostrarCabGuiaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
                     include('formatGuia/guiaremiPDF.php');
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
                     
                     $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
                     
-                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
@@ -412,7 +412,7 @@ class NubeGuiaRemision {
                 
             }
             $con->close();
-            //$obj_var->actualizaEnvioMailRAD($cabDoc,"GR");
+            $obj_var->actualizaEnvioMailRAD($cabDoc,"GR");
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -454,7 +454,7 @@ class NubeGuiaRemision {
                     A.FechaAutorizacion,A.AutorizacionSRI,A.ClaveAcceso,A.Ambiente,A.TipoEmision,
                     CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
                     A.DireccionPartida,A.RazonSocialTransportista,A.IdentificacionTransportista,
-                    A.FechaInicioTransporte,A.FechaFinTransporte,A.Placa,A.DireccionEstablecimiento,
+                    A.FechaInicioTransporte,A.FechaFinTransporte,A.Placa,A.DireccionEstablecimiento,A.USU_ID,
                     'GUIA DE REMISION' NombreDocumento,A.TipoIdentificacionTransportista,A.Rise,A.CodigoDocumento,A.FechaEmisionErp,
                     A.Establecimiento,A.PuntoEmision,A.Secuencial,A.DireccionMatriz,A.ObligadoContabilidad,A.ContribuyenteEspecial
                     FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A
@@ -512,7 +512,11 @@ class NubeGuiaRemision {
         $rawData = array();
         $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDatoAdicionalGuiaRemision WHERE IdGuiaRemision=$id";
         $sentencia = $con->query($sql);
-        $rawData = $sentencia->fetch_assoc();
+        if ($sentencia->num_rows > 0) {
+             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
         return $rawData;
     }
 

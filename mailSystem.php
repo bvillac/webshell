@@ -62,7 +62,7 @@ class mailSystem {
         
         /******** COPIA OCULTA PARA VENTAS  ***************/
         //$mail->addBCC('byronvillacreses@gmail.com', 'Byron Villa'); //Para con copia
-        $mail->addCC("bvillacreses@utimpor.com", "Byron Villa");
+        //$mail->addCC("bvillacreses@utimpor.com", "Byron Villa");
         //$mail->addReplyTo('byronvillacreses@gmail.com', 'First Last');
         
         //$mail->AddAttachment("archivo.zip");//adjuntos un archivo al mensaje
