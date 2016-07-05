@@ -9,7 +9,7 @@ $cabDocPDF='<div>
                 </td>
                 <td>
                     <span class="titleLabel">Fecha Emisión: </span>
-                    <span>'.date($obj_var->datebydefault,strtotime($destDoc[0]["FechaEmisionDocSustento"])).'</span>
+                    <span>'; $cabDocPDF .= ($destDoc[0]["FechaEmisionDocSustento"]<>"0000-00-00")? date($obj_var->datebydefault,strtotime($destDoc[0]["FechaEmisionDocSustento"])):""; $cabDocPDF .= '</span>
                 </td>                
             </tr>
             <tr>

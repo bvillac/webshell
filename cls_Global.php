@@ -140,7 +140,7 @@ class cls_Global {
         //$conCont = $obj_con->conexionVsRAd();
         $conCont = $obj_con->conexionIntermedio();
         try {
-            for ($i = 0; $i < sizeof($cabFact); $i++) {
+            for ($i = 0; $i < sizeof($docDat); $i++) {
                 $Estado=$docDat[$i]['EstadoEnv'];//Contine el IDs del Tabla Autorizacion
                 $Ids=$docDat[$i]['Ids'];
                 switch ($tipDoc) {
