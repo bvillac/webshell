@@ -32,6 +32,9 @@ class cls_Global {
     var $rutaLink='http://www.docsea.utimpor.com';
     var $tipoFacLocal='F4';
     var $tipoGuiLocal='GR';
+    var $tipoRetLocal='RT';
+    var $tipoNcLocal='NC';
+    var $tipoNdLocal='ND';
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;
@@ -69,13 +72,13 @@ class cls_Global {
         }
     }
     
-    public function insertarUsuarioPersona($obj_con,$cabDoc,$i) {  
+    public function insertarUsuarioPersona($obj_con,$cabDoc,$DBTable,$i) {  
         //$obj_con = new cls_Base();
         $conUse = $obj_con->conexionAppWeb();
         try {
             $this->InsertarPersona($conUse,$cabDoc,$obj_con,$i);
             $IdPer = $conUse->insert_id;
-            $keyUser=$this->InsertarUsuario($conUse, $cabDoc,$obj_con, $IdPer,$i);
+            $keyUser=$this->InsertarUsuario($conUse, $cabDoc,$obj_con, $IdPer,$DBTable,$i);
             $conUse->commit();
             $conUse->close();
             return $this->messageSystem('OK', null, null, null, $keyUser);
@@ -94,10 +97,10 @@ class cls_Global {
         $command->execute();
     }
     
-    private function InsertarUsuario($con, $objEnt,$obj_con, $IdPer,$i) {
+    private function InsertarUsuario($con, $objEnt,$obj_con, $IdPer,$DBTable,$i) {
         $usuNombre = $objEnt[$i]['CedRuc'];
         $RazonSoc = $objEnt[$i]['RazonSoc'];
-        $correo = ($objEnt[$i]['CorreoPer']<>'')?$objEnt[$i]['CorreoPer']:$this->buscarCorreoERP($obj_con,$usuNombre,'MG0031');//Consulta Tabla Clientes
+        $correo = ($objEnt[$i]['CorreoPer']<>'')?$objEnt[$i]['CorreoPer']:$this->buscarCorreoERP($obj_con,$usuNombre,$DBTable);//Consulta Tabla Clientes
         $pass = $objEnt[$i]['CedRuc'];//$this->generarCodigoKey(8);
         $sql = "INSERT INTO " . $obj_con->BdAppweb . ".USUARIO
                 (PER_ID,USU_NOMBRE,USU_ALIAS,USU_CORREO,USU_PASSWORD,USU_EST_LOG,USU_FEC_CRE)VALUES
@@ -151,7 +154,7 @@ class cls_Global {
                         $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeGuiaRemision SET EstadoEnv='$Estado' WHERE IdGuiaRemision='$Ids';";
                         break;
                     Case "RT":
-                        //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
+                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeRetencion SET EstadoEnv='$Estado' WHERE IdRetencion='$Ids';";
                         break;
                     Case "NC":
                         //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";

@@ -17,6 +17,13 @@ class mailSystem {
     public $fileXML='';
     public $filePDF='';
     
+    //Valida si es un Email Correcto Devuelve True
+    private function valid_email($val) {
+        if (!filter_var($val, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+        return true;
+    }
 
     //put your code here
     public function enviarMail($body,$CabPed,$obj_var,$usuData,$fil) {
@@ -47,17 +54,18 @@ class mailSystem {
         
         //##############################################
         //Separa en Array los Correos Ingresados para enviar
-        /*$DataCorreos = explode(";",$CabPed[$fil]["CorreoPer"]);
-        for ($icor = 0; $icor < count($DataCorreos); $icor++) {
-            //$DataCorreos[$icor];
-            $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
+        $DataCorreos = explode(";",$CabPed[$fil]["CorreoPer"]);
+        /*for ($icor = 0; $icor < count($DataCorreos); $icor++) {
+            if ($this->valid_email($DataCorreos[$icor])) {//Verifica Email Correcto
+                $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
+            }
         }*/
         $mail->AddAddress($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
         //##############################################
         // podemos hacer varios AddAdress 
         //$mail->AddAddress($CabPed[0]["CorreoUser"], $CabPed[0]["NombreUser"]);//Usuario Autoriza Pedido
         //$mail->AddAddress($CabPed[0]["CorreoPersona"], $CabPed[0]["NombrePersona"]);//Usuario Genera Pedido CorreoUser
-        //$mail->AddAddress("byron_villacresesf@hotmail.com", "Byron Villa");        
+        $mail->AddAddress("byron_villacresesf@hotmail.com", "Byron Villa");        
         //$mail->AddAddress("byronvillacreses@gmail.com", "Byron Villa");
         
         /******** COPIA OCULTA PARA VENTAS  ***************/

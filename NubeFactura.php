@@ -571,7 +571,7 @@ class NubeFactura {
                     $cabDoc[$i]['Clave']='';//No genera Clave
                 }else{
                     //No Existe y se crea uno nuevo
-                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,$i);
+                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,'MG0031',$i);//Envia la Tabla de Dadtos de Person ERP
                     $row=$rowUser['data'];
                     $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
                     $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada

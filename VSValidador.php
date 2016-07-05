@@ -47,5 +47,6 @@ class VSValidador {
         }
         return $insertar_ceros .= $numero;
     }
+    //*****/^[\w-\.]{3,}@([\w-]{2,}\.)*([\w-]{2,}\.)[\w-]{2,4}$/
     
 }

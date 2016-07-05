@@ -369,7 +369,7 @@ class NubeGuiaRemision {
                     $cabDoc[$i]['Clave']='';//No genera Clave
                 }else{
                     //No Existe y se crea uno nuevo
-                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,$i);
+                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,'MG0031',$i);//Envia la Tabla de Dadtos de Person ERP
                     $row=$rowUser['data'];
                     $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
                     $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada
@@ -431,7 +431,7 @@ class NubeGuiaRemision {
             $fechaIni=$obj_var->dateStartFact;
             $limitEnvMail=$obj_var->limitEnvMail;
             $sql = "SELECT A.IdGuiaRemision Ids,A.AutorizacionSRI,A.FechaAutorizacion,B.IdentificacionDestinatario CedRuc,B.RazonSocialDestinatario RazonSoc,
-                    'GUIAS' NombreDocumento,A.Ruc,A.Ambiente,A.TipoEmision,A.EstadoEnv,
+                    'GUIA DE REMISION' NombreDocumento,A.Ruc,A.Ambiente,A.TipoEmision,A.EstadoEnv,
                     ClaveAcceso,CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento
                 FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A"
                     ." INNER JOIN " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDestinatario B ON A.IdGuiaRemision=B.IdGuiaRemision "

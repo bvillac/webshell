@@ -4,7 +4,10 @@ include('cls_Global.php');//para HTTP
 include('EMPRESA.php');//para HTTP
 include('VSValidador.php');
 include('VSClaveAcceso.php');
+include('mailSystem.php');
+include('REPORTES.php');
 class NubeRetencion {
+    private $tipoDoc='07';
     
     private function buscarRetenciones($op,$NumPed) {
         try {
@@ -357,8 +360,161 @@ class NubeRetencion {
             return false;
         }
     }
-
     
+    /************************************************************/
+    /*********CONFIGURACION PARA ENVIAR CORREOS
+    /************************************************************/
+    public function enviarMailDoc() {
+        $obj_con = new cls_Base();
+        $obj_var = new cls_Global();
+        $objEmpData= new EMPRESA();
+        $dataMail = new mailSystem();
+        $rep = new REPORTES();
+        //$con = $obj_con->conexionVsRAd();
+        $objEmp=$objEmpData->buscarDataEmpresa($obj_var->emp_id,$obj_var->est_id,$obj_var->pemi_id);//recuperar info deL Contribuyente
+        $con = $obj_con->conexionIntermedio();
+     
+        $dataMail->file_to_attachXML=$obj_var->rutaXML.'RETENCIONES/';//Rutas FACTURAS
+        $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
+        try {
+            $cabDoc = $this->buscarMailRetenRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
+            //Se procede a preparar con los correos para enviar.
+            for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                //Retorna Informacion de Correos
+                $rowUser=$obj_var->buscarCedRuc($cabDoc[$i]['CedRuc']);//Verifico si Existe la Cedula o Ruc
+                if($rowUser['status'] == 'OK'){
+                    //Existe el Usuario y su Correo Listo para enviar
+                    $row=$rowUser['data'];
+                    $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
+                    $cabDoc[$i]['Clave']='';//No genera Clave
+                }else{
+                    //No Existe y se crea uno nuevo
+                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,'MG0032',$i);//Envia la Tabla de Dadtos de Person ERP
+                    $row=$rowUser['data'];
+                    $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
+                    $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada
+                }
+            }
+            //Envia l iformacion de Correos que ya se completo
+            for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                if(strlen($cabDoc[$i]['CorreoPer'])>0){                
+                    $mPDF1=$rep->crearBaseReport();
+                    //Envia Correo                   
+                    include('mensaje.php');
+                    $htmlMail=$mensaje;
+
+                    $dataMail->Subject='Ha Recibido un(a) Documento Nuevo(a)!!! ';
+                    $dataMail->fileXML='COMPROBANTE DE RETENCION-'.$cabDoc[$i]["NumDocumento"].'.xml';
+                    $dataMail->filePDF='COMPROBANTE DE RETENCION-'.$cabDoc[$i]["NumDocumento"].'.pdf';
+                    //CREAR PDF
+                    $mPDF1->SetTitle($dataMail->filePDF);
+                    $cabFact = $this->mostrarCabRetencion($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $detDoc = $this->mostrarDetRetencion($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $adiDoc = $this->mostrarRetencionDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
+                    include('formatRet/retencionPDF.php');
+                    $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
+                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
+                    
+                    //$usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
+                    
+                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    if($resulMail["status"]=='OK'){
+                        $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
+                    }else{
+                        $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
+                    }
+                    
+                }else{
+                    //No envia Correo 
+                    //Error COrreo no EXISTE
+                    $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
+                }
+                
+            }
+            $con->close();
+            //$obj_var->actualizaEnvioMailRAD($cabDoc,"GR");
+            //echo "ERP Actualizado";
+            return true;
+        } catch (Exception $e) {
+            //$trans->rollback();
+            //$con->active = false;
+            $con->rollback();
+            $con->close();
+            throw $e;
+            return false;
+        }   
+    }
+    
+    
+    private function buscarMailRetenRAD($con,$obj_var,$obj_con) {
+            $rawData = array();
+            $fechaIni=$obj_var->dateStartFact;
+            $limitEnvMail=$obj_var->limitEnvMail;
+            $sql = "SELECT A.IdRetencion Ids,A.AutorizacionSRI,A.FechaAutorizacion,A.IdentificacionSujetoRetenido CedRuc,A.RazonSocialSujetoRetenido RazonSoc,
+                    'COMPROBANTE DE RETENCION' NombreDocumento,A.Ruc,A.Ambiente,A.TipoEmision,A.EstadoEnv,
+                    A.ClaveAcceso,CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento
+                FROM " . $obj_con->BdIntermedio . ".NubeRetencion A "
+                    . " WHERE A.Estado=2 AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
+            $sentencia = $con->query($sql);
+            if ($sentencia->num_rows > 0) {
+                while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                    $rawData[] = $fila;
+                }
+            }
+            return $rawData;
+       
+    }
+    
+    private function mostrarCabRetencion($con,$obj_con,$id) {
+        $rawData = array();
+        $fechaIni=$obj_var->dateStartFact;
+        $limitEnvMail=$obj_var->limitEnvMail;
+        $sql = "SELECT A.IdRetencion IdDoc,A.Estado,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
+                    A.FechaAutorizacion,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
+                    CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
+                    A.ContribuyenteEspecial,A.ObligadoContabilidad,A.TipoIdentificacionSujetoRetenido,
+                    A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,A.PeriodoFiscal,
+                    A.FechaEmision,A.IdentificacionSujetoRetenido,A.RazonSocialSujetoRetenido,
+                    A.TotalRetencion,'COMPROBANTE DE RETENCION' NombreDocumento,A.ClaveAcceso,A.FechaAutorizacion,
+                    A.Ambiente,A.TipoEmision,A.Ruc,A.CodigoError
+                    FROM " . $obj_con->BdIntermedio . ".NubeRetencion A
+                WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdRetencion =$id ";
+        //echo $sql;
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+    }
+
+    private function mostrarDetRetencion($con,$obj_con,$id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDetalleRetencion WHERE IdRetencion=$id";
+        //echo $sql;
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            //$rawData = $sentencia->fetch_assoc();
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }            
+        }
+        return $rawData;
+    }
+
+
+    private function mostrarRetencionDataAdicional($con,$obj_con,$id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDatoAdicionalRetencion WHERE IdRetencion=$id";
+        $sentencia = $con->query($sql); 
+        if ($sentencia->num_rows > 0) {
+             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+    }
     
 
 }
