@@ -415,9 +415,9 @@ class NubeRetencion {
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
                     
-                    //$usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
                     
-                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
@@ -432,7 +432,7 @@ class NubeRetencion {
                 
             }
             $con->close();
-            //$obj_var->actualizaEnvioMailRAD($cabDoc,"GR");
+            $obj_var->actualizaEnvioMailRAD($cabDoc,"RT");
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {

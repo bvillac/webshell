@@ -3,12 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/var/www/html/webshell/mailSystem.php</file>
+            <file>file:/var/www/html/webshell/formatRet/_frm_DataAuxDoc.php</file>
+            <file>file:/var/www/html/webshell/cls_Base.php</file>
+            <file>file:/var/www/html/webshell/formatRet/_frm_DetDoc.php</file>
+            <file>file:/var/www/html/webshell/formatGuia/_frm_CabDoc.php</file>
+            <file>file:/var/www/html/webshell/formatGuia/_frm_DetDoc.php</file>
+            <file>file:/var/www/html/webshell/formatFact/_frm_DataCliente.php</file>
+            <file>file:/var/www/html/webshell/enviarmailRetencion.php</file>
+            <file>file:/var/www/html/webshell/formatGuia/_frm_DataAuxDoc.php</file>
+            <file>file:/var/www/html/webshell/NubeFactura.php</file>
+            <file>file:/var/www/html/webshell/formatRet/retencionPDF.php</file>
+            <file>file:/var/www/html/webshell/formatGuia/guiaremiPDF.php</file>
+            <file>file:/var/www/html/webshell/NubeRetencion.php</file>
+            <file>file:/var/www/html/webshell/formatFact/_frm_DetFact.php</file>
             <file>file:/var/www/html/webshell/cls_Global.php</file>
             <file>file:/var/www/html/webshell/NubeGuiaRemision.php</file>
-            <file>file:/var/www/html/webshell/guiaremi.php</file>
-            <file>file:/var/www/html/webshell/NubeFactura.php</file>
-            <file>file:/var/www/html/webshell/cls_Base.php</file>
         </group>
     </open-files>
 </project-private>

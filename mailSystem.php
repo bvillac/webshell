@@ -54,8 +54,8 @@ class mailSystem {
         
         //##############################################
         //Separa en Array los Correos Ingresados para enviar
-        $DataCorreos = explode(";",$CabPed[$fil]["CorreoPer"]);
-        /*for ($icor = 0; $icor < count($DataCorreos); $icor++) {
+        /*$DataCorreos = explode(";",$CabPed[$fil]["CorreoPer"]);
+        for ($icor = 0; $icor < count($DataCorreos); $icor++) {
             if ($this->valid_email($DataCorreos[$icor])) {//Verifica Email Correcto
                 $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
             }
