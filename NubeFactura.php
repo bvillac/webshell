@@ -25,6 +25,7 @@ class NubeFactura {
                             USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC
                         FROM " .  $obj_con->BdServidor . ".VC010101 
                     WHERE IND_UPD='L' AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
+            //$sql .= " WHERE NUM_NOF='0000138449' AND TIP_NOF='F4' ";//Probar Factura
             //echo $sql;
             $sentencia = $conCont->query($sql);
             if ($sentencia->num_rows > 0) {
@@ -80,7 +81,7 @@ class NubeFactura {
                 $this->InsertarCabFactura($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
                 $detFact=$this->buscarDetFacturas($cabFact[$i]['TIP_NOF'],$cabFact[$i]['NUM_NOF']);
-                $this->InsertarDetFactura($con,$obj_con,$detFact,$idCab);
+                $this->InsertarDetFactura($con,$obj_con,$cabFact[$i]['POR_IVA'],$detFact,$idCab);
                 $this->InsertarFacturaDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
                 $cabFact[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
@@ -156,7 +157,7 @@ class NubeFactura {
 
     }
 
-    private function InsertarDetFactura($con,$obj_con, $detFact, $idCab) {
+    private function InsertarDetFactura($con,$obj_con,$por_iva, $detFact, $idCab) {
         $valSinImp = 0;
         $val_iva12 = 0;
         $vet_iva12 = 0;
@@ -166,7 +167,9 @@ class NubeFactura {
         for ($i = 0; $i < sizeof($detFact); $i++) {
             $valSinImp = floatval($detFact[$i]['T_VENTA']) - floatval($detFact[$i]['VAL_DES']);
             if ($detFact[$i]['I_M_IVA'] == '1') {
-                $val_iva12 = $val_iva12 + floatval($detFact[$i]['VAL_IVA']);
+                //$val_iva12 = $val_iva12 + floatval($detFact[$i]['VAL_IVA']);
+                //MOdificacion por que iva no cuadra con los totales
+                $val_iva12 = $val_iva12 + (floatval($detFact[$i]['CAN_DES'])*floatval($detFact[$i]['P_VENTA'])* (floatval($por_iva)/100));
                 $vet_iva12 = $vet_iva12 + $valSinImp;
             } else {
                 $val_iva0 = 0;
@@ -189,7 +192,7 @@ class NubeFactura {
             //Inserta el IVA de cada Item 
             if ($detFact[$i]['I_M_IVA'] == '1') {//Verifico si el ITEM tiene Impuesto
                 //Segun Datos Sri
-                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '2', '12', $valSinImp, $detFact[$i]['VAL_IVA']); //12%
+                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '2', $por_iva, $valSinImp, $detFact[$i]['VAL_IVA']); //12%
             } else {//Caso Contrario no Genera Impuesto
                 $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
             }
@@ -201,7 +204,7 @@ class NubeFactura {
         }
         //Inserta Datos de Iva 12
         If ($vet_iva12 > 0) {
-            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '2', '12', $vet_iva12, $val_iva12);
+            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '2', $por_iva, $vet_iva12, $val_iva12);
         }
     }
 

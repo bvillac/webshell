@@ -65,7 +65,7 @@ class mailSystem {
         // podemos hacer varios AddAdress 
         //$mail->AddAddress($CabPed[0]["CorreoUser"], $CabPed[0]["NombreUser"]);//Usuario Autoriza Pedido
         //$mail->AddAddress($CabPed[0]["CorreoPersona"], $CabPed[0]["NombrePersona"]);//Usuario Genera Pedido CorreoUser
-        $mail->AddAddress("byron_villacresesf@hotmail.com", "Byron Villa");        
+        //$mail->AddAddress("byron_villacresesf@hotmail.com", "Byron Villa");        
         //$mail->AddAddress("byronvillacreses@gmail.com", "Byron Villa");
         
         /******** COPIA OCULTA PARA VENTAS  ***************/

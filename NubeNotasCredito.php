@@ -98,7 +98,7 @@ class NubeNotasCredito {
                 $this->InsertarCabNC($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
                 $detFact=$this->buscarDetNC($cabFact[$i]['TIP_DEV'],$cabFact[$i]['NUM_DEV']);
-                $this->InsertarDetNC($con,$obj_con,$detFact,$idCab);
+                $this->InsertarDetNC($con,$obj_con,$cabFact[$i]['POR_IVA'],$detFact,$idCab);
                 $this->InsertarNcDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
                 $cabFact[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
             }
@@ -181,7 +181,7 @@ class NubeNotasCredito {
 
     }
 
-    private function InsertarDetNC($con,$obj_con, $detFact, $idCab) {
+    private function InsertarDetNC($con,$obj_con,$por_iva ,$detFact, $idCab) {
         //$obj_var = new cls_Global();
         $valSinImp = 0;
         $val_iva12 = 0;
@@ -218,7 +218,7 @@ class NubeNotasCredito {
             //Inserta el IVA de cada Item devuelto
             if ($detFact[$i]['I_M_IVA'] == '1') {//Verifico si el ITEM tiene Impuesto
                 //Segun Datos Sri
-                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '2', '12', $valSinImp, $detFact[$i]['VAL_IVA']); //12%
+                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '2', $por_iva, $valSinImp, $detFact[$i]['VAL_IVA']); //12%
             } else {//Caso Contrario no Genera Impuesto
                 $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
             }
@@ -230,7 +230,7 @@ class NubeNotasCredito {
         }
         //Inserta Datos de Iva 12
         If ($vet_iva12 > 0) {
-            $this->InsertarNcImpuesto($con,$obj_con, $idCab, '2', '2', '12', $vet_iva12, $val_iva12);
+            $this->InsertarNcImpuesto($con,$obj_con, $idCab, '2', '2', $por_iva, $vet_iva12, $val_iva12);
         }
     }
 
