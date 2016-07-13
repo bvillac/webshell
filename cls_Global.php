@@ -138,6 +138,28 @@ class cls_Global {
         return $rawData;
     }
     
+    public static function retornaTarifaDelIva($tarifa) {
+         //TABLA 18 FICHA TECNICA
+        $codigo=0;
+        switch (floatval($tarifa)) {
+            Case 0:
+                $codigo=0;
+                break;
+            Case 12:
+                $codigo=2;
+                break;
+            Case 14:
+                $codigo=3;
+                break;
+            Case 6:
+                $codigo=6;//NO OBJETO DE IVA
+                break;
+            default:
+                $codigo=7;//EXEPTO DE IVA
+        }
+        return $codigo;
+     }
+    
     public function actualizaEnvioMailRAD($docDat,$tipDoc) {
         $obj_con = new cls_Base();
         //$conCont = $obj_con->conexionVsRAd();

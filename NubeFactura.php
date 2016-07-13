@@ -209,6 +209,7 @@ class NubeFactura {
     }
 
     private function InsertarDetImpFactura($con,$obj_con, $idDet, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
+        $CodigoPor=cls_Global::retornaTarifaDelIva($Tarifa);
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleFacturaImpuesto 
                  (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdDetalleFactura)VALUES(
                  '$codigo','$CodigoPor','$t_venta','$Tarifa','$val_iva','$idDet')";
@@ -218,6 +219,7 @@ class NubeFactura {
     }
 
     private function InsertarFacturaImpuesto($con,$obj_con, $idCab, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
+        $CodigoPor=cls_Global::retornaTarifaDelIva($Tarifa);
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeFacturaImpuesto 
                  (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdFactura)VALUES(
                  '$codigo','$CodigoPor','$t_venta','$Tarifa','$val_iva','$idCab')";
