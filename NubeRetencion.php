@@ -467,8 +467,6 @@ class NubeRetencion {
     
     private function mostrarCabRetencion($con,$obj_con,$id) {
         $rawData = array();
-        $fechaIni=$obj_var->dateStartFact;
-        $limitEnvMail=$obj_var->limitEnvMail;
         $sql = "SELECT A.IdRetencion IdDoc,A.Estado,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
                     A.FechaAutorizacion,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
                     CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,

@@ -6,8 +6,10 @@ include('EMPRESA.php');//para HTTP
 include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
+include('REPORTES.php');
 class NubeNotasCredito {
     private $tipDev="DV";
+    private $tipoDoc='04';
     
     private function buscarNC($op,$NumPed) {
         try {
@@ -64,8 +66,8 @@ class NubeNotasCredito {
     private function buscarDetNC($tipDoc, $numDoc) {
         $obj_con = new cls_Base();
         $conCont = $obj_con->conexionServidor();
-        $rawData = array();        
-        $sql = "SELECT A.COD_ART,A.NOM_ART,A.CAN_DEV,A.P_VENTA,A.T_VENTA,A.I_M_IVA,A.VAL_DES,IF(A.I_M_IVA=1,A.T_VENTA*0.12,0) VAL_IVA
+        $rawData = array();//IF(A.I_M_IVA=1,A.T_VENTA*0.12,0)        
+        $sql = "SELECT A.COD_ART,A.NOM_ART,A.CAN_DEV,A.P_VENTA,A.T_VENTA,A.I_M_IVA,A.VAL_DES,0 VAL_IVA
                     FROM " . $obj_con->BdServidor . ".IG0061 A
                 WHERE A.TIP_DEV='$tipDoc' AND A.NUM_DEV='$numDoc' AND A.IND_EST='L';";
         //echo $sql;
@@ -188,14 +190,18 @@ class NubeNotasCredito {
         $vet_iva12 = 0;
         $val_iva0 = 0;//Valor de Iva
         $vet_iva0 = 0;//Venta total con Iva
+        $VAL_IVA=0;//Calculo de Iva Genrado
         //TIP_NOF,NUM_NOF,FEC_VTA,COD_ART,NOM_ART,CAN_DES,P_VENTA,T_VENTA,VAL_DES,I_M_IVA,VAL_IVA
         for ($i = 0; $i < sizeof($detFact); $i++) {
             $valSinImp = floatval($detFact[$i]['T_VENTA']) - floatval($detFact[$i]['VAL_DES']);
             if ($detFact[$i]['I_M_IVA'] == '1') {
-                $val_iva12 = $val_iva12 + floatval($detFact[$i]['VAL_IVA']);
-                //$val_iva12 = $val_iva12 + (floatval($detFact[$i]['T_VENTA'])*$obj_var->valorIva);
+                //$val_iva12 = $val_iva12 + floatval($detFact[$i]['VAL_IVA']);
+                //MOdificacion por que iva no cuadra con los totales
+                $VAL_IVA=(floatval($detFact[$i]['CAN_DEV'])*floatval($detFact[$i]['P_VENTA'])* (floatval($por_iva)/100));
+                $val_iva12 = $val_iva12 + $VAL_IVA;
                 $vet_iva12 = $vet_iva12 + $valSinImp;
             } else {
+                $VAL_IVA=0;//Cuando el Valor del Iva es 0
                 $val_iva0 = 0;
                 $vet_iva0 = $vet_iva0 + $valSinImp;
             }
@@ -218,9 +224,9 @@ class NubeNotasCredito {
             //Inserta el IVA de cada Item devuelto
             if ($detFact[$i]['I_M_IVA'] == '1') {//Verifico si el ITEM tiene Impuesto
                 //Segun Datos Sri
-                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '2', $por_iva, $valSinImp, $detFact[$i]['VAL_IVA']); //12%
+                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '2', $por_iva, $valSinImp, $VAL_IVA); //12%
             } else {//Caso Contrario no Genera Impuesto
-                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
+                $this->InsertarDetImpNC($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $VAL_IVA); //0%
             }
         }
         //Inserta el Total del Iva Acumulado en el detalle
@@ -499,17 +505,24 @@ class NubeNotasCredito {
     /************************************************************/
     /*********CONFIGURACION PARA ENVIAR CORREOS
     /************************************************************/
+    
     public function enviarMailDoc() {
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
-        $con = $obj_con->conexionVsRAd();
-        $dataMail = new mailSystem;
-        $dataMail->file_to_attach='/opt/SEADOC/AUTORIZADO/FACTURAS/';//Ruta de Facturas
-        $rutaLink='http://www.docsea.utimpor.com';
+        $objEmpData= new EMPRESA();
+        $dataMail = new mailSystem();
+        $rep = new REPORTES();
+        //$con = $obj_con->conexionVsRAd();
+        $objEmp=$objEmpData->buscarDataEmpresa($obj_var->emp_id,$obj_var->est_id,$obj_var->pemi_id);//recuperar info deL Contribuyente
+        $con = $obj_con->conexionIntermedio();
+        
+        $dataMail->file_to_attachXML=$obj_var->rutaXML.'NC/';//Rutas FACTURAS
+        $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
         try {
-            $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
-            //Se procede a preparar con loa correos para enviar.
+            $cabDoc = $this->buscarMailNcRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
+            //Se procede a preparar con los correos para enviar.
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                //Retorna Informacion de Correos
                 $rowUser=$obj_var->buscarCedRuc($cabDoc[$i]['CedRuc']);//Verifico si Existe la Cedula o Ruc
                 if($rowUser['status'] == 'OK'){
                     //Existe el Usuario y su Correo Listo para enviar
@@ -518,7 +531,7 @@ class NubeNotasCredito {
                     $cabDoc[$i]['Clave']='';//No genera Clave
                 }else{
                     //No Existe y se crea uno nuevo
-                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,$i);
+                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,'MG0032',$i);//Envia la Tabla de Dadtos de Person ERP
                     $row=$rowUser['data'];
                     $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
                     $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada
@@ -526,30 +539,43 @@ class NubeNotasCredito {
             }
             //Envia l iformacion de Correos que ya se completo
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                if(strlen($cabDoc[$i]['CorreoPer'])>0){
-                    //Envia Correo
-                    //$htmlMail="Hola como estas 2";
+                if(strlen($cabDoc[$i]['CorreoPer'])>0){                
+                    $mPDF1=$rep->crearBaseReport();
+                    //Envia Correo                   
                     include('mensaje.php');
                     $htmlMail=$mensaje;
-                    //$htmlMail=file_get_contents('mensaje.php');
-                    $dataMail->Subject='Ha Recibido un(a) Factura Nuevo(a)!!! ';
-                    $dataMail->fileXML='FACTURA-'.$cabDoc[$i]["Documento"].'.xml';
-                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var);
+
+                    $dataMail->Subject='Ha Recibido un(a) Documento Nuevo(a)!!! ';
+                    $dataMail->fileXML='NOTA DE CREDITO-'.$cabDoc[$i]["NumDocumento"].'.xml';
+                    $dataMail->filePDF='NOTA DE CREDITO-'.$cabDoc[$i]["NumDocumento"].'.pdf';
+                    //CREAR PDF
+                    $mPDF1->SetTitle($dataMail->filePDF);
+                    $cabFact = $this->mostrarCabNc($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $detDoc = $this->mostrarDetNc($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $impDoc = $this->mostrarNcImp($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $adiDoc = $this->mostrarNcDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
+                    include('formatRet/retencionPDF.php');
+                    $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
+                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
+                    
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
+                    
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
-                        $cabDoc[$i]['Estado']=6;//Correo Envia
+                        $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
-                        $cabDoc[$i]['Estado']=7;//Correo No enviado
+                        $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
                     }
                     
                 }else{
                     //No envia Correo 
                     //Error COrreo no EXISTE
-                    $cabDoc[$i]['Estado']=7;//Correo No enviado
+                    $cabDoc[$i]['EstadoEnv']=7;//Correo No enviado
                 }
                 
             }
             $con->close();
-            $this->actualizaEnvioMailRAD($cabDoc);
+            $obj_var->actualizaEnvioMailRAD($cabDoc,"NC");
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -562,48 +588,100 @@ class NubeNotasCredito {
         }   
     }
     
-    private function buscarMailFacturasRAD($con,$obj_var,$obj_con) {
+    private function buscarMailNcRAD($con,$obj_var,$obj_con) {
             $rawData = array();
             $fechaIni=$obj_var->dateStartFact;
-            $limitEnvMail=$obj_var->limitEnvMail;
-            $sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
-                    ImporteTotal Importe,CONCAT(Estab,'-',PtoEmi,'-',Secuencial) Documento
-            FROM " . $obj_con->BdRad . ".VSFactura WHERE Estado=2 limit $limitEnvMail ";
-            //echo $sql;
+            $limitEnvMail=$obj_var->limitEnvMail;            
+            $sql = "SELECT A.IdNotaCredito Ids,A.AutorizacionSRI,A.FechaAutorizacion,A.IdentificacionComprador CedRuc,A.RazonSocialComprador RazonSoc,
+                    'NOTA DE CREDITO' NombreDocumento,A.Ruc,A.Ambiente,A.TipoEmision,A.EstadoEnv,
+                    A.ClaveAcceso,CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento
+                FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A "
+                    . " WHERE A.Estado=2 AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
                     $rawData[] = $fila;
                 }
             }
-            //$conCont->close();
             return $rawData;
        
     }
     
-    private function actualizaEnvioMailRAD($cabFact) {
-        $obj_con = new cls_Base();
-        $conCont = $obj_con->conexionVsRAd();
-        try {
-            for ($i = 0; $i < sizeof($cabFact); $i++) {
-                $Estado=$cabFact[$i]['Estado'];//Contine el IDs del Tabla Autorizacion
-                $Ids=$cabFact[$i]['Ids'];
-                $sql = "UPDATE " . $obj_con->BdRad . ".VSFactura SET Estado='$Estado' WHERE IdFactura='$Ids';";
-                //echo $sql;
-                $command = $conCont->prepare($sql);
-                $command->execute();
+    public function mostrarCabNc($con,$obj_con,$id) {
+        $rawData = array();        
+        $sql = "SELECT A.IdNotaCredito IdDoc,A.Estado,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
+                        A.FechaAutorizacion,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
+                        CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
+                        A.ContribuyenteEspecial,A.ObligadoContabilidad,A.TipoIdentificacionComprador,
+                        A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,
+                        A.FechaEmision,A.IdentificacionComprador,A.RazonSocialComprador,
+                        A.CodDocModificado,A.NumDocModificado,A.FechaEmisionDocModificado,
+                        A.TotalSinImpuesto,A.ValorModificacion,A.MotivoModificacion,
+                        'NOTA DE CREDITO' NombreDocumento,A.AutorizacionSri,A.ClaveAcceso,A.FechaAutorizacion,
+                        A.Ambiente,A.TipoEmision,A.Moneda,A.Ruc,A.CodigoError
+                        FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A
+                WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdNotaCredito =$id ";
+        //echo $sql;
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
             }
-            $conCont->commit();
-            $conCont->close();
-            return true;
-        } catch (Exception $e) {
-            $conCont->rollback();
-            $conCont->close();
-            throw $e;
-            return false;
         }
+        return $rawData;
+    }
+    
+    public function mostrarDetNc($con,$obj_con,$id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDetalleNotaCredito WHERE IdNotaCredito=$id";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        for ($i = 0; $i < sizeof($rawData); $i++) {
+            $rawData[$i]['impuestos'] = $this->mostrarDetNcImp($con,$obj_con,$rawData[$i]['IdDetalleNotaCredito']); //Retorna el Detalle del Impuesto
+        }
+        return $rawData;
     }
 
+    private function mostrarDetNcImp($id) {
+        $rawData = array();
+        $con = Yii::app()->dbvsseaint;
+        $sql = "SELECT * FROM " . $con->dbname . ".NubeDetalleNotaCreditoImpuesto WHERE IdDetalleNotaCredito=$id";
+        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
+        $con->active = false;
+        return $rawData;
+    }
+
+    public function mostrarNcImp($con,$obj_con,$id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeNotaCreditoImpuesto WHERE IdNotaCredito=$id";
+        $sentencia = $con->query($sql); 
+        if ($sentencia->num_rows > 0) {
+             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+    }
+
+    public function mostrarNcDataAdicional($con,$obj_con,$id) {
+        $rawData = array();
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDatoAdicionalNotaCredito WHERE IdNotaCredito=$id";
+        $sentencia = $con->query($sql); 
+        if ($sentencia->num_rows > 0) {
+             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+    }
+    
+    
+    
+    
     
     
 }
