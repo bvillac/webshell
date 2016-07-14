@@ -531,7 +531,7 @@ class NubeNotasCredito {
                     $cabDoc[$i]['Clave']='';//No genera Clave
                 }else{
                     //No Existe y se crea uno nuevo
-                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,'MG0032',$i);//Envia la Tabla de Dadtos de Person ERP
+                    $rowUser=$obj_var->insertarUsuarioPersona($obj_con,$cabDoc,'MG0031',$i);//Envia la Tabla de Dadtos de Person ERP
                     $row=$rowUser['data'];
                     $cabDoc[$i]['CorreoPer']=$row['CorreoPer'];
                     $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada
@@ -539,7 +539,8 @@ class NubeNotasCredito {
             }
             //Envia l iformacion de Correos que ya se completo
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                if(strlen($cabDoc[$i]['CorreoPer'])>0){                
+                if(strlen($cabDoc[$i]['CorreoPer'])>0){ 
+                //if(1>0){   
                     $mPDF1=$rep->crearBaseReport();
                     //Envia Correo                   
                     include('mensaje.php');
@@ -554,7 +555,7 @@ class NubeNotasCredito {
                     $detDoc = $this->mostrarDetNc($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $impDoc = $this->mostrarNcImp($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $adiDoc = $this->mostrarNcDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
-                    include('formatRet/retencionPDF.php');
+                    include('formatNc/ncPDF.php');
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
                     
@@ -616,7 +617,7 @@ class NubeNotasCredito {
                         A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,
                         A.FechaEmision,A.IdentificacionComprador,A.RazonSocialComprador,
                         A.CodDocModificado,A.NumDocModificado,A.FechaEmisionDocModificado,
-                        A.TotalSinImpuesto,A.ValorModificacion,A.MotivoModificacion,
+                        A.TotalSinImpuesto,A.ValorModificacion,A.MotivoModificacion,A.USU_ID,
                         'NOTA DE CREDITO' NombreDocumento,A.AutorizacionSri,A.ClaveAcceso,A.FechaAutorizacion,
                         A.Ambiente,A.TipoEmision,A.Moneda,A.Ruc,A.CodigoError
                         FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A
@@ -646,12 +647,15 @@ class NubeNotasCredito {
         return $rawData;
     }
 
-    private function mostrarDetNcImp($id) {
+    private function mostrarDetNcImp($con,$obj_con,$id) {
         $rawData = array();
-        $con = Yii::app()->dbvsseaint;
-        $sql = "SELECT * FROM " . $con->dbname . ".NubeDetalleNotaCreditoImpuesto WHERE IdDetalleNotaCredito=$id";
-        $rawData = $con->createCommand($sql)->queryAll(); //Recupera Solo 1
-        $con->active = false;
+        $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDetalleNotaCreditoImpuesto WHERE IdDetalleNotaCredito=$id";
+        $sentencia = $con->query($sql); 
+        if ($sentencia->num_rows > 0) {
+             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
         return $rawData;
     }
 

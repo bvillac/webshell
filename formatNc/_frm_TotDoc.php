@@ -2,25 +2,25 @@
 $IRBPNR=0;
 $ICE=0;
 //TABLA 18 FICHA TECNICA
-for ($ib = 0; $ib < sizeof($impFact); $ib++) {
-    if ($impFact[$ib]['Codigo'] == '2') {//Valores de IVA
-        switch ($impFact[$ib]['CodigoPorcentaje']) {
+for ($ib = 0; $ib < sizeof($impDoc); $ib++) {
+    if ($impDoc[$ib]['Codigo'] == '2') {//Valores de IVA
+        switch ($impDoc[$ib]['CodigoPorcentaje']) {
             case 0:
-                $BASEIVA0=$impFact[$ib]['BaseImponible'];
+                $BASEIVA0=$impDoc[$ib]['BaseImponible'];
                 break;
             case 2:
-                $BASEIVA12=$impFact[$ib]['BaseImponible'];
-                $VALORIVA12=$impFact[$ib]['Valor'];
+                $BASEIVA12=$impDoc[$ib]['BaseImponible'];
+                $VALORIVA12=$impDoc[$ib]['Valor'];
                 break;
             case 3:
-                $BASEIVA12=$impFact[$ib]['BaseImponible'];
-                $VALORIVA12=$impFact[$ib]['Valor'];
+                $BASEIVA12=$impDoc[$ib]['BaseImponible'];
+                $VALORIVA12=$impDoc[$ib]['Valor'];
                 break;
             case 6://No objeto Iva
-                $NOOBJIVA=$impFact[$ib]['BaseImponible'];
+                $NOOBJIVA=$impDoc[$ib]['BaseImponible'];
                 break;
             case 7://Excento de Iva
-                $EXENTOIVA=$impFact[$ib]['BaseImponible'];
+                $EXENTOIVA=$impDoc[$ib]['BaseImponible'];
                 break;
             default:
         }
@@ -107,7 +107,7 @@ $cabDocPDF = '<table class="tabDetalle" style="width:100mm" >
                 <span>VALOR TOTAL</span>
             </td>
             <td class="marcoCel dataNumber">
-                <span>'. number_format($cabFact[0]["ImporteTotal"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
+                <span>'. number_format($cabFact[0]["ValorModificacion"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')  .'</span>
             </td>
         </tr>
 

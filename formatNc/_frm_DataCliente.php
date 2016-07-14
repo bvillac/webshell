@@ -1,20 +1,21 @@
-<div>
-    <table style="width:200mm;" class="marcoDiv">
+<?php 
+$cabDocPDF='<div>
+    <table style="width:100%;" class="marcoDiv">
         <tbody>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Social reason and last name') ?></span>
-                    <span><?php echo $cabFact['RazonSocialComprador'] ?></span>
+                    <span class="titleLabel">Razón Social/Nombre y Apellido:</span>
+                    <span>'.utf8_encode($obj_var->limpioCaracteresXML($cabFact[0]["RazonSocialComprador"])).'</span>
                 </td>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Identification') ?></span>
-                    <span><?php echo $cabFact['IdentificacionComprador'] ?></span>
+                    <span class="titleLabel">Identificación:</span>
+                    <span>'.$cabFact[0]["IdentificacionComprador"].'</span>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span class="titleLabel"><?php echo Yii::t('DOCUMENTOS', 'Date of issue') ?></span>
-                    <span><?php echo date(Yii::app()->params["datebydefault"],strtotime($cabFact['FechaEmision'])) ?></span>
+                    <span class="titleLabel">Fecha Emisión:</span>
+                    <span>'.date($obj_var->datebydefault,strtotime($cabFact[0]["FechaEmision"])).'</span>
                 </td>
                 <td>
                     
@@ -22,4 +23,5 @@
             </tr>
         </tbody>
     </table>
-</div>
+</div>';
+?>

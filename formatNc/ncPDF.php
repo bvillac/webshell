@@ -68,7 +68,7 @@ $mensajePDF='
                             <img src="logo.png" style="width:300px;height:50px;">
                         </td>
                         <td rowspan="2" style="width:50%">';
-                            include("formatGuia/_frm_CabDoc.php");//echo $this->renderPartial('_frm_CabFact', array('cabFact' => $cabFact));
+                            include("formatNc/_frm_CabDoc.php");//echo $this->renderPartial('_frm_CabFact', array('cabFact' => $cabFact));
                         $mensajePDF .= $cabDocPDF;
                         $mensajePDF .= '</td> 
                     </tr>
@@ -84,15 +84,15 @@ $mensajePDF='
                 <tbody>
                     <tr>
                         <td style="width:100%">';
-                            include("formatRet/_frm_DataCliente.php");//echo $this->renderPartial('_frm_DataCliente', array('cabFact' => $cabFact));
-                        $mensajePDF .= $cabDocPDF;
-                        $mensajePDF .= '</td>
+                            include("formatNc/_frm_DataCliente.php");//echo $this->renderPartial('_frm_DataCliente', array('cabFact' => $cabFact));
+                            $mensajePDF .= $cabDocPDF;
+                            $mensajePDF .= '</td>
                     </tr>
                     <tr>
                         <td style="width:100%">';
-                            include("formatRet/_frm_DataComprobante.php");//echo $this->renderPartial('_frm_DataComprobante', array('cabFact' => $cabFact));
-                        $mensajePDF .= $cabDocPDF;
-                        $mensajePDF .= '</td>
+                            include("formatNc/_frm_DataComprobante.php");//echo $this->renderPartial('_frm_DataComprobante', array('cabFact' => $cabFact));
+                            $mensajePDF .= $cabDocPDF;
+                            $mensajePDF .= '</td>
                     </tr>
                 </tbody>
             </table>
@@ -101,7 +101,7 @@ $mensajePDF='
                 <tbody>
                     <tr>
                         <td style="width:100%">';
-                            include("formatRet/_frm_DetDoc.php");//echo $this->renderPartial('_frm_DetFact', array('detFact' => $detFact));
+                            include("formatNc/_frm_DetDoc.php");//echo $this->renderPartial('_frm_DetFact', array('detFact' => $detFact));
                         $mensajePDF .= $cabDocPDF;
                         $mensajePDF .= '</td>
                     </tr>
@@ -111,11 +111,11 @@ $mensajePDF='
                 <tbody>
                     <tr>
                         <td style="width:70%">';
-                            include("formatGuia/_frm_DataAuxDoc.php");//echo $this->renderPartial('_frm_DataAuxFact', array('adiFact' => $adiFact));
+                            include("formatNc/_frm_DataAuxDoc.php");//echo $this->renderPartial('_frm_DataAuxFact', array('adiFact' => $adiFact));
                             $mensajePDF .= $cabDocPDF;
                             $mensajePDF .= '</td>
                         <td style="width:30%">';
-                            include("formatNc/_frm_TotFact.php");//echo $this->renderPartial('_frm_TotFact', array('impFact' => $impFact, 'cabFact' => $cabFact));
+                            include("formatNc/_frm_TotDoc.php");//echo $this->renderPartial('_frm_TotFact', array('impFact' => $impFact, 'cabFact' => $cabFact));
                             $mensajePDF .= $cabDocPDF;
                             $mensajePDF .= '</td>
                     </tr>

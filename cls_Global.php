@@ -24,12 +24,11 @@ class cls_Global {
     var $SepdecimalPDF='.';
     var $limitEnv=10;
     var $limitEnvMail=2;
-    //var $valorIva=0.12;
-    var $textIva='14%';
+    var $IVAdefault=14;//Valor de Iva por Defecto en Textos
     var $Author="Utimpor";
     var $rutaPDF="/opt/SEADOC/DOCPDF/";
     var $rutaXML="/opt/SEADOC/AUTORIZADO/";
-    var $rutaLink='http://www.docsea.utimpor.com';
+    var $rutaLink='http://docsea.utimpor.com';
     var $tipoFacLocal='F4';
     var $tipoGuiLocal='GR';
     var $tipoRetLocal='RT';
