@@ -74,7 +74,7 @@ class NubeRetencion {
     }
 
     public function insertarDocumentosFactura($op,$NumPed) {
-        
+        //DATOS DE RETENCION COMPRAS
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
         $con = $obj_con->conexionIntermedio();
@@ -110,7 +110,7 @@ class NubeRetencion {
     }
     
     public function insertarDocumentosPasivos($op,$NumPed) {
-        
+        //DATOS RETENCION PROVICIONES
         $obj_con = new cls_Base();
         $obj_var = new cls_Global();
         $con = $obj_con->conexionIntermedio();
@@ -204,6 +204,7 @@ class NubeRetencion {
     
     
     private function InsertarDetRetencion($con,$obj_con, $objEnt, $idCab,$i,$op) {
+        //INSERTA PROVICIONES DE PASIVOS
         $valida = new VSValidador();
         $codigo=0;//codigo impuesto a retener
         $cod_retencion='';//Codigo de Porcentaje de Retencion
@@ -221,7 +222,7 @@ class NubeRetencion {
             //Valores Retención RENTA
             $codigo=1;
             $cod_retencion=trim($objEnt[$i]['TIP_RET']);//Tipo de Retencion de Fuente
-            $bas_imponible=$objEnt[$i]['BAS_IVA'];
+            $bas_imponible=$objEnt[$i]['BAS_RET'];
             $por_retener=$objEnt[$i]['POR_RET'];
             $val_retenido=$objEnt[$i]['VAL_RET'];
             $TotalRetencion=$TotalRetencion+$val_retenido;
