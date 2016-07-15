@@ -222,7 +222,7 @@ class NubeRetencion {
             //Valores Retención RENTA
             $codigo=1;
             $cod_retencion=trim($objEnt[$i]['TIP_RET']);//Tipo de Retencion de Fuente
-            $bas_imponible=$objEnt[$i]['BAS_RET'];
+            $bas_imponible=($op==1)?$objEnt[$i]['BAS_IVA']:$objEnt[$i]['BAS_RET'];//Guarda el ls Base imponible dependiendo si es una compra o un provision
             $por_retener=$objEnt[$i]['POR_RET'];
             $val_retenido=$objEnt[$i]['VAL_RET'];
             $TotalRetencion=$TotalRetencion+$val_retenido;
