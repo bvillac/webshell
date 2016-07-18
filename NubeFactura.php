@@ -192,23 +192,23 @@ class NubeFactura {
             //Inserta el IVA de cada Item 
             if ($detFact[$i]['I_M_IVA'] == '1') {//Verifico si el ITEM tiene Impuesto
                 //Segun Datos Sri
-                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '2', $por_iva, $valSinImp, $detFact[$i]['VAL_IVA']); //12%
+                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2',$por_iva, $valSinImp, $detFact[$i]['VAL_IVA']); //12%
             } else {//Caso Contrario no Genera Impuesto
-                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2', '0', '0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
+                $this->InsertarDetImpFactura($con,$obj_con, $idDet, '2','0', $valSinImp, $detFact[$i]['VAL_IVA']); //0%
             }
         }
         //Inserta el Total del Iva Acumulado en el detalle
         //Insertar Datos de Iva 0%
         If ($vet_iva0 > 0) {
-            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '0', '0', $vet_iva0, $val_iva0);
+            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2','0', $vet_iva0, $val_iva0);
         }
         //Inserta Datos de Iva 12
         If ($vet_iva12 > 0) {
-            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', '2', $por_iva, $vet_iva12, $val_iva12);
+            $this->InsertarFacturaImpuesto($con,$obj_con, $idCab, '2', $por_iva, $vet_iva12, $val_iva12);
         }
     }
 
-    private function InsertarDetImpFactura($con,$obj_con, $idDet, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
+    private function InsertarDetImpFactura($con,$obj_con, $idDet, $codigo, $Tarifa, $t_venta, $val_iva) {
         $CodigoPor=cls_Global::retornaTarifaDelIva($Tarifa);
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeDetalleFacturaImpuesto 
                  (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdDetalleFactura)VALUES(
@@ -218,7 +218,7 @@ class NubeFactura {
         //$command = $con->query($sql);
     }
 
-    private function InsertarFacturaImpuesto($con,$obj_con, $idCab, $codigo, $CodigoPor, $Tarifa, $t_venta, $val_iva) {
+    private function InsertarFacturaImpuesto($con,$obj_con, $idCab, $codigo, $Tarifa, $t_venta, $val_iva) {
         $CodigoPor=cls_Global::retornaTarifaDelIva($Tarifa);
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeFacturaImpuesto 
                  (Codigo,CodigoPorcentaje,BaseImponible,Tarifa,Valor,IdFactura)VALUES(
