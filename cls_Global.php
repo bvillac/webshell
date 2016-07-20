@@ -101,16 +101,43 @@ class cls_Global {
         $RazonSoc = $objEnt[$i]['RazonSoc'];
         $correo = ($objEnt[$i]['CorreoPer']<>'')?$objEnt[$i]['CorreoPer']:$this->buscarCorreoERP($obj_con,$usuNombre,$DBTable);//Consulta Tabla Clientes
         $pass = $objEnt[$i]['CedRuc'];//$this->generarCodigoKey(8);
+        //Inserta Datos Tabla USUARIO
         $sql = "INSERT INTO " . $obj_con->BdAppweb . ".USUARIO
                 (PER_ID,USU_NOMBRE,USU_ALIAS,USU_CORREO,USU_PASSWORD,USU_EST_LOG,USU_FEC_CRE)VALUES
                 ($IdPer,'$usuNombre','$RazonSoc','$correo',MD5('$pass'),'1',CURRENT_TIMESTAMP()) ";
         $command = $con->prepare($sql);
         $command->execute();
+        
+        //Inserta Datas en la tabla USUARIO_EMPRESA con Su Rol
+        $UsuId = $con->insert_id;
+        $RolId = $this->retornaRolUser($DBTable);//Retorna el Rol segunta tabla Roles
+        $sql = "INSERT INTO " . $obj_con->BdAppweb . ".USUARIO_EMPRESA
+                (EMP_ID,USU_ID,ROL_ID,EST_LOG)VALUES
+                ($this->emp_id,$UsuId,$RolId,1) ";
+        $command = $con->prepare($sql);
+        $command->execute();
+        
         //Retorna el Pass y el Correo Guardado
         $arroout["Clave"] = $pass;
         $arroout["CorreoPer"] = $correo;
         return $arroout;
     }
+    //Retrona ROL SEGUN TABLA ROLES
+    private function retornaRolUser($tabla) {
+        $IdsRol = 6; //ROL DE USER NORMAL POR DEFECTO
+        switch ($tabla) {
+            Case "MG0031":
+                $IdsRol = 4; //CLIENTE
+                break;
+            Case "MG0032":
+                $IdsRol = 5; //PROVEEDOR
+                break;
+            default:
+                $IdsRol = 6; //USUARIO NORMAL
+        }
+        return $IdsRol;
+    }
+
     //Genera un Codigo para Pass
     private function generarCodigoKey($longitud) {
         $key = '';
@@ -146,19 +173,19 @@ class cls_Global {
                 $Estado=$docDat[$i]['EstadoEnv'];//Contine el IDs del Tabla Autorizacion
                 $Ids=$docDat[$i]['Ids'];
                 switch ($tipDoc) {
-                    Case "FA":
+                    Case "FA"://FACTURAS
                         $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
                         break;
-                    Case "GR":
+                    Case "GR"://GUIAS DE REMISION
                         $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeGuiaRemision SET EstadoEnv='$Estado' WHERE IdGuiaRemision='$Ids';";
                         break;
-                    Case "RT":
+                    Case "RT"://RETENCIONES
                         $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeRetencion SET EstadoEnv='$Estado' WHERE IdRetencion='$Ids';";
                         break;
-                    Case "NC":
+                    Case "NC"://NOTAS DE CREDITO
                         $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeNotaCredito SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
                         break;
-                    Case "ND":
+                    Case "ND"://NOTAS DE DEBITO
                         //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
                         break;
                 }

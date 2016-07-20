@@ -582,6 +582,7 @@ class NubeFactura {
                     $cabDoc[$i]['Clave']=$row['Clave'];//Clave Generada
                 }
             }
+            //return true;//Finaliza la accion por pruebas.
             //Envia l iformacion de Correos que ya se completo
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 if(strlen($cabDoc[$i]['CorreoPer'])>0){                
@@ -621,7 +622,8 @@ class NubeFactura {
                 
             }
             $con->close();
-            $this->actualizaEnvioMailRAD($cabDoc);
+            //$this->actualizaEnvioMailRAD($cabDoc);
+            $obj_var->actualizaEnvioMailRAD($cabDoc,"FA");
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -663,30 +665,30 @@ class NubeFactura {
        
     }
     
-    private function actualizaEnvioMailRAD($cabFact) {
-        $obj_con = new cls_Base();
-        //$conCont = $obj_con->conexionVsRAd();
-        $conCont = $obj_con->conexionIntermedio();
-        try {
-            for ($i = 0; $i < sizeof($cabFact); $i++) {
-                $Estado=$cabFact[$i]['EstadoEnv'];//Contine el IDs del Tabla Autorizacion
-                $Ids=$cabFact[$i]['Ids'];
-                //$sql = "UPDATE " . $obj_con->BdRad . ".VSFactura SET Estado='$Estado' WHERE IdFactura='$Ids';";
-                $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
-                //echo $sql;
-                $command = $conCont->prepare($sql);
-                $command->execute();
-            }
-            $conCont->commit();
-            $conCont->close();
-            return true;
-        } catch (Exception $e) {
-            $conCont->rollback();
-            $conCont->close();
-            throw $e;
-            return false;
-        }
-    }
+//    private function actualizaEnvioMailRAD($cabFact) {
+//        $obj_con = new cls_Base();
+//        //$conCont = $obj_con->conexionVsRAd();
+//        $conCont = $obj_con->conexionIntermedio();
+//        try {
+//            for ($i = 0; $i < sizeof($cabFact); $i++) {
+//                $Estado=$cabFact[$i]['EstadoEnv'];//Contine el IDs del Tabla Autorizacion
+//                $Ids=$cabFact[$i]['Ids'];
+//                //$sql = "UPDATE " . $obj_con->BdRad . ".VSFactura SET Estado='$Estado' WHERE IdFactura='$Ids';";
+//                $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
+//                //echo $sql;
+//                $command = $conCont->prepare($sql);
+//                $command->execute();
+//            }
+//            $conCont->commit();
+//            $conCont->close();
+//            return true;
+//        } catch (Exception $e) {
+//            $conCont->rollback();
+//            $conCont->close();
+//            throw $e;
+//            return false;
+//        }
+//    }
 
     
     
