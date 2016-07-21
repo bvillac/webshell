@@ -100,7 +100,7 @@ class cls_Global {
         $usuNombre = $objEnt[$i]['CedRuc'];
         $RazonSoc = $objEnt[$i]['RazonSoc'];
         $correo = ($objEnt[$i]['CorreoPer']<>'')?$objEnt[$i]['CorreoPer']:$this->buscarCorreoERP($obj_con,$usuNombre,$DBTable);//Consulta Tabla Clientes
-        $pass = $objEnt[$i]['CedRuc'];//$this->generarCodigoKey(8);
+        $pass =$this->generarCodigoKey(8);// $objEnt[$i]['CedRuc'];
         //Inserta Datos Tabla USUARIO
         $sql = "INSERT INTO " . $obj_con->BdAppweb . ".USUARIO
                 (PER_ID,USU_NOMBRE,USU_ALIAS,USU_CORREO,USU_PASSWORD,USU_EST_LOG,USU_FEC_CRE)VALUES
