@@ -153,7 +153,6 @@ class NubeFactura {
 
         $command = $con->prepare($sql);
         $command->execute();
-        //$command = $con->query($sql);
 
     }
 
