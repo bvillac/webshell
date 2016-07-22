@@ -55,14 +55,14 @@
                             </div>';
             }
             //Datos de prueba
-            $DataCorreos = explode(";",$cabDoc[$i]["CorreoPer"]);
+            /*$DataCorreos = explode(";",$cabDoc[$i]["CorreoPer"]);
             for ($icor = 0; $icor < count($DataCorreos); $icor++) {
                 $mensaje.='<div class="trow">
                                 <div class="tcol-td form-group">
                                     <span> Correo :'.trim($DataCorreos[$icor]).'- Para :'.trim($cabDoc[$i]["RazonSoc"]).'</span><br>
                                 </div>
                             </div>';
-            }
+            }*/
             //Adem&aacute;s puede realizar la impresi&oacute;n su documento accediendo a nuestro portal <a target="_blank" href="'.$obj_var->rutaLink.'">aqui</a>.<br>
             $mensaje.='<div class="trow">
                 <div class="tcol-td form-group">
