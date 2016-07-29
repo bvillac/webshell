@@ -27,7 +27,7 @@ class NubeRetencion {
             switch ($op) {
                 Case 1://Compras alimenta inventarios
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
-                                        A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.P_R_IVA,A.V_R_IVA,
+                                        A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_FLE,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.P_R_IVA,A.V_R_IVA,
                                         A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
                                      FROM " .  $obj_con->BdServidor . ".IG0050 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
@@ -223,7 +223,16 @@ class NubeRetencion {
             //Valores Retención RENTA
             $codigo=1;
             $cod_retencion=trim($objEnt[$i]['TIP_RET']);//Tipo de Retencion de Fuente
-            $bas_imponible=($op==1)?$objEnt[$i]['BAS_IVA']:$objEnt[$i]['BAS_RET'];//Guarda el ls Base imponible dependiendo si es una compra o un provision
+            //Guarda el ls Base imponible dependiendo si es una compra o un provision
+            //$bas_imponible=($op==1)?$objEnt[$i]['BAS_IVA']:$objEnt[$i]['BAS_RET'];
+            if($op==1){//Vefirica si es compras o es Provicion
+                //COMPRAS A.BAS_IV0,A.BAS_IVA,A.VAL_FLE
+                //Me.txt_val_ret.Text = (((Double.Parse(Me.txt_sub_tot.Text) + Double.Parse(Me.txt_val_fle.Text)) * Double.Parse(Me.txt_por_ret.Text)) / 100).ToString(g_Formato)
+                $bas_imponible=floatval($objEnt[$i]['BAS_IV0'])+floatval($objEnt[$i]['BAS_IVA'])+floatval($objEnt[$i]['VAL_FLE']);
+            }else{
+                //PROVICIONES PP
+                $bas_imponible=$objEnt[$i]['BAS_RET'];
+            }
             $por_retener=$objEnt[$i]['POR_RET'];
             $val_retenido=$objEnt[$i]['VAL_RET'];
             $TotalRetencion=$TotalRetencion+$val_retenido;
