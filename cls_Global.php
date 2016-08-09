@@ -238,6 +238,53 @@ class cls_Global {
         }
         return $codigo;
      }
+     
+     public static function buscarDocAutorizacion($tipDoc) {
+        try {
+            $obj_con = new cls_Base();
+            $obj_var = new cls_Global();
+            //$conCont = $obj_con->conexionServidor();
+            $conCont = $obj_con->conexionIntermedio();
+            $rawData = array();
+            $fechaIni=$obj_var->dateStartFact;
+            $limitEnv=$obj_var->limitEnv;
+            switch ($tipDoc) {
+                    Case "FA"://FACTURAS                        
+                        $sql = "SELECT IdFactura Ids,ClaveAcceso,AutorizacionSri 
+                                        FROM " . $obj_con->BdIntermedio . ".NubeFactura 
+                                WHERE Estado=2 AND DATE(FechaCarga)>'$fechaIni' LIMIT $limitEnv ";                        
+                        //$sql = "SELECT TIP_NOF TIPO,NUM_NOF NUMERO,ENV_DOC ID_DOC FROM " .  $obj_con->BdServidor . ".VC010101 
+                        //        WHERE ClaveAcceso IS NULL AND AutorizacionSri IS NULL AND IND_UPD='L' AND FEC_VTA>'$fechaIni' LIMIT $limitEnv ";
+                        break;
+                    Case "GR"://GUIAS DE REMISION
+                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeGuiaRemision SET EstadoEnv='$Estado' WHERE IdGuiaRemision='$Ids';";
+                        break;
+                    Case "RT"://RETENCIONES
+                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeRetencion SET EstadoEnv='$Estado' WHERE IdRetencion='$Ids';";
+                        break;
+                    Case "NC"://NOTAS DE CREDITO
+                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeNotaCredito SET EstadoEnv='$Estado' WHERE IdNotaCredito='$Ids';";
+                        break;
+                    Case "ND"://NOTAS DE DEBITO
+                        //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
+                        break;
+                }
+            
+            //echo $sql;
+            $sentencia = $conCont->query($sql);
+            if ($sentencia->num_rows > 0) {
+                while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                    $rawData[] = $fila;
+                }
+            }
+            $conCont->close();
+            return $rawData;
+        } catch (Exception $e) {
+            echo $e;
+            $conCont->close();
+            return false;
+        }
+    }
     
 
 }

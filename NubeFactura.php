@@ -664,31 +664,33 @@ class NubeFactura {
        
     }
     
-//    private function actualizaEnvioMailRAD($cabFact) {
-//        $obj_con = new cls_Base();
-//        //$conCont = $obj_con->conexionVsRAd();
-//        $conCont = $obj_con->conexionIntermedio();
-//        try {
-//            for ($i = 0; $i < sizeof($cabFact); $i++) {
-//                $Estado=$cabFact[$i]['EstadoEnv'];//Contine el IDs del Tabla Autorizacion
-//                $Ids=$cabFact[$i]['Ids'];
-//                //$sql = "UPDATE " . $obj_con->BdRad . ".VSFactura SET Estado='$Estado' WHERE IdFactura='$Ids';";
-//                $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
-//                //echo $sql;
-//                $command = $conCont->prepare($sql);
-//                $command->execute();
-//            }
-//            $conCont->commit();
-//            $conCont->close();
-//            return true;
-//        } catch (Exception $e) {
-//            $conCont->rollback();
-//            $conCont->close();
-//            throw $e;
-//            return false;
-//        }
-//    }
-
+    private function updateErpDocAutorizado() {
+        $obj_con = new cls_Base();
+        $conCont = $obj_con->conexionServidor();
+        try {
+            $cabDoc=cls_Global::buscarDocAutorizacion('FA');
+            for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                $ClaveAcceso = $cabDoc[$i]['ClaveAcceso'];
+                $AutorizacionSri = $cabDoc[$i]['AutorizacionSri'];                
+                $ids=$cabDoc[$i]['Ids'];//Contine el IDs del Tabla Autorizacion                
+                $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ClaveAcceso='$ClaveAcceso',AutorizacionSri='$AutorizacionSri',
+                        WHERE ClaveAcceso IS NULL AND AutorizacionSri IS NULL AND ENV_DOC='$ids' AND IND_UPD='L'";
+                //echo $sql;
+                $command = $conCont->prepare($sql);
+                $command->execute();
+            }
+            $conCont->commit();
+            $conCont->close();
+            return true;
+        } catch (Exception $e) {
+            $conCont->rollback();
+            $conCont->close();
+            throw $e;
+            return false;
+        }
+    }
     
+    
+
     
 }
