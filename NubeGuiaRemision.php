@@ -129,7 +129,7 @@ class NubeGuiaRemision {
         //$tip_doc,$fec_doc,$ruc,$ambiente,$serie,$numDoc,$tipoemision
         $objCla = new VSClaveAcceso();
         $serie = $objEmp['Establecimiento'] . $objEmp['PuntoEmision'];
-        $fec_doc = date("Y-m-d", strtotime($objEnt[$i]['FEC_GUI']));
+        $fec_doc = $objEnt[$i]['FEC_GUI'];//date("Y-m-d", strtotime($objEnt[$i]['FEC_GUI']));
         //$perFiscal = date("m/Y", strtotime($objEnt[$i]['FEC_GUI']));
         $ClaveAcceso = $objCla->claveAcceso($codDoc, $fec_doc, $objEmp['Ruc'], $objEmp['Ambiente'], $serie, $Secuencial, $objEmp['TipoEmision']);
         /** ********************** */
