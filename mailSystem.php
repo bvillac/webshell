@@ -10,6 +10,7 @@ class mailSystem {
     private $domEmpresa='Utimpor.com';
     private $mailSMTP='mail.utimpor.com';
     private $noResponder='no-responder@utimpor.com';
+    private $adminMail='ecastro@utimpor.com';
     private $noResponderPass='F0E4CwUyWy?h';
     public $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
     public $file_to_attachXML='';
@@ -54,13 +55,18 @@ class mailSystem {
         
         //##############################################
         //Separa en Array los Correos Ingresados para enviar
-        /*$DataCorreos = explode(";",$CabPed[$fil]["CorreoPer"]);
+        $DataCorreos = explode(";",$CabPed[$fil]["CorreoPer"]);
         for ($icor = 0; $icor < count($DataCorreos); $icor++) {
             if ($this->valid_email($DataCorreos[$icor])) {//Verifica Email Correcto
                 $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
+            }else{
+                //Correos Alternativos de admin  $adminMail
+                $mail->addBCC(trim($this->adminMail), trim("Gerencia"));
+                $mail->AddAddress($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
+                $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
             }
-        }*/
-        $mail->AddAddress($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
+        }
+        //$mail->AddAddress($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
         //##############################################
         // podemos hacer varios AddAdress 
         //$mail->AddAddress($CabPed[0]["CorreoUser"], $CabPed[0]["NombreUser"]);//Usuario Autoriza Pedido
