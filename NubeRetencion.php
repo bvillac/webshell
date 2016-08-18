@@ -28,7 +28,7 @@ class NubeRetencion {
                 Case 1://Compras alimenta inventarios
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_FLE,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.P_R_IVA,A.V_R_IVA,
-                                        A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
+                                        A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC,'' CLAVE
                                      FROM " .  $obj_con->BdServidor . ".IG0050 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
                                                      ON B.COD_PRO=A.COD_PRO
@@ -39,7 +39,7 @@ class NubeRetencion {
                     //Considear Reembolso AND A.NUM_RET<>999 para no ser selecionados ni insertados
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.BAS_RET,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
-                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
+                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC,'' CLAVE
                                      FROM " .  $obj_con->BdServidor . ".IG0054 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
                                                      ON B.COD_PRO=A.COD_PRO
@@ -49,7 +49,7 @@ class NubeRetencion {
                     
                     $sql = "SELECT A.TIP_PED,A.NUM_PED,A.FEC_PED,A.COD_PRO,A.NOM_PRO,A.DIR_PRO,A.N_S_PRO,A.N_F_PRO,A.F_F_PRO,A.COD_SUS,
                                         A.COD_I_P,A.BAS_IV0,A.BAS_IVA,A.VAL_IVA,A.TIP_RET,A.NUM_RET,A.POR_RET,A.VAL_RET,A.TIP_RE1,A.BAS_RE1,
-                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC
+                                        A.POR_RE1,A.VAL_RE1,A.P_R_IVA,A.V_R_IVA,A.FEC_RET,A.DET_RET,B.CED_RUC,A.USUARIO,B.TEL_N01,B.CORRE_E,'' ID_DOC,'' CLAVE
                                      FROM " .  $obj_con->BdServidor . ".IG0054 A
                                              INNER JOIN " .  $obj_con->BdServidor . ".MG0032 B
                                                      ON B.COD_PRO=A.COD_PRO
@@ -87,13 +87,14 @@ class NubeRetencion {
         try {
             $cabDoc = $this->buscarRetenciones($op,$NumPed);//Compras inventarios
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
-            $codDoc='07';//Comprobante de Retencion
+            $codDoc=$this->tipoDoc;//Comprobante de Retencion
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                $this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
+                $ClaveAcceso=$this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
                 $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,1);
                 $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
                 $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
+                $cabDoc[$i]['CLAVE']=$ClaveAcceso;
             }
             $con->commit();
             $con->close();
@@ -123,15 +124,16 @@ class NubeRetencion {
         try {
             $cabDoc = $this->buscarRetenciones($op,$NumPed);//Provision de Pasivos
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
-            $codDoc='07';//Comprobante de Retencion
+            $codDoc=$this->tipoDoc;//Comprobante de Retencion
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 //Por el 332, si no existe Numero de Retencion no se genera documento a validar Byron 24-08-2015 
                 if(strlen($cabDoc[$i]['NUM_RET'])>0){
-                    $this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
+                    $ClaveAcceso=$this->InsertarCabRetencion($con,$obj_con,$cabDoc, $empresaEnt,$codDoc, $i);
                     $idCab = $con->insert_id;
                     $this->InsertarDetRetencion($con,$obj_con,$cabDoc,$idCab,$i,2);
                     $this->InsertarRetenDatoAdicional($con,$obj_con,$i,$cabDoc,$idCab);
                     $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
+                    $cabDoc[$i]['CLAVE']=$ClaveAcceso;
                 }
                
             }
@@ -200,7 +202,7 @@ class NubeRetencion {
         $command = $con->prepare($sql);
         $command->execute();
         //$command = $con->query($sql);
-
+        return $ClaveAcceso;
     }
     
     
@@ -325,8 +327,9 @@ class NubeRetencion {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_PED'];
                 $tipo = $cabFact[$i]['TIP_PED'];
+                $clave = $cabFact[$i]['CLAVE'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
-                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0050 SET ENV_DOC='$ids'
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0050 SET ENV_DOC='$ids',ClaveAcceso='$clave'
                         WHERE TIP_PED='$tipo' AND NUM_PED='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);
@@ -350,10 +353,11 @@ class NubeRetencion {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_PED'];
                 $tipo = $cabFact[$i]['TIP_PED'];
+                $clave = $cabFact[$i]['CLAVE'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
                 ////Por el 332, si no existe Numero de Retencion no se genera documento a validar Byron 24-08-2015 
                 if($ids>0){
-                    $sql = "UPDATE " . $obj_con->BdServidor . ".IG0054 SET ENV_DOC='$ids'
+                    $sql = "UPDATE " . $obj_con->BdServidor . ".IG0054 SET ENV_DOC='$ids',ClaveAcceso='$clave'
                         WHERE TIP_PED='$tipo' AND NUM_PED='$numero' AND IND_UPD='L'";
                     //echo $sql;
                     $command = $conCont->prepare($sql);

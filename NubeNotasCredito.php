@@ -25,7 +25,7 @@ class NubeNotasCredito {
                     $sql = "SELECT A.TIP_DEV,A.NUM_DEV,A.FEC_DEV,A.COD_MOT,C.NOM_MOT,A.TIP_NOF,A.NUM_NOF,A.FEC_NOF,
                                     A.COD_CLI,B.CED_RUC,B.NOM_CLI,B.DIR_CLI,B.TEL_N01,B.CORRE_E,A.VAL_BRU,A.POR_DES,A.VAL_DES,
                                     A.BAS_IVA,A.BAS_IV0,A.POR_IVA,A.POR_IVA,A.VAL_IVA,A.VAL_NET,A.POR_RET,
-                                    A.VAL_RET,A.T_I_DEV,A.T_P_DEV,A.LIN_N01,A.ATIENDE,A.USUARIO,'' ID_DOC
+                                    A.VAL_RET,A.T_I_DEV,A.T_P_DEV,A.LIN_N01,A.ATIENDE,A.USUARIO,'' ID_DOC,'' CLAVE
                                     FROM " .  $obj_con->BdServidor . ".IG0060 A
                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B ON A.COD_CLI=B.COD_CLI 
                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0041 C ON A.COD_MOT=C.COD_MOT
@@ -37,7 +37,7 @@ class NubeNotasCredito {
                     $sql = "SELECT A.TIP_DEV,A.NUM_DEV,A.FEC_DEV,A.COD_MOT,C.NOM_MOT,A.TIP_NOF,A.NUM_NOF,A.FEC_NOF,
                                     A.COD_CLI,B.CED_RUC,B.NOM_CLI,B.DIR_CLI,B.TEL_N01,B.CORRE_E,A.VAL_BRU,A.POR_DES,A.VAL_DES,
                                     A.BAS_IVA,A.BAS_IV0,A.POR_IVA,A.POR_IVA,A.VAL_IVA,A.VAL_NET,A.POR_RET,
-                                    A.VAL_RET,A.T_I_DEV,A.T_P_DEV,A.LIN_N01,A.ATIENDE,A.USUARIO,'' ID_DOC
+                                    A.VAL_RET,A.T_I_DEV,A.T_P_DEV,A.LIN_N01,A.ATIENDE,A.USUARIO,'' ID_DOC,'' CLAVE
                                     FROM " .  $obj_con->BdServidor . ".IG0060 A
                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B ON A.COD_CLI=B.COD_CLI 
                                             INNER JOIN " .  $obj_con->BdServidor . ".MG0041 C ON A.COD_MOT=C.COD_MOT
@@ -95,14 +95,15 @@ class NubeNotasCredito {
             $cabFact = $this->buscarNC($op,$NumPed);
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
 
-            $codDoc='04';//Documento Notas de Credito
+            $codDoc=$this->tipoDoc;//Documento Notas de Credito
             for ($i = 0; $i < sizeof($cabFact); $i++) {
-                $this->InsertarCabNC($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
+                $ClaveAcceso=$this->InsertarCabNC($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
                 $detFact=$this->buscarDetNC($cabFact[$i]['TIP_DEV'],$cabFact[$i]['NUM_DEV']);
                 $this->InsertarDetNC($con,$obj_con,$cabFact[$i]['POR_IVA'],$detFact,$idCab);
                 $this->InsertarNcDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
                 $cabFact[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
+                $cabFact[$i]['CLAVE']=$ClaveAcceso;
             }
             $con->commit();
             $con->close();
@@ -180,6 +181,7 @@ class NubeNotasCredito {
         $command = $con->prepare($sql);
         $command->execute();
         //$command = $con->query($sql);
+        return $ClaveAcceso;
 
     }
 
@@ -280,8 +282,9 @@ class NubeNotasCredito {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_DEV'];
                 $tipo = $cabFact[$i]['TIP_DEV'];
+                $clave = $cabFact[$i]['CLAVE'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
-                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0060 SET ENV_DOC='$ids'
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0060 SET ENV_DOC='$ids',ClaveAcceso='$clave'
                         WHERE TIP_DEV='$tipo' AND NUM_DEV='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);

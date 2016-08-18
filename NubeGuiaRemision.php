@@ -23,7 +23,7 @@ class NubeGuiaRemision {
                 Case 1://Consulta Masiva
                     $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
                             A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
-                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,A.ATIENDE,'' ID_DOC
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,A.ATIENDE,'' ID_DOC,'' CLAVE
                             FROM " .  $obj_con->BdServidor . ".IG0045 A
                                 INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
                                     ON A.COD_CLI=B.COD_CLI
@@ -33,7 +33,7 @@ class NubeGuiaRemision {
                 Case 2://Consulta por un Numero Determinado
                     $sql = "SELECT A.NUM_GUI,A.FEC_GUI,A.TIP_NOF,A.NUM_NOF,A.FEC_VTA,A.FEC_I_T,A.FEC_T_T,A.MOT_TRA,A.PUN_PAR,
                             A.PUN_LLE,A.FEC_PAR,A.COD_CLI,A.NOM_CLI,A.CED_RUC,A.COD_TRA,A.NOM_TRA,A.C_R_TRA,A.USUARIO,
-                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,A.ATIENDE,'' ID_DOC
+                            B.DIR_CLI,B.NOM_CTO,B.CORRE_E,A.PLK_TRA,A.ATIENDE,'' ID_DOC,'' CLAVE
                             FROM " .  $obj_con->BdServidor . ".IG0045 A
                                 INNER JOIN " .  $obj_con->BdServidor . ".MG0031 B
                                     ON A.COD_CLI=B.COD_CLI
@@ -92,7 +92,7 @@ class NubeGuiaRemision {
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
             $codDoc=$this->tipoDoc;//GUIAS DE REMISION
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                $this->InsertarCabGuia($con,$obj_con,$obj_var,$cabDoc, $empresaEnt,$codDoc, $i);
+                $ClaveAcceso=$this->InsertarCabGuia($con,$obj_con,$obj_var,$cabDoc, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
                 $this->InsertarDestinatarioGuia($con,$obj_con,$obj_var,$cabDoc,$empresaEnt,$idCab,$i);
                 $idDestino = $con->insert_id;
@@ -101,6 +101,7 @@ class NubeGuiaRemision {
                 //Descomentar si se desea Agregar Datos Adicional
                 $this->InsertarGuiaDatoAdicional($con,$obj_con,$obj_var,$i,$cabDoc,$idCab);
                 $cabDoc[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
+                $cabDoc[$i]['CLAVE']=$ClaveAcceso;
             }
             $con->commit();
             $con->close();
@@ -190,7 +191,7 @@ class NubeGuiaRemision {
                 '$Secuencial','1',CURRENT_TIMESTAMP() )";
         $command = $con->prepare($sql);
         $command->execute();
-
+        return $ClaveAcceso;
     }
     
     private function InsertarDestinatarioGuia($con,$obj_con,$obj_var,$cabDoc,$objEmp, $idCab,$i) {
@@ -285,8 +286,9 @@ class NubeGuiaRemision {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_GUI'];
                 $tipo = $cabFact[$i]['TIP_NOF'];
+                $clave = $cabFact[$i]['CLAVE'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
-                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0045 SET ENV_DOC='$ids'
+                $sql = "UPDATE " . $obj_con->BdServidor . ".IG0045 SET ENV_DOC='$ids',ClaveAcceso='$clave'
                         WHERE NUM_GUI='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);

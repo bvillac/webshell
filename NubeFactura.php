@@ -8,7 +8,7 @@ include('VSClaveAcceso.php');
 include('mailSystem.php');
 include('REPORTES.php');
 class NubeFactura {
-    private $tipoDoc='01';
+    private $tipoDoc='01';//Tipo Doc SRI
     
     private function buscarFacturas() {
         try {
@@ -22,7 +22,7 @@ class NubeFactura {
             $sql = "SELECT TIP_NOF, NUM_NOF,
                             CED_RUC,NOM_CLI,FEC_VTA,DIR_CLI,VAL_BRU,POR_DES,VAL_DES,VAL_FLE,BAS_IVA,
                             BAS_IV0,POR_IVA,VAL_IVA,VAL_NET,POR_R_F,VAL_R_F,POR_R_I,VAL_R_I,GUI_REM,0 PROPINA,
-                            USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC
+                            USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC,'' CLAVE
                         FROM " .  $obj_con->BdServidor . ".VC010101 
                     WHERE IND_UPD='L' AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
             //$sql .= " WHERE NUM_NOF='0000138449' AND TIP_NOF='F4' ";//Probar Factura
@@ -76,14 +76,15 @@ class NubeFactura {
             $cabFact = $this->buscarFacturas();
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
 
-            $codDoc='01';//Documento Factura
+            $codDoc=$this->tipoDoc;//Documento Factura
             for ($i = 0; $i < sizeof($cabFact); $i++) {
-                $this->InsertarCabFactura($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
+                $ClaveAcceso=$this->InsertarCabFactura($con,$obj_con,$cabFact, $empresaEnt,$codDoc, $i);
                 $idCab = $con->insert_id;
                 $detFact=$this->buscarDetFacturas($cabFact[$i]['TIP_NOF'],$cabFact[$i]['NUM_NOF']);
                 $this->InsertarDetFactura($con,$obj_con,$cabFact[$i]['POR_IVA'],$detFact,$idCab);
                 $this->InsertarFacturaDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
                 $cabFact[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
+                $cabFact[$i]['CLAVE']=$ClaveAcceso;
             }
             $con->commit();
             $con->close();
@@ -153,7 +154,7 @@ class NubeFactura {
 
         $command = $con->prepare($sql);
         $command->execute();
-
+        return $ClaveAcceso;
     }
 
     private function InsertarDetFactura($con,$obj_con,$por_iva, $detFact, $idCab) {
@@ -247,8 +248,9 @@ class NubeFactura {
             for ($i = 0; $i < sizeof($cabFact); $i++) {
                 $numero = $cabFact[$i]['NUM_NOF'];
                 $tipo = $cabFact[$i]['TIP_NOF'];
+                $clave = $cabFact[$i]['CLAVE'];
                 $ids=$cabFact[$i]['ID_DOC'];//Contine el IDs del Tabla Autorizacion
-                $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ENV_DOC='$ids'
+                $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ENV_DOC='$ids',ClaveAcceso='$clave'
                         WHERE TIP_NOF='$tipo' AND NUM_NOF='$numero' AND IND_UPD='L'";
                 //echo $sql;
                 $command = $conCont->prepare($sql);
@@ -623,6 +625,7 @@ class NubeFactura {
             $con->close();
             //$this->actualizaEnvioMailRAD($cabDoc);
             $obj_var->actualizaEnvioMailRAD($cabDoc,"FA");
+            //$this->updateErpDocAutorizado($cabDoc);//Actualiza Claves de Acceso ERP
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -664,20 +667,23 @@ class NubeFactura {
        
     }
     
-    private function updateErpDocAutorizado() {
+    public function updateErpDocAutorizado($cabDoc) {
         $obj_con = new cls_Base();
         $conCont = $obj_con->conexionServidor();
         try {
             $cabDoc=cls_Global::buscarDocAutorizacion('FA');
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
-                $ClaveAcceso = $cabDoc[$i]['ClaveAcceso'];
-                $AutorizacionSri = $cabDoc[$i]['AutorizacionSri'];                
-                $ids=$cabDoc[$i]['Ids'];//Contine el IDs del Tabla Autorizacion                
-                $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ClaveAcceso='$ClaveAcceso',AutorizacionSri='$AutorizacionSri',
-                        WHERE ClaveAcceso IS NULL AND AutorizacionSri IS NULL AND ENV_DOC='$ids' AND IND_UPD='L'";
-                //echo $sql;
-                $command = $conCont->prepare($sql);
-                $command->execute();
+                $Estado=$cabDoc[$i]['EstadoEnv'];
+                if($Estado=6){//Actualiza Solo los que fueron enviados Correctamente
+                    $ClaveAcceso = $cabDoc[$i]['ClaveAcceso'];
+                    $AutorizacionSri = $cabDoc[$i]['AutorizacionSRI'];                
+                    $ids=$cabDoc[$i]['Ids'];//Contine el IDs del Tabla Autorizacion                
+                    $sql = "UPDATE " . $obj_con->BdServidor . ".VC010101 SET ClaveAcceso='$ClaveAcceso',AutorizacionSri='$AutorizacionSri' 
+                            WHERE ClaveAcceso IS NULL AND AutorizacionSri IS NULL AND ENV_DOC='$ids' AND IND_UPD='L'";
+                    //echo $sql;
+                    $command = $conCont->prepare($sql);
+                    $command->execute();                    
+                }                
             }
             $conCont->commit();
             $conCont->close();

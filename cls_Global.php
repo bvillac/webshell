@@ -18,7 +18,7 @@ class cls_Global {
     var $est_id='1';//Establecimiento
     var $pemi_id='1';//Punto Emision
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2016-07-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     var $decimalPDF=2;
     var $SepdecimalPDF='.';
@@ -252,7 +252,7 @@ class cls_Global {
                     Case "FA"://FACTURAS                        
                         $sql = "SELECT IdFactura Ids,ClaveAcceso,AutorizacionSri 
                                         FROM " . $obj_con->BdIntermedio . ".NubeFactura 
-                                WHERE Estado=2 AND DATE(FechaCarga)>'$fechaIni' LIMIT $limitEnv ";                        
+                                WHERE Estado=2 AND DATE(FechaCarga)>='$fechaIni' LIMIT $limitEnv ";                        
                         //$sql = "SELECT TIP_NOF TIPO,NUM_NOF NUMERO,ENV_DOC ID_DOC FROM " .  $obj_con->BdServidor . ".VC010101 
                         //        WHERE ClaveAcceso IS NULL AND AutorizacionSri IS NULL AND IND_UPD='L' AND FEC_VTA>'$fechaIni' LIMIT $limitEnv ";
                         break;
