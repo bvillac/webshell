@@ -561,6 +561,14 @@ class NubeNotasCredito {
                     $impDoc = $this->mostrarNcImp($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $adiDoc = $this->mostrarNcDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
                     include('formatNc/ncPDF.php');
+                    
+                    //COMETAR EN CASO DE NO PRESENTAR ESTA INFO
+                    $mPDF1->SetWatermarkText('ESTA INFORMACIÓN ES UNA PRUEBA');
+                    $mPDF1->watermark_font= 'DejaVuSansCondensed';
+                    $mPDF1->watermarkTextAlpha = 0.5;
+                    $mPDF1->showWatermarkText=($cabDoc[$i]["Ambiente"]==1)?TRUE:FALSE; // 1=Pruebas y 2=Produccion
+                    //****************************************
+                    
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
                     
