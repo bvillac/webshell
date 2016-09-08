@@ -65,7 +65,7 @@ $mensajePDF='
             $mensajePDF .= '<table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td style="width:50%">
+                        <td style="width:50%;vertical-align: central">
                             <img src="logo.png" style="width:300px;height:50px;">
                         </td>                        
                         <td rowspan="2" style="width:50%">';
@@ -74,7 +74,7 @@ $mensajePDF='
                         $mensajePDF .= '</td> 
                     </tr>
                     <tr>
-                        <td style="width:50%">';
+                        <td style="width:50%;vertical-align: bottom">';
                         include("formatFact/_frm_DataEmpresa.php");//echo $this->renderPartial("_frm_DataEmpresa");
                         $mensajePDF .= $cabDocPDF;
                         $mensajePDF .= '</td>
@@ -105,7 +105,7 @@ $mensajePDF='
             <table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td style="width:70%">';
+                        <td style="width:70%;vertical-align: top">';
                         include("formatGuia/_frm_DataAuxDoc.php");//echo $this->renderPartial('_frm_DataAuxDoc', array('adiDoc' => $adiDoc));
                         $mensajePDF .= $cabDocPDF;
                         $mensajePDF .= '</td> 

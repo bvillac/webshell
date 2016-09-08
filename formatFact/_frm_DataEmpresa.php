@@ -13,21 +13,20 @@ $cabDocPDF = '<div>
                     <span>'.strtoupper($objEmp['DireccionMatriz']) .'</span>
                 </td>
                 
-            </tr>
-            <tr>
-                <td>
-                    <span class="titleLabel">Dir Sucursal:</span>
-                    <span>'.strtoupper($objEmp['DireccionSucursal']) .'</span>
-                </td>
-                
-            </tr>
-            <tr>
-                <td>
-                    <span class="titleLabel">Contribuyente Especial:</span>
-                    <span>'.strtoupper(($objEmp['ContribuyenteEspecial']!='')?$objEmp['ContribuyenteEspecial']:' NO') .'</span>
-                </td>
-            </tr>
-            <tr>
+            </tr>';
+//            <tr>
+//                <td>
+//                    <span class="titleLabel">Dir Sucursal:</span>
+//                    <span>'.strtoupper($objEmp['DireccionSucursal']) .'</span>
+//                </td>                
+//            </tr>
+//            <tr>
+//                <td>
+//                    <span class="titleLabel">Contribuyente Especial:</span>
+//                    <span>'.strtoupper(($objEmp['ContribuyenteEspecial']!='')?$objEmp['ContribuyenteEspecial']:' NO') .'</span>
+//                </td>
+//            </tr>
+$cabDocPDF .='<tr>
                 <td>
                     <span class="titleLabel">OBLIGADO A LLEVAR CONTABILIDAD:</span>
                     <span>'.strtoupper($objEmp['ObligadoContabilidad']) .'</span>

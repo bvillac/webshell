@@ -22,7 +22,7 @@ class NubeFactura {
             $sql = "SELECT TIP_NOF, NUM_NOF,
                             CED_RUC,NOM_CLI,FEC_VTA,DIR_CLI,VAL_BRU,POR_DES,VAL_DES,VAL_FLE,BAS_IVA,
                             BAS_IV0,POR_IVA,VAL_IVA,VAL_NET,POR_R_F,VAL_R_F,POR_R_I,VAL_R_I,GUI_REM,0 PROPINA,
-                            USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC,'' CLAVE
+                            USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC,'' CLAVE,FOR_PAG_SRI,PAG_PLZ,PAG_TMP
                         FROM " .  $obj_con->BdServidor . ".VC010101 
                     WHERE IND_UPD='L' AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
             //$sql .= " WHERE NUM_NOF='0000138449' AND TIP_NOF='F4' ";//Probar Factura
@@ -82,6 +82,7 @@ class NubeFactura {
                 $idCab = $con->insert_id;
                 $detFact=$this->buscarDetFacturas($cabFact[$i]['TIP_NOF'],$cabFact[$i]['NUM_NOF']);
                 $this->InsertarDetFactura($con,$obj_con,$cabFact[$i]['POR_IVA'],$detFact,$idCab);
+                $this->InsertarFacturaFormaPago($con, $obj_con, $i, $cabFact, $idCab);//Inserta Forma de Pago 8 SEP 2016
                 $this->InsertarFacturaDatoAdicional($con,$obj_con,$i,$cabFact,$idCab);
                 $cabFact[$i]['ID_DOC']=$idCab;//Actualiza el IDs Documento Autorizacon SRI
                 $cabFact[$i]['CLAVE']=$ClaveAcceso;
@@ -226,6 +227,22 @@ class NubeFactura {
         $command = $con->prepare($sql);
         $command->execute();
         //$command = $con->query($sql);
+    }
+    
+    private function InsertarFacturaFormaPago($con,$obj_con, $i, $cabFact, $idCab) {
+        //Implementado 8/08/2016
+        //FOR_PAG_SRI,PAG_PLZ,PAG_TMP,VAL_NET
+        //Nota la Tabla Forma de Pago debe ser aigual que la SEA Y WEBSEA los IDS deben conincidir.
+        //Si no tiene codigo usa el codigo 1 (SIN UTILIZACION DEL SISTEMA FINANCIERO o Efectivo)
+        $IdsForma = ($cabFact[$i]['FOR_PAG_SRI']!='')?$cabFact[$i]['FOR_PAG_SRI']:'1';
+        $Total=($cabFact[$i]['VAL_NET']!='')?$cabFact[$i]['VAL_NET']:0;
+        $Plazo=($cabFact[$i]['PAG_PLZ']!='')?$cabFact[$i]['PAG_PLZ']:'30';
+        $UnidadTiempo=($cabFact[$i]['PAG_TMP']!='')?$cabFact[$i]['PAG_TMP']:'DIAS';
+        $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeFacturaFormaPago
+                (IdForma,IdFactura,FormaPago,Total,Plazo,UnidadTiempo)VALUES(
+                '$IdsForma','$idCab','$IdsForma',$Total,'$Plazo','$UnidadTiempo');";
+        $command = $con->prepare($sql);
+        $command->execute();
     }
 
     private function InsertarFacturaDatoAdicional($con,$obj_con, $i, $cabFact, $idCab) {
