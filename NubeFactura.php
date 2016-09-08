@@ -236,7 +236,7 @@ class NubeFactura {
         //Si no tiene codigo usa el codigo 1 (SIN UTILIZACION DEL SISTEMA FINANCIERO o Efectivo)
         $IdsForma = ($cabFact[$i]['FOR_PAG_SRI']!='')?$cabFact[$i]['FOR_PAG_SRI']:'1';
         $Total=($cabFact[$i]['VAL_NET']!='')?$cabFact[$i]['VAL_NET']:0;
-        $Plazo=($cabFact[$i]['PAG_PLZ']!='')?$cabFact[$i]['PAG_PLZ']:'30';
+        $Plazo=($cabFact[$i]['PAG_PLZ']>0)?$cabFact[$i]['PAG_PLZ']:'30';
         $UnidadTiempo=($cabFact[$i]['PAG_TMP']!='')?$cabFact[$i]['PAG_TMP']:'DIAS';
         $sql = "INSERT INTO " . $obj_con->BdIntermedio . ".NubeFacturaFormaPago
                 (IdForma,IdFactura,FormaPago,Total,Plazo,UnidadTiempo)VALUES(
