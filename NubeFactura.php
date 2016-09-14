@@ -554,6 +554,23 @@ class NubeFactura {
         return $rawData;
     }
     
+    //Mostrar Formas de Pago Factura
+    public function mostrarFormaPago($con,$obj_con,$id) {
+        $rawData = array();
+        $sql = "SELECT B.FormaPago,A.Total,A.Plazo,A.UnidadTiempo,A.FormaPago Codigo  
+                FROM " . $obj_con->BdIntermedio . ".NubeFacturaFormaPago A
+                        INNER JOIN " . $obj_con->BdIntermedio . ".VSFormaPago B
+                                ON A.IdForma=B.IdForma
+                    WHERE A.IdFactura=$id ";
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+    }
+    
     private function mostrarFacturaDataAdicional($con,$obj_con,$id) {
         $rawData = array();
         $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeDatoAdicionalFactura WHERE IdFactura=$id";
@@ -617,6 +634,7 @@ class NubeFactura {
                     $cabFact = $this->mostrarCabFactura($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $detFact = $this->mostrarDetFacturaImp($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $impFact = $this->mostrarFacturaImp($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $pagFact = $this->mostrarFormaPago($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $adiFact = $this->mostrarFacturaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);
                     include('formatFact/facturaPDF.php');
                   
@@ -625,14 +643,11 @@ class NubeFactura {
                     $mPDF1->watermark_font= 'DejaVuSansCondensed';
                     $mPDF1->watermarkTextAlpha = 0.5;
                     $mPDF1->showWatermarkText=($cabDoc[$i]["Ambiente"]==1)?TRUE:FALSE; // 1=Pruebas y 2=Produccion
-                    //****************************************
-                    
+                    //****************************************                    
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
-                    //$mPDF1->WriteHTML($mensaje);
-                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
+                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO
                     
-                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
-                    
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);                    
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
@@ -648,9 +663,7 @@ class NubeFactura {
                 
             }
             $con->close();
-            //$this->actualizaEnvioMailRAD($cabDoc);
             $obj_var->actualizaEnvioMailRAD($cabDoc,"FA");
-            //$this->updateErpDocAutorizado($cabDoc);//Actualiza Claves de Acceso ERP
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -673,14 +686,7 @@ class NubeFactura {
                     ClaveAcceso,ImporteTotal Importe,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
                 FROM " . $obj_con->BdIntermedio . ".NubeFactura WHERE Estado=2 "
                     . "AND EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
-                    //. "AND IdFactura=19026 ";  
-            
-            /*$sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
-                    'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,
-                    ClaveAcceso,ImporteTotal Importe,CONCAT(Estab,'-',PtoEmi,'-',Secuencial) NumDocumento
-                FROM " . $obj_con->BdRad . ".VSFactura WHERE Estado=2 limit $limitEnvMail ";   */         
-
-            //echo $sql;
+                    //. "AND IdFactura=22401 ";  
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
