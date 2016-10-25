@@ -728,6 +728,37 @@ class NubeFactura {
     }
     
     
+    /************************************************************/
+    /*********CONSUMO DE WEB SERVICES
+    /************************************************************/
+    public function enviarDocumentos($id) {
+        try {
+            $autDoc=new VSAutoDocumento();
+            $errAuto= new VSexception();
+            $ids = explode(",", $id);
+            for ($i = 0; $i < count($ids); $i++) {
+                if ($ids[$i] !== "") {
+                    //$result = $this->generarFileXML($ids[$i]);
+                    $DirDocAutorizado=Yii::app()->params['seaDocAutFact']; 
+                    $DirDocFirmado=Yii::app()->params['seaDocFact'];
+                    if ($result['status'] == 'OK') {//Retorna True o False 
+                        //echo $result['nomDoc'];
+                        return $autDoc->AutorizaDocumento($result,$ids,$i,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
+                    }elseif ($result['status'] == 'OK_REG') {
+                        //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                        //Autorizacion de Comprobantes 
+                        return $autDoc->autorizaComprobante($result, $ids, $i, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                   
+                    }else{
+                        return $result;//$errAuto->messageSystem('NO_OK', $result["error"],1,null, null);
+                    }
+                }
+            }
+            return $errAuto->messageSystem('OK', null,40,null, null);
+        } catch (Exception $e) { // se arroja una excepción si una consulta falla
+            return $errAuto->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+        }
+    }
 
     
 }
