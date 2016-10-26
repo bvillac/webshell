@@ -7,6 +7,10 @@ include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
 include('REPORTES.php');
+
+include('VSAutoDocumento.php');
+include('VSFirmaDigital.php');
+include('VSexception.php');
 class NubeFactura {
     private $tipoDoc='01';//Tipo Doc SRI
     
@@ -733,14 +737,19 @@ class NubeFactura {
     /************************************************************/
     public function enviarDocumentos($id) {
         try {
+            $obj_var = new cls_Global();
             $autDoc=new VSAutoDocumento();
-            $errAuto= new VSexception();
-            $ids = explode(",", $id);
-            for ($i = 0; $i < count($ids); $i++) {
-                if ($ids[$i] !== "") {
+            $errAuto= new VSexception(); 
+            $obj_con = new cls_Base();
+            $con = $obj_con->conexionIntermedio();
+            $ids =0; //explode(",", $id);
+            //for ($i = 0; $i < count($ids); $i++) {
+                //if ($ids[$i] !== "") {
                     //$result = $this->generarFileXML($ids[$i]);
-                    $DirDocAutorizado=Yii::app()->params['seaDocAutFact']; 
-                    $DirDocFirmado=Yii::app()->params['seaDocFact'];
+                    $result['status']='OK';
+                    $result['nomDoc']='FACTURA-001-001-000139466.xml';
+                    $DirDocAutorizado=$obj_var->seaDocAutFact; 
+                    $DirDocFirmado=$obj_var->seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
                         //echo $result['nomDoc'];
                         return $autDoc->AutorizaDocumento($result,$ids,$i,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
@@ -750,11 +759,11 @@ class NubeFactura {
                         return $autDoc->autorizaComprobante($result, $ids, $i, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
                    
                     }else{
-                        return $result;//$errAuto->messageSystem('NO_OK', $result["error"],1,null, null);
+                        return $result;
                     }
-                }
-            }
-            return $errAuto->messageSystem('OK', null,40,null, null);
+                //}
+            //}
+            //return $errAuto->messageSystem('OK', null,40,null, null);
         } catch (Exception $e) { // se arroja una excepción si una consulta falla
             return $errAuto->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
         }

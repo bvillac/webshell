@@ -61,7 +61,7 @@ class mailSystem {
                 $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
             }else{
                 //Correos Alternativos de admin  $adminMail
-                $mail->addBCC(trim($this->adminMail), trim("Gerencia"));
+                //$mail->addBCC(trim($this->adminMail), trim("Gerencia"));
                 $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
                 $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
             }

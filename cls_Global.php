@@ -18,7 +18,7 @@ class cls_Global {
     var $est_id='1';//Establecimiento
     var $pemi_id='1';//Punto Emision
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2016-08-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2016-10-15';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     var $decimalPDF=2;
     var $SepdecimalPDF='.';
@@ -34,6 +34,20 @@ class cls_Global {
     var $tipoRetLocal='RT';
     var $tipoNcLocal='NC';
     var $tipoNdLocal='ND';
+    //FACTURA ELECTRONICA
+    
+    public $seaDocXml = '/opt/SEADOC/GENERADO/';
+    public $seaDocFact = '/opt/SEADOC/FIRMADO/FACTURAS/';
+    public $seaDocRete = '/opt/SEADOC/FIRMADO/RETENCIONES/';
+    public $seaDocNc = '/opt/SEADOC/FIRMADO/NC/';
+    public $seaDocNd = '/opt/SEADOC/FIRMADO/ND/';
+    public $seaDocGuia = '/opt/SEADOC/FIRMADO/GUIAS/';
+    public $seaDocAutFact = '/opt/SEADOC/AUTORIZADO/FACTURAS/';
+    public $seaDocAutRete = '/opt/SEADOC/AUTORIZADO/RETENCIONES/';
+    public $seaDocAutNc = '/opt/SEADOC/AUTORIZADO/NC/';
+    public $seaDocAutNd = '/opt/SEADOC/AUTORIZADO/ND/';
+    public $seaDocAutGuia = '/opt/SEADOC/AUTORIZADO/GUIAS/';
+    
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;
