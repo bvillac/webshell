@@ -47,11 +47,8 @@ class cls_Global {
     public $seaDocAutNc = '/opt/SEADOC/AUTORIZADO/NC/';
     public $seaDocAutNd = '/opt/SEADOC/AUTORIZADO/ND/';
     public $seaDocAutGuia = '/opt/SEADOC/AUTORIZADO/GUIAS/';
-    
-    //LOG TEXT
-    //public $logfile = __DIR__ . '/../runtime/logs/rdmi.log';
-    var  $logfile =  '/Errorlog.log';
-    
+
+
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;

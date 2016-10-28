@@ -12,7 +12,7 @@ class VSAutoDocumento {
         //$errAuto = new VSexception();
         $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);
         //Verifica Errores del Firmado
-        /*if ($firma['status'] == 'OK') {
+        if ($firma['status'] == 'OK') {
             //Validad COmprobante
             $valComp = $firmaDig->validarComprobanteWS($result['nomDoc'],$DirDocFirmado); //Envio NOmbre Documento
             if ($valComp['status'] == 'OK') {//Retorna Datos del Comprobacion
@@ -41,7 +41,7 @@ class VSAutoDocumento {
             //Sin No hay firma Automaticamente Hay que Parar el Envio
             //break;
             return $errAuto->messageSystem('NO_OK', $firma["error"], 3, null, null);
-        }*/
+        }
         return $errAuto->messageSystem('OK', null,40,null, null);//Si nunka tuvo un Error Devuelve OK
     }
     

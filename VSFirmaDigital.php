@@ -3,8 +3,6 @@
 //require_once('nusoap.php');
 
 include("nusoap/lib/nusoap.php");
-//include('cls_Base.php');//para HTTP
-
 class VSFirmaDigital {
     
     private $seaFirma = '/opt/SEAF/';
@@ -23,7 +21,8 @@ class VSFirmaDigital {
     
     
     public function firmaXAdES_BES($Documento,$DirDocFirmado) {
-        $Dataf = $this->recuperarFirmaDigital('1');
+        $obj_var = new cls_Global();
+        $Dataf = $this->recuperarFirmaDigital($obj_var->emp_id);
         $fileCertificado = $this->seaFirma . base64_decode($Dataf['RutaFile']);
         $pass = base64_decode($Dataf['Clave']);
         $filexml = $Dataf['SeaDocXml'].$Documento;
@@ -35,8 +34,7 @@ class VSFirmaDigital {
             'clave' => $pass,
             'nombreFirmado' => $Documento
         );
-        //VSValidador::putMessageLogFile($param);
-        cls_Global::putMessageLogFile($wdsl);
+        //cls_Global::putMessageLogFile($obj_var->emp_id);
         $metodo = 'firmar';
         return $this->webServiceNuSoap($wdsl, $param, $metodo);
     }
