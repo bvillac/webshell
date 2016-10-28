@@ -48,6 +48,10 @@ class cls_Global {
     public $seaDocAutNd = '/opt/SEADOC/AUTORIZADO/ND/';
     public $seaDocAutGuia = '/opt/SEADOC/AUTORIZADO/GUIAS/';
     
+    //LOG TEXT
+    //public $logfile = __DIR__ . '/../runtime/logs/rdmi.log';
+    var  $logfile =  '/Errorlog.log';
+    
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;
@@ -298,6 +302,20 @@ class cls_Global {
             $conCont->close();
             return false;
         }
+    }
+    
+    public static function putMessageLogFile($message) {
+        $rutaLog= __DIR__ . '/log/Errorlog.log';//$this->logfile;
+        if (is_array($message))
+            $message = json_encode($message);
+        $message = date("Y-m-d H:i:s") . " " . $message . "\n";
+        if (!is_dir(dirname($rutaLog))) {
+            mkdir(dirname($rutaLog), 0777, true);
+            chmod(dirname($rutaLog), 0777);
+            touch($rutaLog);
+        }
+        //se escribe en el fichero
+        file_put_contents($rutaLog, $message, FILE_APPEND | LOCK_EX);
     }
     
 

@@ -6,6 +6,7 @@ include("nusoap/lib/nusoap.php");
 //include('cls_Base.php');//para HTTP
 
 class VSFirmaDigital {
+    
     private $seaFirma = '/opt/SEAF/';
     private $seaFirext = 'p12'; //Extension de Firma Electronica
 
@@ -13,8 +14,7 @@ class VSFirmaDigital {
     public function recuperarFirmaDigital($id) {
         $obj_con = new cls_Base();
         $conApp = $obj_con->conexionAppWeb();
-        $rawData = array();
-        $sql = "SELECT Clave,RutaFile,Wdsl_local,SeaDocXml FROM " . $obj_con->BdAppweb . ".VSFirmaDigital WHERE idCompania=$id AND Estado=1";
+        $sql = "SELECT Clave,RutaFile,Wdsl_local,SeaDocXml FROM " . $obj_con->BdAppweb . ".VSFirmaDigital WHERE EMP_ID=$id AND Estado=1";
         $sentencia = $conApp->query($sql);
         //$conApp->active = false;//Verificar
         return $sentencia->fetch_assoc();
@@ -23,11 +23,10 @@ class VSFirmaDigital {
     
     
     public function firmaXAdES_BES($Documento,$DirDocFirmado) {
-        //$obj = new VSFirmaDigital;
         $Dataf = $this->recuperarFirmaDigital('1');
         $fileCertificado = $this->seaFirma . base64_decode($Dataf['RutaFile']);
         $pass = base64_decode($Dataf['Clave']);
-        $filexml = $Dataf['SeaDocXml'].$Documento;//$obj_var->seaDocXml. $Documento;
+        $filexml = $Dataf['SeaDocXml'].$Documento;
         $wdsl = $Dataf['Wdsl_local'];//'http://127.0.0.1:8080/FIRMARSRI/FirmaElectronicaSRI?wsdl';
         $param = array(
             'pathOrigen' => $filexml,
@@ -37,6 +36,7 @@ class VSFirmaDigital {
             'nombreFirmado' => $Documento
         );
         //VSValidador::putMessageLogFile($param);
+        cls_Global::putMessageLogFile($wdsl);
         $metodo = 'firmar';
         return $this->webServiceNuSoap($wdsl, $param, $metodo);
     }
