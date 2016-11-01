@@ -40,9 +40,11 @@ class VSAutoDocumento {
         } else {
             //Sin No hay firma Automaticamente Hay que Parar el Envio
             //break;
-            return $errAuto->messageSystem('NO_OK', $firma["error"], 3, null, null);
+            //return $errAuto->messageSystem('NO_OK', $firma["error"], 3, null, null);
+            return VSexception::messageSystem('NO_OK', $firma["error"], 3, null, null);
         }
-        return $errAuto->messageSystem('OK', null,40,null, null);//Si nunka tuvo un Error Devuelve OK
+        //return $errAuto->messageSystem('OK', null,40,null, null);//Si nunka tuvo un Error Devuelve OK
+        return VSexception::messageSystem('OK', null,40,null, null);//Si nunka tuvo un Error Devuelve OK
     }
     
     public function autorizaComprobante($result, $ids, $i, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID) {

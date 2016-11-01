@@ -35,4 +35,14 @@ class EMPRESA {
         $conApp->close();
         return $sentencia->fetch_assoc();
     }
+    
+    public static function buscarAmbienteEmp($IdCompania,$Ambiente) {
+        $obj_con = new cls_Base();
+        $conApp = $obj_con->conexionAppWeb();
+        $sql = "SELECT Recepcion,Autorizacion,RecepcionLote,TiempoRespuesta,TiempoSincronizacion "
+                . "FROM " . $obj_con->BdAppweb . ".VSServiciosSRI WHERE EMP_ID=$IdCompania AND Ambiente=$Ambiente AND Estado=1 ";
+        $sentencia = $conApp->query($sql);
+        $conApp->close();
+        return $sentencia->fetch_assoc();
+    }
 }

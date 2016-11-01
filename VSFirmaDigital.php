@@ -1,12 +1,18 @@
 <?php
-//Yii::import('system.vendors.nusoap.lib.*');
-//require_once('nusoap.php');
-
 include("nusoap/lib/nusoap.php");
 class VSFirmaDigital {
     
     private $seaFirma = '/opt/SEAF/';
     private $seaFirext = 'p12'; //Extension de Firma Electronica
+    private $Recepcion="";
+    private $Autorizacion="";
+            
+    function __construct() {
+       //cls_Global::putMessageLogFile("En el constructor BaseClass\n");
+       $Resul=  EMPRESA::buscarAmbienteEmp(cls_Global::$emp_id, cls_Global::$ambt_id);
+       $this->Recepcion=$Resul['Recepcion'];
+       $this->Autorizacion=$Resul['Autorizacion'];
+    }
 
 
     public function recuperarFirmaDigital($id) {
@@ -14,15 +20,14 @@ class VSFirmaDigital {
         $conApp = $obj_con->conexionAppWeb();
         $sql = "SELECT Clave,RutaFile,Wdsl_local,SeaDocXml FROM " . $obj_con->BdAppweb . ".VSFirmaDigital WHERE EMP_ID=$id AND Estado=1";
         $sentencia = $conApp->query($sql);
-        //$conApp->active = false;//Verificar
+        $conApp->close();
         return $sentencia->fetch_assoc();
     }
 
     
     
     public function firmaXAdES_BES($Documento,$DirDocFirmado) {
-        $obj_var = new cls_Global();
-        $Dataf = $this->recuperarFirmaDigital($obj_var->emp_id);
+        $Dataf = $this->recuperarFirmaDigital(cls_Global::$emp_id);
         $fileCertificado = $this->seaFirma . base64_decode($Dataf['RutaFile']);
         $pass = base64_decode($Dataf['Clave']);
         $filexml = $Dataf['SeaDocXml'].$Documento;
@@ -40,8 +45,7 @@ class VSFirmaDigital {
     }
     
     public function autorizacionComprobanteWS($ClaveAcceso) {
-        $wdsl = Yii::app()->getSession()->get('Autorizacion', FALSE);//wsdl dependiendo del ambiente Configurado
-        //$wdsl = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantes?wsdl'; //Ruta del Web service SRI AutorizacionComprobantes
+        $wdsl = $this->Autorizacion;//Yii::app()->getSession()->get('Autorizacion', FALSE);//wsdl dependiendo del ambiente Configurado
         $param = array(
             'claveAccesoComprobante' => $ClaveAcceso
         );
@@ -53,7 +57,7 @@ class VSFirmaDigital {
         $filexml = $DirDocFirmado . $Documento;
         $filebyte = $this->StrToByteArray(file_get_contents($filexml));
         $file64base = base64_encode(file_get_contents($filexml));
-        $wdsl = Yii::app()->getSession()->get('Recepcion', FALSE);//wsdl dependiendo del ambiente Configurado
+        $wdsl = $this->Recepcion;//Yii::app()->getSession()->get('Recepcion', FALSE);//wsdl dependiendo del ambiente Configurado
         //$wdsl = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantes?wsdl'; //Ruta del Web service SRI RecepcionComprobantes
         $param = array(
             'xml' => $file64base
@@ -101,6 +105,22 @@ class VSFirmaDigital {
                 return $arroout;
             }
         }
+    }
+    
+    private function StrToByteArray($string) {
+        $bytes = array();
+        for ($i = 0; $i < strlen($string); $i++) {
+            $bytes[] = ord($string[$i]);
+        }
+        return $bytes;
+    }
+
+    public function ByteArrayToStr($bytes) {
+        $string = "";
+        foreach ($bytes as $chr) {
+            $string .= chr($chr);
+        }
+        return $string;
     }
     
     

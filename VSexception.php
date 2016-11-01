@@ -15,11 +15,14 @@ class VSexception {
     //NOTA: no poner estas funciones como static
 
     //put your code here
-    public function messageSystem($status, $error, $op, $message, $data) {
+    public static function messageSystem($status, $error, $op, $message, $data) {
         $arroout["status"] = $status;
         $arroout["error"] = $error;
-        $arroout["message"] = $this->messageError($op, $message);
+        $arroout["message"] = $message; //$this->messageError($op, $message);
         $arroout["data"] = $data;
+        if($status=="NO_OK"){
+            cls_Global::putMessageLogFile($arroout);//Imprime el Error en Logs
+        }
         return $arroout;
     }
     

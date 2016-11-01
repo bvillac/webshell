@@ -747,11 +747,10 @@ class NubeFactura {
                 //if ($ids[$i] !== "") {
                     //$result = $this->generarFileXML($ids[$i]);
                     $result['status']='OK';
-                    $result['nomDoc']='FACTURA-001-001-000139466.xml';
+                    $result['nomDoc']='FACTURA-001-001-000143451.xml';
                     $DirDocAutorizado=$obj_var->seaDocAutFact; 
                     $DirDocFirmado=$obj_var->seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
-                        //echo $result['nomDoc'];
                         return $autDoc->AutorizaDocumento($result,$ids,$i,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
                     }elseif ($result['status'] == 'OK_REG') {
                         //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
@@ -765,7 +764,8 @@ class NubeFactura {
             //}
             //return $errAuto->messageSystem('OK', null,40,null, null);
         } catch (Exception $e) { // se arroja una excepción si una consulta falla
-            return $errAuto->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+            //return $errAuto->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
         }
     }
 

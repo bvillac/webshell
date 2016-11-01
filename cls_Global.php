@@ -14,9 +14,10 @@
 //include('cls_Base.php');//para HTTP
 class cls_Global {
     //put your code here
-    var $emp_id='1';//Empresa
-    var $est_id='1';//Establecimiento
-    var $pemi_id='1';//Punto Emision
+    public static $emp_id='1';//Empresa
+    public static $est_id='1';//Establecimiento
+    public static $pemi_id='1';//Punto Emision
+    public static $ambt_id='1';//Ambiente de Pruebas por Defecto =1 =>2 Produccion
     var $consumidorfinal='9999999999';
     var $dateStartFact='2016-10-15';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
