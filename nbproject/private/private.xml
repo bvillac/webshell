@@ -5,9 +5,13 @@
         <group>
             <file>file:/var/www/html/webshell/enviarmail.php</file>
             <file>file:/var/www/html/webshell/NubeFactura.php</file>
-            <file>file:/var/www/html/webshell/VSexception.php</file>
-            <file>file:/var/www/html/webshell/VSFirmaDigital.php</file>
-            <file>file:/var/www/html/webshell/VSAutoDocumento.php</file>
+            <file>file:/var/www/html/webshell/formatFact/_frm_DataEmpresa.php</file>
+            <file>file:/var/www/html/webshell/formatFact/_frm_CabDoc.php</file>
+            <file>file:/var/www/html/webshell/formatFact/_frm_TotFact.php</file>
+            <file>file:/var/www/html/webshell/formatFact/facturaPDF.php</file>
+            <file>file:/var/www/html/webshell/formatFact/_frm_DataCliente.php</file>
+            <file>file:/var/www/html/webshell/cls_Global.php</file>
+            <file>file:/var/www/html/webshell/EMPRESA.php</file>
         </group>
     </open-files>
 </project-private>

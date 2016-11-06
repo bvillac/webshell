@@ -836,7 +836,8 @@ class NubeFactura {
         
         $dom->appendChild(EMPRESA::infoTributaria($cabFact,$xml));
         
-        $infoFactura=$xml->createElement('infoFactura');
+            //INFORMACION DE FACTURAS
+            $infoFactura=$xml->createElement('infoFactura');
             $infoFactura->appendChild($xml->createElement('fechaEmision', date(cls_Global::$dateXML, strtotime($cabFact[0]["FechaEmision"]))));
             $infoFactura->appendChild($xml->createElement('dirEstablecimiento', utf8_encode(trim($cabFact[0]["DireccionEstablecimiento"]))));
             if(strlen(trim($cabFact[0]['ContribuyenteEspecial']))>0){                
@@ -846,21 +847,78 @@ class NubeFactura {
             $infoFactura->appendChild($xml->createElement('tipoIdentificacionComprador', $cabFact[0]["TipoIdentificacionComprador"]));
             $infoFactura->appendChild($xml->createElement('razonSocialComprador', utf8_encode($valida->limpioCaracteresXML(trim($cabFact[0]["RazonSocialComprador"])))));
             $infoFactura->appendChild($xml->createElement('identificacionComprador', $cabFact[0]["IdentificacionComprador"]));
-            $infoFactura->appendChild($xml->createElement('totalSinImpuestos', number_format($cabFact[0]["TotalSinImpuesto"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')));
-            $infoFactura->appendChild($xml->createElement('totalDescuento', number_format($cabFact[0]["TotalDescuento"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')));
+            $infoFactura->appendChild($xml->createElement('totalSinImpuestos', cls_Global::formatoDecXML($cabFact[0]["TotalSinImpuesto"])));
+            $infoFactura->appendChild($xml->createElement('totalDescuento', cls_Global::formatoDecXML($cabFact[0]["TotalDescuento"])));
            
-            
-            
-            
+                $TConImpuestos=$xml->createElement('totalConImpuestos');
+                $IRBPNR = 0; //NOta validar si existe casos para estos
+                $ICE = 0;
+                for ($i = 0; $i < sizeof($impFact); $i++) {
+                    if ($impFact[$i]['Codigo'] == '2') {//Valores de IVA
+                        switch ($impFact[$i]['CodigoPorcentaje']) {
+                            case 0:
+                                $BASEIVA0=$impFact[$i]['BaseImponible'];
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 2://IVA 12%
+                                $BASEIVA12 = $impFact[$i]['BaseImponible'];
+                                $VALORIVA12 = $impFact[$i]['Valor'];
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 3://IVA 14%
+                                $BASEIVA12 = $impFact[$i]['BaseImponible'];
+                                $VALORIVA12 = $impFact[$i]['Valor'];
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 6://No objeto Iva
+                                //$NOOBJIVA=$impFact[$i]['BaseImponible'];
+                                break;
+                            case 7://Excento de Iva
+                                //$EXENTOIVA=$impFact[$i]['BaseImponible'];
+                                break;
+                            default:
+                        }
+                    }
+                    //NOta Verificar cuando el COdigo sea igual a 3 o 5 Para los demas impuestos
+                    $infoFactura->appendChild($TConImpuestos);
+                }
+                
+            $infoFactura->appendChild($xml->createElement('propina', cls_Global::formatoDecXML($cabFact[0]["Propina"])));
+            $infoFactura->appendChild($xml->createElement('importeTotal', cls_Global::formatoDecXML($cabFact[0]["ImporteTotal"])));
+            $infoFactura->appendChild($xml->createElement('moneda', $cabFact[0]["Moneda"]));
+
+            //DATOS DE FORMA DE PAGO APLICADO 8 SEP 2016 
+            $infoFactura->appendChild($this->pagosXML($pagFact,$xml));
         $dom->appendChild($infoFactura);
         
+            //DETALLE DE FACTURAS
+            $detalles=$xml->createElement('detalles');
+            for ($i = 0; $i < sizeof($detFact); $i++) {//DETALLE DE FACTURAS
+                $detalle=$xml->createElement('detalle');
+                $detalle->appendChild($xml->createElement('codigoPrincipal', utf8_encode(trim($detFact[$i]['CodigoPrincipal']))));
+                $detalle->appendChild($xml->createElement('codigoAuxiliar', utf8_encode(trim($detFact[$i]['CodigoAuxiliar']))));
+                $detalle->appendChild($xml->createElement('descripcion', $valida->limpioCaracteresXML(trim($detFact[$i]['Descripcion']))));
+                $detalle->appendChild($xml->createElement('cantidad', cls_Global::formatoDecXML($detFact[$i]['Cantidad'])));
+                $detalle->appendChild($xml->createElement('precioUnitario', (string)$detFact[$i]['PrecioUnitario']));
+                $detalle->appendChild($xml->createElement('descuento', cls_Global::formatoDecXML($detFact[$i]['Descuento'])));
+                $detalle->appendChild($xml->createElement('precioTotalSinImpuesto', cls_Global::formatoDecXML($detFact[$i]['PrecioTotalSinImpuesto'])));
+                $detalle->appendChild($this->impuestosXML($detFact[$i]['impuestos'], $xml));
+
+                $detalles->appendChild($detalle);
+
+            }
+        $dom->appendChild($detalles);
         
+        //INFORMACION ADICIONAL
+        $dom->appendChild($this->infoAdicional($adiFact, $xml));
         $xml->formatOutput = true;
         //$strings_xml = $xml->saveXML();
 	//$xml->save('XML/prueba.xml');
 	//echo $strings_xml;
         $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
         $xml->save(cls_Global::$seaDocXml.$nomDocfile);
+        
+        
         
         
         /*
@@ -997,6 +1055,59 @@ class NubeFactura {
         //return $msgAuto->messageFileXML('OK', $nomDocfile, $cabFact["ClaveAcceso"], 2, null, null); */
         
         return VSexception::messageFileXML('OK', $nomDocfile, $cabFact["ClaveAcceso"], 2, null, null);
+    }
+    
+    public function totalImpuestoXML($impFact,$i,$xml){
+        $TImpuesto=$xml->createElement('totalImpuesto');
+        $TImpuesto->appendChild($xml->createElement('codigo', $impFact[$i]["Codigo"]));
+        $TImpuesto->appendChild($xml->createElement('codigoPorcentaje', cls_Global::formatoDecXML($impFact[$i]["CodigoPorcentaje"])));
+        $TImpuesto->appendChild($xml->createElement('baseImponible', cls_Global::formatoDecXML($impFact[$i]["BaseImponible"])));
+        //$TImpuesto->appendChild($xml->createElement('tarifa', $impFact[$i]["Tarifa"]));
+        $TImpuesto->appendChild($xml->createElement('valor', cls_Global::formatoDecXML($impFact[$i]["Valor"])));
+        return $TImpuesto;
+    }
+    
+    //DATOS DE FORMA DE PAGO APLICADO 8 SEP 2016 
+    public function pagosXML($pagFact,$xml){
+        $valida = new VSValidador;
+        $pagos=$xml->createElement('pagos');
+        for ($xi = 0; $xi < sizeof($pagFact); $xi++) {
+            $pago=$xml->createElement('pago');
+            $pago->appendChild($xml->createElement('formaPago', $valida->ajusteNumDoc($pagFact[$xi]["Codigo"], 2) ));
+            $pago->appendChild($xml->createElement('total', cls_Global::formatoDecXML($pagFact[$xi]["Total"])));
+            $pago->appendChild($xml->createElement('plazo', cls_Global::formatoDecXML($pagFact[$xi]["Plazo"])));
+            $pago->appendChild($xml->createElement('unidadTiempo', utf8_encode(trim($pagFact[$xi]['UnidadTiempo']))));
+            $pagos->appendChild($pago);
+        }
+        return $pagos;
+    }
+    
+    public function impuestosXML($impuesto,$xml){
+        $impuestosG=$xml->createElement('impuestos');
+        for ($j = 0; $j < sizeof($impuesto); $j++) {//DETALLE IMPUESTO DE FACTURA
+            $imp=$xml->createElement('impuesto');
+            $imp->appendChild($xml->createElement('codigo',$impuesto[$j]['Codigo']));
+            $imp->appendChild($xml->createElement('codigoPorcentaje',$impuesto[$j]['CodigoPorcentaje']));
+            $imp->appendChild($xml->createElement('tarifa',cls_Global::formatoDecXML($impuesto[$j]['Tarifa'])));
+            $imp->appendChild($xml->createElement('baseImponible',cls_Global::formatoDecXML($impuesto[$j]['BaseImponible'])));
+            $imp->appendChild($xml->createElement('valor',cls_Global::formatoDecXML($impuesto[$j]['Valor'])));
+            $impuestosG->appendChild($imp);
+        }
+        return $impuestosG;
+    }
+    
+    public function infoAdicional($adiFact,$xml){
+        $valida = new cls_Global;
+        $infoAdicional=$xml->createElement('infoAdicional');
+        for ($i = 0; $i < sizeof($adiFact); $i++) {
+            if(strlen(trim($adiFact[$i]['Descripcion']))>0){
+                //$xmldata .='<campoAdicional nombre="' . utf8_encode(trim($adiFact[$i]['Nombre'])) . '">' . utf8_encode($valida->limpioCaracteresXML(trim($adiFact[$i]['Descripcion']))) . '</campoAdicional>';
+                $campoA=$xml->createElement('campoAdicional',$valida->limpioCaracteresXML(trim($adiFact[$i]['Descripcion'])) );
+                $campoA->setAttribute('nombre', $valida->limpioCaracteresXML(trim($adiFact[$i]['Nombre'])));
+                $infoAdicional->appendChild($campoA);
+            }
+        }
+        return $infoAdicional;
     }
 
 

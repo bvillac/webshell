@@ -22,8 +22,8 @@ class cls_Global {
     var $dateStartFact='2016-10-15';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     public static $dateXML = "d/m/Y";
-    var $decimalPDF=2;
-    var $SepdecimalPDF='.';
+    public $decimalPDF=2;
+    public $SepdecimalPDF='.';
     var $limitEnv=10;
     var $limitEnvMail=2;
     var $IVAdefault=14;//Valor de Iva por Defecto en Textos
@@ -51,6 +51,7 @@ class cls_Global {
     public $seaDocAutGuia = '/opt/SEADOC/AUTORIZADO/GUIAS/';
 
 
+    //function __construct() {  }
     
     public function messageSystem($status,$error,$op,$message,$data) {
         $arroout["status"] = $status;
@@ -315,6 +316,11 @@ class cls_Global {
         }
         //se escribe en el fichero
         file_put_contents($rutaLog, $message, FILE_APPEND | LOCK_EX);
+    }
+    
+    public static function formatoDecXML($valor){
+        $obj_var = new cls_Global();
+        return number_format($valor, $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '');
     }
     
 
