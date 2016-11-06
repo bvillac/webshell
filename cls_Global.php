@@ -21,6 +21,7 @@ class cls_Global {
     var $consumidorfinal='9999999999';
     var $dateStartFact='2016-10-15';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
+    public static $dateXML = "d/m/Y";
     var $decimalPDF=2;
     var $SepdecimalPDF='.';
     var $limitEnv=10;
@@ -37,7 +38,7 @@ class cls_Global {
     var $tipoNdLocal='ND';
     //FACTURA ELECTRONICA
     
-    public $seaDocXml = '/opt/SEADOC/GENERADO/';
+    public static $seaDocXml = '/opt/SEADOC/GENERADO/';
     public $seaDocFact = '/opt/SEADOC/FIRMADO/FACTURAS/';
     public $seaDocRete = '/opt/SEADOC/FIRMADO/RETENCIONES/';
     public $seaDocNc = '/opt/SEADOC/FIRMADO/NC/';

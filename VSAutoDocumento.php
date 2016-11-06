@@ -9,7 +9,6 @@ class VSAutoDocumento {
 
     public function AutorizaDocumento($result,$ids,$i,$DirDocAutorizado,$DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
         $firmaDig = new VSFirmaDigital();
-        //$errAuto = new VSexception();
         $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);
         //Verifica Errores del Firmado
         if ($firma['status'] == 'OK') {
@@ -35,7 +34,8 @@ class VSAutoDocumento {
                 }
             } else {
                 //Si Existe un error al realizar la peticion al Web Servicies
-                return $errAuto->messageSystem('NO_OK', $valComp["error"], 4, null, null);
+                //return $errAuto->messageSystem('NO_OK', $valComp["error"], 4, null, null);
+                return VSexception::messageSystem('NO_OK', $valComp["error"], 4, null, null);
             }
         } else {
             //Sin No hay firma Automaticamente Hay que Parar el Envio
@@ -49,7 +49,6 @@ class VSAutoDocumento {
     
     public function autorizaComprobante($result, $ids, $i, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID) {
         $firmaDig = new VSFirmaDigital();
-        $errAuto = new VSexception();
         //Continua con el Proceso
         //Autorizacion de Comprobantes
         $autComp = $firmaDig->autorizacionComprobanteWS($result['ClaveAcceso']); //Envio CLave de Acceso
@@ -60,7 +59,8 @@ class VSAutoDocumento {
             //Operacion de Stop, si no hay ningun Documento AUtorizado sale automaticamente de la funcion Autoriza
             //Su finalidad es que no siga realizado el resto de las operaciones y continuar con la siguiente.
             if ($numeroAutorizacion == 0) {
-                return $errAuto->messageSystem('NO_OK', '', 22, null, null);
+                $mError="No podemos encontrar la información que está solicitando.";
+                return VSexception::messageSystem('NO_OK', '', 22, $mError, null);
             }//Por favor volver a Intentar en unos minutos
             /*             * ****************************************************** */
             $autorizacion = $autComp['data']['RespuestaAutorizacionComprobante']['autorizaciones']['autorizacion'];
@@ -83,22 +83,19 @@ class VSAutoDocumento {
                 }
             }
         } else {
-            //Si Existe un error al realizar la peticion al Web Servicies
-            $arroout["status"] = "NO_OK";
-            $arroout["error"] = $autComp["error"];
-            $arroout["message"] = Yii::t('EXCEPTION', 'Failed to perform authorization document.');
-            return $arroout;
+            $mError="(Error al Realizar la Autorizacion del Documento)";
+            return VSexception::messageSystem('NO_OK', $autComp["error"], 22, $mError, null);
         }
     }
 
     private function actualizaDocRecibidoSri($response,$ids,$NombreDocumento,$DirDocAutorizado,$DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
-        $con = Yii::app()->dbvsseaint;
-        $trans = $con->beginTransaction();
+        $obj_con = new cls_Base();
+        $con = $obj_con->conexionIntermedio();
         $msg= new VSexception();
         try {
-            $UsuId=Yii::app()->getSession()->get('user_id', FALSE);
+            $UsuId=1;//Usuario Admin //Yii::app()->getSession()->get('user_id', FALSE);
             $estado = $response['estado'];
-            $fecha = date(Yii::app()->params["datebytime"], strtotime($response['fechaAutorizacion']));
+            $fecha = date("Y-m-d H:i:s", strtotime($response['fechaAutorizacion']));//date(Yii::app()->params["datebytime"], strtotime($response['fechaAutorizacion']));
             $numeroAutorizacion='';
             $CodigoError='';
             $DescripcionError='';
@@ -118,33 +115,34 @@ class VSAutoDocumento {
                 $DirectorioDocumento=$DirDocFirmado;
             }
             
-            $sql = 'UPDATE ' . $con->dbname . '.'.$DBTabDoc.' SET 
+            $sql = 'UPDATE ' . $obj_con->BdIntermedio . '.'.$DBTabDoc.' SET 
                                 AutorizacionSRI="'.$numeroAutorizacion.'",FechaAutorizacion="'.$fecha.'",
                                 DirectorioDocumento="'.$DirectorioDocumento.'",NombreDocumento="'.$NombreDocumento.'",
                                 EstadoDocumento="'.$estado.'",Estado="'.$codEstado.'",
                                 DescripcionError="'.$DescripcionError.'",CodigoError="'.$CodigoError.'",USU_ID="'.$UsuId.'"
                             WHERE '.$CampoID.'='.$ids ;
             //echo $sql;
-            $command = $con->createCommand($sql);
+            $command = $con->prepare($sql);
             $command->execute();
-            $trans->commit();
-            $con->active = false;
-            return $msg->messageSystem('OK', null, $op, null, null);
+
+            $con->commit();
+            $con->close();
+            $mError="No podemos encontrar la información que está solicitando.";
+            return VSexception::messageSystem('NO_OK', '', 22, $mError, null);
         } catch (Exception $e) {
-            $trans->rollback();
-            $con->active = false;
+            $con->rollback();
+            $con->close();
             //throw $e;
-            return $msg->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
         }
     }
     
     private function recibeDocSriDevuelto($response, $ids, $NombreDocumento, $DirDocFirmado,$DBTabDoc,$CampoID) {
-        $con = Yii::app()->dbvsseaint;
-        $msg= new VSexception();
-        $trans = $con->beginTransaction();
+        $ids="22863";
+        $obj_con = new cls_Base();
+        $con = $obj_con->conexionIntermedio();
         try {
-            $UsuId=Yii::app()->getSession()->get('user_id', FALSE);
-            //[estado] => DEVUELTA 
+            $UsuId=1;//Usuario Admin //Yii::app()->getSession()->get('user_id', FALSE);
             $estado = $response['estado'];
             $CodigoError = '';
             $DescripcionError = '';
@@ -155,28 +153,28 @@ class VSAutoDocumento {
             $CodigoError = $mensaje['identificador'];
             $MensajeSRI = $mensaje['mensaje'];
             $InformacionAdicional = (!empty($mensaje['informacionAdicional'])) ? $mensaje['informacionAdicional'] : '';
-            $DescripcionError = utf8_encode("ID=>$CodigoError Error=> $InformacionAdicional");
+            $DescripcionError = utf8_encode("IdFact=>$ids ID=>$CodigoError MensSri=>($MensajeSRI) InfAdicional=>($InformacionAdicional)");
             $DirectorioDocumento = $DirDocFirmado;
 
-            $sql = 'UPDATE ' . $con->dbname . '.'.$DBTabDoc.' SET 
+            $sql = 'UPDATE ' . $obj_con->BdIntermedio . '.'.$DBTabDoc.' SET 
                                 DirectorioDocumento="'.$DirectorioDocumento.'",NombreDocumento="'.$NombreDocumento.'",
                                 EstadoDocumento="'.$estado.'",Estado="'.$codEstado.'",
                                 DescripcionError="'.$DescripcionError.'",CodigoError="'.$CodigoError.'",USU_ID="'.$UsuId.'"
                             WHERE '.$CampoID.'='.$ids ;
             //echo $sql;
-            $command = $con->createCommand($sql);
+            $command = $con->prepare($sql);
             $command->execute();
 
-            $trans->commit();
-            $con->active = false;
+            $con->commit();
+            $con->close();
             //Su documento fue devuelto por errores en el comprobante
             //Dependiendo del Error arrojado por el SRI
-            return $msg->messageWSSRI('OK', null, $CodigoError, $MensajeSRI, null);//Web service Sri
+            return VSexception::messageWSSRI('OK', null, $CodigoError, $MensajeSRI, null);//Web service Sri
         } catch (Exception $e) {
-            $trans->rollback();
-            $con->active = false;
-            throw $e;
-            return $msg->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+            $con->rollback();
+            $con->close();
+            //throw $e;
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
         }
     }
     
@@ -203,12 +201,12 @@ class VSAutoDocumento {
             $TipoMensaje=$mensaje[$i]['tipo'];
             $Mensaje=$mensaje[$i]['mensaje'];
             $InformacionAdicional=(!empty($mensaje[$i]['informacionAdicional']))?$mensaje[$i]['informacionAdicional']:'';
-            $sql = "INSERT INTO " . $con->dbname . ".NubeMensajeError 
+            $sql = "INSERT INTO " . $con->BdIntermedio . ".NubeMensajeError 
                  (IdFactura,IdRetencion,IdNotaCredito,IdNotaDebito,IdGuiaRemision,Identificador,TipoMensaje,Mensaje,InformacionAdicional)
                  VALUES
                  ('$IdFactura','$IdRetencion','$IdNotaCredito','$IdNotaDebito','$IdGuiaRemision','$Identificador','$TipoMensaje','$Mensaje','$InformacionAdicional')";
 
-            $command = $con->createCommand($sql);
+            $command = $con->prepare($sql);
             $command->execute();
         }
     }
@@ -225,8 +223,11 @@ class VSAutoDocumento {
         } else {
             $arroout["status"] = "NO";
             $arroout["error"] = null;
-            $arroout["message"] = 'El Xml no se Genero';
+            $arroout["message"] = $NombreDocumento .'El Xml no se Genero';
             $arroout["data"] = null;
+        }
+        if($arroout["status"]=="NO"){
+            cls_Global::putMessageLogFile($arroout);//Imprime el Error en Logs
         }
         return $arroout;
     }

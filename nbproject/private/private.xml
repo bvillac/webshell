@@ -5,9 +5,8 @@
         <group>
             <file>file:/var/www/html/webshell/enviarmail.php</file>
             <file>file:/var/www/html/webshell/NubeFactura.php</file>
+            <file>file:/var/www/html/webshell/VSexception.php</file>
             <file>file:/var/www/html/webshell/VSFirmaDigital.php</file>
-            <file>file:/var/www/html/webshell/cls_Global.php</file>
-            <file>file:/var/www/html/webshell/EMPRESA.php</file>
             <file>file:/var/www/html/webshell/VSAutoDocumento.php</file>
         </group>
     </open-files>

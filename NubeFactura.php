@@ -501,7 +501,7 @@ class NubeFactura {
     private function mostrarCabFactura($con,$obj_con,$id) {
         $rawData = array();
         $sql = "SELECT A.IdFactura IdDoc,A.Estado,A.EstadoEnv,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
-                        A.FechaAutorizacion,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
+                        A.FechaAutorizacion,A.RazonSocial,A.NombreComercial,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
                         CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
                         A.ContribuyenteEspecial,A.ObligadoContabilidad,A.TipoIdentificacionComprador,
                         A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,
@@ -735,19 +735,19 @@ class NubeFactura {
     /************************************************************/
     /*********CONSUMO DE WEB SERVICES
     /************************************************************/
-    public function enviarDocumentos($id) {
+    public function enviarDocumentos() {
         try {
             $obj_var = new cls_Global();
-            $autDoc=new VSAutoDocumento();
-            $errAuto= new VSexception(); 
+            $autDoc=new VSAutoDocumento(); 
             $obj_con = new cls_Base();
             $con = $obj_con->conexionIntermedio();
-            $ids =0; //explode(",", $id);
-            //for ($i = 0; $i < count($ids); $i++) {
-                //if ($ids[$i] !== "") {
-                    //$result = $this->generarFileXML($ids[$i]);
-                    $result['status']='OK';
-                    $result['nomDoc']='FACTURA-001-001-000143451.xml';
+            //$ids =0; //explode(",", $id);
+            $result = $this->generarFileXML($con,$obj_con,'22863');
+            /*for ($i = 0; $i < count($ids); $i++) {
+                if ($ids[$i] !== "") {
+                    $result = $this->generarFileXML($ids[$i]);
+                    //$result['status']='OK';
+                    //$result['nomDoc']='FACTURA-001-001-000142237.xml';
                     $DirDocAutorizado=$obj_var->seaDocAutFact; 
                     $DirDocFirmado=$obj_var->seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
@@ -760,14 +760,245 @@ class NubeFactura {
                     }else{
                         return $result;
                     }
-                //}
-            //}
+                }
+            }*/
             //return $errAuto->messageSystem('OK', null,40,null, null);
         } catch (Exception $e) { // se arroja una excepción si una consulta falla
             //return $errAuto->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
             return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
         }
     }
+    
+    private function generarFileXML($con,$obj_con,$ids) {
+        $autDoc=new VSAutoDocumento();
+
+        $valida= new cls_Global();
+        //$xmlGen=new VSXmlGenerador();
+        $codDoc = $this->tipoDoc; //Documento Factura
+        $cabFact = $this->mostrarCabFactura($con,$obj_con,$ids);
+        //cls_Global::putMessageLogFile($cabFact);
+        if (count($cabFact)>0) {
+            switch ($cabFact[0]["Estado"]) {
+                case 2://RECIBIDO SRI (AUTORIZADOS)
+                    //return $msgAuto->messageFileXML('NO_OK', $cabFact["NumDocumento"], null, 42, null, null);
+                    return VSexception::messageFileXML('NO_OK', $cabFact[0]["NumDocumento"], null, 42, null, null);
+                    break;
+                case 4://DEVUELTA (NO AUTORIZADOS EN PROCESO)
+                    //Cuando son devueltas no se deben generar de nuevo la clave de acceso
+                    //hay que esperar hasta que responda
+                    switch ($cabFact["CodigoError"]) {
+                        case 43://CLAVE DE ACCESO REGISTRADA
+                            //No genera Nada Envia los datos generados anteriormente
+                            //Retorna Automaticamente sin Generar Documento
+                            //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                            //return $msgAuto->messageFileXML('OK_REG', $cabFact["NombreDocumento"], $cabFact["ClaveAcceso"], 43, null, null);
+                            return VSexception::messageFileXML('OK_REG', $cabFact[0]["NombreDocumento"], $cabFact[0]["ClaveAcceso"], 43, null, null);
+                            break;
+                        case 70://CLAVE DE ACCESO EN PROCESO
+                            //return $msgAuto->messageFileXML('OK', $cabFact["NombreDocumento"], $cabFact["ClaveAcceso"], 43, null, null);
+                            return VSexception::messageFileXML('OK', $cabFact[0]["NombreDocumento"], $cabFact[0]["ClaveAcceso"], 43, null, null);
+                            break;
+                        default:
+                            //Documento Devuelto hay que volver a generar la clave de Acceso
+                            //Esto es Opcional
+
+                    }
+                    break;
+                case 8://DOCUMENTO ANULADO
+                    //return $msgAuto->messageSystem('NO_OK', null,11,null, null);//Peticion Invalida
+                    return VSexception::messageSystem('NO_OK', null,11,null, null);
+                    break;
+                default:
+            }
+        }else{
+            //Si la Cabecera no devuelve registros Retorna un resultado  de False
+            //return $msgAuto->messageFileXML('NO_OK', null, null, 1, null, null);
+            return VSexception::messageFileXML('NO_OK', null, null, 1, null, null);
+        }
+        
+        $detFact = $this->mostrarDetFacturaImp($con,$obj_con,$ids);
+        $impFact = $this->mostrarFacturaImp($con,$obj_con,$ids);
+        $adiFact = $this->mostrarFacturaDataAdicional($con,$obj_con,$ids);
+        $pagFact = $this->mostrarFormaPago($con,$obj_con,$ids);//Agregar forma de pago
+
+        
+        //http://www.itsalif.info/content/php-5-domdocument-creating-basic-xml
+        $xml = new DomDocument('1.0', 'UTF-8');
+        //$xml->version='1.0';
+        //$xml->encoding='UTF-8';
+        $xml->standalone= TRUE;
+        
+        //NODO PRINCIPAL
+        $dom = $xml->createElement('factura');
+        $dom->setAttribute('id', 'comprobante');
+        $dom->setAttribute('version', '1.1.0');
+        $dom = $xml->appendChild($dom);
+        
+        $dom->appendChild(EMPRESA::infoTributaria($cabFact,$xml));
+        
+        $infoFactura=$xml->createElement('infoFactura');
+            $infoFactura->appendChild($xml->createElement('fechaEmision', date(cls_Global::$dateXML, strtotime($cabFact[0]["FechaEmision"]))));
+            $infoFactura->appendChild($xml->createElement('dirEstablecimiento', utf8_encode(trim($cabFact[0]["DireccionEstablecimiento"]))));
+            if(strlen(trim($cabFact[0]['ContribuyenteEspecial']))>0){                
+                $infoFactura->appendChild($xml->createElement('contribuyenteEspecial', $cabFact[0]["ContribuyenteEspecial"]));
+            }
+            $infoFactura->appendChild($xml->createElement('obligadoContabilidad', $cabFact[0]["ObligadoContabilidad"]));
+            $infoFactura->appendChild($xml->createElement('tipoIdentificacionComprador', $cabFact[0]["TipoIdentificacionComprador"]));
+            $infoFactura->appendChild($xml->createElement('razonSocialComprador', utf8_encode($valida->limpioCaracteresXML(trim($cabFact[0]["RazonSocialComprador"])))));
+            $infoFactura->appendChild($xml->createElement('identificacionComprador', $cabFact[0]["IdentificacionComprador"]));
+            $infoFactura->appendChild($xml->createElement('totalSinImpuestos', number_format($cabFact[0]["TotalSinImpuesto"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')));
+            $infoFactura->appendChild($xml->createElement('totalDescuento', number_format($cabFact[0]["TotalDescuento"], $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '')));
+           
+            
+            
+            
+        $dom->appendChild($infoFactura);
+        
+        
+        $xml->formatOutput = true;
+        //$strings_xml = $xml->saveXML();
+	//$xml->save('XML/prueba.xml');
+	//echo $strings_xml;
+        $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
+        $xml->save(cls_Global::$seaDocXml.$nomDocfile);
+        
+        
+        /*
+        $xmldata = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+            //$xmldata .='<factura id="comprobante" version="1.0.0">';//Version Normal Para 2 Decimales
+            $xmldata .='<factura id="comprobante" version="1.1.0">';//Version para 4 Decimales en Precio Unitario
+            
+                $xmldata .= $xmlGen->infoTributaria($cabFact);
+                $xmldata .='<infoFactura>';
+                    $xmldata .='<fechaEmision>' . date(Yii::app()->params["dateXML"], strtotime($cabFact["FechaEmision"])) . '</fechaEmision>';
+                    $xmldata .='<dirEstablecimiento>' . utf8_encode(trim($cabFact["DireccionEstablecimiento"])) . '</dirEstablecimiento>';
+                    if(strlen(trim($cabFact['ContribuyenteEspecial']))>0){
+                        $xmldata .='<contribuyenteEspecial>' . utf8_encode(trim($cabFact["ContribuyenteEspecial"])) . '</contribuyenteEspecial>';
+                    }
+                    $xmldata .='<obligadoContabilidad>' . utf8_encode(trim($cabFact["ObligadoContabilidad"])) . '</obligadoContabilidad>';
+                    $xmldata .='<tipoIdentificacionComprador>' . utf8_encode(trim($cabFact["TipoIdentificacionComprador"])) . '</tipoIdentificacionComprador>';
+                    //$xmldata .='<razonSocialComprador>' . utf8_encode($valida->limpioCaracteresXML(trim($cabFact["RazonSocialComprador"]))) . '</razonSocialComprador>';
+                    $xmldata .='<razonSocialComprador>' . $valida->limpioCaracteresXML(trim($cabFact["RazonSocialComprador"])) . '</razonSocialComprador>'; 
+                    //SValidador::putMessageLogFile($valida->limpioCaracteresXML(trim($cabFact["RazonSocialComprador"])));
+                    //VSValidador::putMessageLogFile(trim($cabFact["RazonSocialComprador"]));
+                    $xmldata .='<identificacionComprador>' . utf8_encode(trim($cabFact["IdentificacionComprador"])) . '</identificacionComprador>';
+                    $xmldata .='<totalSinImpuestos>' . Yii::app()->format->formatNumber($cabFact["TotalSinImpuesto"]) . '</totalSinImpuestos>';
+                    $xmldata .='<totalDescuento>' . Yii::app()->format->formatNumber($cabFact["TotalDescuento"]) . '</totalDescuento>';
+                        $xmldata .='<totalConImpuestos>';
+                        $IRBPNR = 0; //NOta validar si existe casos para estos
+                        $ICE = 0;
+                        for ($i = 0; $i < sizeof($impFact); $i++) {
+                            if ($impFact[$i]['Codigo'] == '2') {//Valores de IVA
+                                switch ($impFact[$i]['CodigoPorcentaje']) {
+                                    case 0:
+                                        $BASEIVA0=$impFact[$i]['BaseImponible'];
+                                        $xmldata .='<totalImpuesto>';
+                                                $xmldata .='<codigo>' . $impFact[$i]["Codigo"] . '</codigo>';
+                                                $xmldata .='<codigoPorcentaje>' . $impFact[$i]["CodigoPorcentaje"] . '</codigoPorcentaje>';
+                                                $xmldata .='<baseImponible>' . Yii::app()->format->formatNumber($impFact[$i]["BaseImponible"]) . '</baseImponible>';
+                                                //$xmldata .='<tarifa>' . Yii::app()->format->formatNumber($impFact[$i]["Tarifa"]) . '</tarifa>';
+                                                $xmldata .='<valor>' . Yii::app()->format->formatNumber($impFact[$i]["Valor"]) . '</valor>';
+                                        $xmldata .='</totalImpuesto>';
+                                        break;
+                                    case 2://IVA 12%
+                                        $BASEIVA12 = $impFact[$i]['BaseImponible'];
+                                        $VALORIVA12 = $impFact[$i]['Valor'];
+                                        $xmldata .='<totalImpuesto>';
+                                                $xmldata .='<codigo>' . $impFact[$i]["Codigo"] . '</codigo>';
+                                                $xmldata .='<codigoPorcentaje>' . $impFact[$i]["CodigoPorcentaje"] . '</codigoPorcentaje>';
+                                                $xmldata .='<baseImponible>' . Yii::app()->format->formatNumber($impFact[$i]["BaseImponible"]) . '</baseImponible>';
+                                                //$xmldata .='<tarifa>' . Yii::app()->format->formatNumber($impFact[$i]["Tarifa"]) . '</tarifa>';
+                                                $xmldata .='<valor>' . Yii::app()->format->formatNumber($impFact[$i]["Valor"]) . '</valor>';
+                                        $xmldata .='</totalImpuesto>';
+                                        break;
+                                    case 3://IVA 14%
+                                        $BASEIVA12 = $impFact[$i]['BaseImponible'];
+                                        $VALORIVA12 = $impFact[$i]['Valor'];
+                                        $xmldata .='<totalImpuesto>';
+                                                $xmldata .='<codigo>' . $impFact[$i]["Codigo"] . '</codigo>';
+                                                $xmldata .='<codigoPorcentaje>' . $impFact[$i]["CodigoPorcentaje"] . '</codigoPorcentaje>';
+                                                $xmldata .='<baseImponible>' . Yii::app()->format->formatNumber($impFact[$i]["BaseImponible"]) . '</baseImponible>';
+                                                //$xmldata .='<tarifa>' . Yii::app()->format->formatNumber($impFact[$i]["Tarifa"]) . '</tarifa>';
+                                                $xmldata .='<valor>' . Yii::app()->format->formatNumber($impFact[$i]["Valor"]) . '</valor>';
+                                        $xmldata .='</totalImpuesto>';
+                                        break;
+                                    case 6://No objeto Iva
+                                        //$NOOBJIVA=$impFact[$i]['BaseImponible'];
+                                        break;
+                                    case 7://Excento de Iva
+                                        //$EXENTOIVA=$impFact[$i]['BaseImponible'];
+                                        break;
+                                    default:
+                                }
+                            }
+                            //NOta Verificar cuando el COdigo sea igual a 3 o 5 Para los demas impuestos
+                        }
+                        $xmldata .='</totalConImpuestos>';
+                $xmldata .='<propina>' . Yii::app()->format->formatNumber($cabFact["Propina"]) . '</propina>';
+                $xmldata .='<importeTotal>' . Yii::app()->format->formatNumber($cabFact["ImporteTotal"]) . '</importeTotal>';
+                $xmldata .='<moneda>' . utf8_encode(trim($cabFact["Moneda"])) . '</moneda>';
+                
+                //DATOS DE FORMA DE PAGO APLICADO 8 SEP 2016                
+                $xmldata .='<pagos>';
+                for ($xi = 0; $xi < sizeof($pagFact); $xi++) {
+                    $xmldata .='<pago>';
+                        $xmldata .='<formaPago>' . $valida->ajusteNumDoc(trim($pagFact[$xi]['Codigo']),2) . '</formaPago>';//Completa los 01 de al formato XSD <xsd:pattern value="[0][1-9]"/>
+                        $xmldata .='<total>' . Yii::app()->format->formatNumber($pagFact[$xi]['Total']) . '</total>';
+                        $xmldata .='<plazo>' . Yii::app()->format->formatNumber($pagFact[$xi]['Plazo']) . '</plazo>';
+                        $xmldata .='<unidadTiempo>' . utf8_encode(trim($pagFact[$xi]['UnidadTiempo'])) . '</unidadTiempo>';
+                    $xmldata .='</pago>';                    
+                }
+                $xmldata .='</pagos>';
+                //Fin Forma de Pago
+                
+            $xmldata .='</infoFactura>';
+        $xmldata .='<detalles>';
+        for ($i = 0; $i < sizeof($detFact); $i++) {//DETALLE DE FACTURAS
+            $xmldata .='<detalle>';
+            $xmldata .='<codigoPrincipal>' . utf8_encode(trim($detFact[$i]['CodigoPrincipal'])) . '</codigoPrincipal>';
+            $xmldata .='<codigoAuxiliar>' . utf8_encode(trim($detFact[$i]['CodigoAuxiliar'])) . '</codigoAuxiliar>';
+            $xmldata .='<descripcion>' . $valida->limpioCaracteresXML(trim($detFact[$i]['Descripcion'])) . '</descripcion>';
+            //VSValidador::putMessageLogFile($valida->limpioCaracteresXML(trim($detFact[$i]['Descripcion'])));
+            $xmldata .='<cantidad>' . Yii::app()->format->formatNumber($detFact[$i]['Cantidad']) . '</cantidad>';
+            //$xmldata .='<precioUnitario>' . Yii::app()->format->formatNumber($detFact[$i]['PrecioUnitario']) . '</precioUnitario>'; //Problemas de Redondeo Usar Roud(valor,deci)
+            $xmldata .='<precioUnitario>' . (string)$detFact[$i]['PrecioUnitario'] . '</precioUnitario>';
+            $xmldata .='<descuento>' . Yii::app()->format->formatNumber($detFact[$i]['Descuento']) . '</descuento>';
+            $xmldata .='<precioTotalSinImpuesto>' . Yii::app()->format->formatNumber($detFact[$i]['PrecioTotalSinImpuesto']) . '</precioTotalSinImpuesto>';
+            $xmldata .='<impuestos>';
+            $impuesto = $detFact[$i]['impuestos'];
+            for ($j = 0; $j < sizeof($impuesto); $j++) {//DETALLE IMPUESTO DE FACTURA
+                $xmldata .='<impuesto>';
+                        $xmldata .='<codigo>' . $impuesto[$j]['Codigo'] . '</codigo>';
+                        $xmldata .='<codigoPorcentaje>' . $impuesto[$j]['CodigoPorcentaje'] . '</codigoPorcentaje>';
+                        $xmldata .='<tarifa>' . Yii::app()->format->formatNumber($impuesto[$j]['Tarifa']) . '</tarifa>';
+                        $xmldata .='<baseImponible>' . Yii::app()->format->formatNumber($impuesto[$j]['BaseImponible']) . '</baseImponible>';
+                        $xmldata .='<valor>' . Yii::app()->format->formatNumber($impuesto[$j]['Valor']) . '</valor>';
+                    $xmldata .='</impuesto>';
+            }
+            $xmldata .='</impuestos>';
+        $xmldata .='</detalle>';
+        }
+        $xmldata .='</detalles>';
+
+
+        $xmldata .='<infoAdicional>';
+        for ($i = 0; $i < sizeof($adiFact); $i++) {
+            if(strlen(trim($adiFact[$i]['Descripcion']))>0){
+                //$xmldata .='<campoAdicional nombre="' . utf8_encode(trim($adiFact[$i]['Nombre'])) . '">' . utf8_encode($valida->limpioCaracteresXML(trim($adiFact[$i]['Descripcion']))) . '</campoAdicional>';
+                $xmldata .='<campoAdicional nombre="' . $valida->limpioCaracteresXML(trim($adiFact[$i]['Nombre'])) . '">' . $valida->limpioCaracteresXML(trim($adiFact[$i]['Descripcion'])) . '</campoAdicional>';
+            }
+        }
+        $xmldata .='</infoAdicional>';
+        //$xmldata .=$firma;
+        $xmldata .='</factura>';
+        //echo htmlentities($xmldata);
+        $nomDocfile = $cabFact['NombreDocumento'] . '-' . $cabFact['NumDocumento'] . '.xml';
+        file_put_contents(Yii::app()->params['seaDocXml'] . $nomDocfile, $xmldata); //Escribo el Archivo Xml    
+        //return $msgAuto->messageFileXML('OK', $nomDocfile, $cabFact["ClaveAcceso"], 2, null, null); */
+        
+        return VSexception::messageFileXML('OK', $nomDocfile, $cabFact["ClaveAcceso"], 2, null, null);
+    }
+
 
     
 }

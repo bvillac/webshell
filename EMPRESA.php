@@ -45,4 +45,38 @@ class EMPRESA {
         $conApp->close();
         return $sentencia->fetch_assoc();
     }
+    
+    public static function infoTributaria($cabDoc,$xml){
+        $valida= new cls_Global;
+        $infoTributaria=$xml->createElement('infoTributaria');
+        $infoTributaria->appendChild($xml->createElement('ambiente', $cabDoc[0]['Ambiente']));
+        $infoTributaria->appendChild($xml->createElement('tipoEmision', $cabDoc[0]['TipoEmision']));        
+        $infoTributaria->appendChild($xml->createElement('razonSocial', utf8_encode($valida->limpioCaracteresXML(trim(strtoupper($cabDoc[0]['RazonSocial']))))));
+        $infoTributaria->appendChild($xml->createElement('nombreComercial', utf8_encode($valida->limpioCaracteresXML(trim(strtoupper($cabDoc[0]['NombreComercial']))))));
+        $infoTributaria->appendChild($xml->createElement('ruc', $cabDoc[0]['Ruc']));
+        $infoTributaria->appendChild($xml->createElement('claveAcceso', $cabDoc[0]['ClaveAcceso']));
+        $infoTributaria->appendChild($xml->createElement('codDoc', $cabDoc[0]['CodigoDocumento']));
+        $infoTributaria->appendChild($xml->createElement('estab', $cabDoc[0]['Establecimiento']));
+        $infoTributaria->appendChild($xml->createElement('ptoEmi', $cabDoc[0]['PuntoEmision']));
+        $infoTributaria->appendChild($xml->createElement('secuencial', $cabDoc[0]['Secuencial']));
+        $infoTributaria->appendChild($xml->createElement('dirMatriz', utf8_encode(trim($cabDoc[0]['DireccionMatriz']))));
+        
+        
+        /*$xmldata ='<infoTributaria>';
+            $xmldata .='<ambiente>' . $cabDoc["Ambiente"] . '</ambiente>';
+            $xmldata .='<tipoEmision>' . $cabDoc["TipoEmision"] . '</tipoEmision>';
+            $xmldata .='<razonSocial>' . utf8_encode($valida->limpioCaracteresXML(trim(Yii::app()->getSession()->get('RazonSocial', FALSE)))) . '</razonSocial>';
+            $xmldata .='<nombreComercial>' . utf8_encode($valida->limpioCaracteresXML(trim(Yii::app()->getSession()->get('NombreComercial', FALSE)))) . '</nombreComercial>';
+            $xmldata .='<ruc>' . utf8_encode(trim(Yii::app()->getSession()->get('Ruc', FALSE))) . '</ruc>';
+            $xmldata .='<claveAcceso>' . utf8_encode(trim($cabDoc["ClaveAcceso"])) . '</claveAcceso>';
+            $xmldata .='<codDoc>' . $cabDoc["CodigoDocumento"] . '</codDoc>';
+            $xmldata .='<estab>' . utf8_encode(trim($cabDoc["Establecimiento"])) . '</estab>';
+            $xmldata .='<ptoEmi>' . utf8_encode(trim($cabDoc["PuntoEmision"])) . '</ptoEmi>';
+            $xmldata .='<secuencial>' . utf8_encode(trim($cabDoc["Secuencial"])) . '</secuencial>';
+            $xmldata .='<dirMatriz>' . utf8_encode(trim($cabDoc["DireccionMatriz"])) . '</dirMatriz>';
+        $xmldata .='</infoTributaria>';
+        return $xmldata;*/
+        return $infoTributaria;
+    }
+    
 }
