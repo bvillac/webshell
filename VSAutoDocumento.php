@@ -7,7 +7,7 @@
 //include('VSexception.php');
 class VSAutoDocumento {
 
-    public function AutorizaDocumento($result,$ids,$i,$DirDocAutorizado,$DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
+    public function AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
         $firmaDig = new VSFirmaDigital();
         $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);
         //Verifica Errores del Firmado
@@ -21,12 +21,12 @@ class VSAutoDocumento {
                 if ($estadoRac == 'RECIBIDA') {
                     //Continua con el Proceso
                     //Autorizacion de Comprobantes 
-                    return $this->autorizaComprobante($result, $ids, $i, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
+                    return $this->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
                 } else {
                     //Verifica si la Clave esta en Proceso de Validacion
                     if ($estadoRac == 'DEVUELTA') {
                         //Actualiza Errores de Documento Devuelto...
-                        $AdrSri = $this->recibeDocSriDevuelto($Rac, $ids[$i], $result['nomDoc'], $DirDocFirmado,$DBTabDoc,$CampoID);
+                        $AdrSri= $this->recibeDocSriDevuelto($Rac, $ids, $result['nomDoc'], $DirDocFirmado,$DBTabDoc,$CampoID);
                         if (count($ids) == 1) {//Sale directamente si solo tiene un Domento para validadr
                             return $AdrSri; //Si la autorizacion es uno a uno.
                         }
@@ -34,20 +34,16 @@ class VSAutoDocumento {
                 }
             } else {
                 //Si Existe un error al realizar la peticion al Web Servicies
-                //return $errAuto->messageSystem('NO_OK', $valComp["error"], 4, null, null);
-                return VSexception::messageSystem('NO_OK', $valComp["error"], 4, null, null);
+                return VSexception::messageSystem('NO_OK', $valComp["error"], 4, "Ids=>$ids", null);
             }
         } else {
             //Sin No hay firma Automaticamente Hay que Parar el Envio
-            //break;
-            //return $errAuto->messageSystem('NO_OK', $firma["error"], 3, null, null);
-            return VSexception::messageSystem('NO_OK', $firma["error"], 3, null, null);
+            return VSexception::messageSystem('NO_OK', $firma["error"], 3, "Ids=>$ids", null);
         }
-        //return $errAuto->messageSystem('OK', null,40,null, null);//Si nunka tuvo un Error Devuelve OK
         return VSexception::messageSystem('OK', null,40,null, null);//Si nunka tuvo un Error Devuelve OK
     }
     
-    public function autorizaComprobante($result, $ids, $i, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID) {
+    public function autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID) {
         $firmaDig = new VSFirmaDigital();
         //Continua con el Proceso
         //Autorizacion de Comprobantes
@@ -59,13 +55,13 @@ class VSAutoDocumento {
             //Operacion de Stop, si no hay ningun Documento AUtorizado sale automaticamente de la funcion Autoriza
             //Su finalidad es que no siga realizado el resto de las operaciones y continuar con la siguiente.
             if ($numeroAutorizacion == 0) {
-                $mError="No podemos encontrar la información que está solicitando.";
-                return VSexception::messageSystem('NO_OK', '', 22, $mError, null);
+                //$mError="No podemos encontrar la información que está solicitando.";
+                return VSexception::messageSystem('NO_OK', "Ids=$ids =>>".$autComp["error"], 22, null, null);
             }//Por favor volver a Intentar en unos minutos
             /*             * ****************************************************** */
             $autorizacion = $autComp['data']['RespuestaAutorizacionComprobante']['autorizaciones']['autorizacion'];
             if ($numeroAutorizacion == 1) {//Verifica si Autorizo algun Comprobante Apesar de recibirlo Autorizo Comprobante
-                $AdrSri = $this->actualizaDocRecibidoSri($autorizacion, $ids[$i], $result['nomDoc'], $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
+                $AdrSri = $this->actualizaDocRecibidoSri($autorizacion, $ids, $result['nomDoc'], $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
                 $this->newXMLDocRecibidoSri($autorizacion, $result['nomDoc'], $DirDocAutorizado);
                 if (count($ids) == 1) {//Sale directamente si solo tiene un Domento para validadr
                     return $AdrSri; //Si la autorizacion es uno a uno.
@@ -74,7 +70,7 @@ class VSAutoDocumento {
                 //Ingresa si el Documento a intentado Varias AUTORIZACIONES
                 if ($numeroAutorizacion > 1) {
                     for ($c = 0; $c < sizeof($autorizacion); $c++) {
-                        $this->actualizaDocRecibidoSri($autorizacion[$c], $ids[$i], $result['nomDoc'], $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
+                        $this->actualizaDocRecibidoSri($autorizacion[$c], $ids, $result['nomDoc'], $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
                         if ($autorizacion[$c]['estado'] == 'AUTORIZADO') {
                             $this->newXMLDocRecibidoSri($autorizacion[$c], $result['nomDoc'], $DirDocAutorizado);
                             break; //Si de todo el Recorrido Existe un Autorizado 
@@ -83,8 +79,8 @@ class VSAutoDocumento {
                 }
             }
         } else {
-            $mError="(Error al Realizar la Autorizacion del Documento)";
-            return VSexception::messageSystem('NO_OK', $autComp["error"], 22, $mError, null);
+            //$mError="(Error al Realizar la Autorizacion del Documento)";
+            return VSexception::messageSystem('NO_OK', "Ids=$ids =>>".$autComp["error"], 22, null, null);
         }
     }
 
@@ -111,7 +107,7 @@ class VSAutoDocumento {
                 $this->mensajeErrorDocumentos($con,$mensaje,$ids,$DocErr);
                 $CodigoError=$mensaje[0]['identificador'];
                 $InformacionAdicional=(!empty($mensaje[0]['informacionAdicional']))?$mensaje[0]['informacionAdicional']:'';
-                $DescripcionError=utf8_encode("ID=>$CodigoError Error=> $InformacionAdicional");
+                $DescripcionError=utf8_encode("IdFact=>$ids ID=>$CodigoError Error=> $InformacionAdicional");
                 $DirectorioDocumento=$DirDocFirmado;
             }
             
@@ -127,8 +123,8 @@ class VSAutoDocumento {
 
             $con->commit();
             $con->close();
-            $mError="No podemos encontrar la información que está solicitando.";
-            return VSexception::messageSystem('NO_OK', '', 22, $mError, null);
+            //$mError="No podemos encontrar la información que está solicitando.";
+            return VSexception::messageSystem('NO_OK', '', 17, $DescripcionError, null);
         } catch (Exception $e) {
             $con->rollback();
             $con->close();
@@ -138,7 +134,6 @@ class VSAutoDocumento {
     }
     
     private function recibeDocSriDevuelto($response, $ids, $NombreDocumento, $DirDocFirmado,$DBTabDoc,$CampoID) {
-        $ids="22863";
         $obj_con = new cls_Base();
         $con = $obj_con->conexionIntermedio();
         try {
@@ -169,7 +164,7 @@ class VSAutoDocumento {
             $con->close();
             //Su documento fue devuelto por errores en el comprobante
             //Dependiendo del Error arrojado por el SRI
-            return VSexception::messageWSSRI('OK', null, $CodigoError, $MensajeSRI, null);//Web service Sri
+            return VSexception::messageWSSRI('OK', null, $CodigoError, $DescripcionError, null);//Web service Sri
         } catch (Exception $e) {
             $con->rollback();
             $con->close();

@@ -18,14 +18,16 @@ class cls_Global {
     public static $est_id='1';//Establecimiento
     public static $pemi_id='1';//Punto Emision
     public static $ambt_id='1';//Ambiente de Pruebas por Defecto =1 =>2 Produccion
+    //public static $IdsUsu='1';//Valor por defecto(Alimenta al Autorizar el Documento)
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2016-10-15';//'2016-08-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2016-10-29';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     public static $dateXML = "d/m/Y";
     public $decimalPDF=2;
     public $SepdecimalPDF='.';
-    var $limitEnv=10;
+    var $limitEnv=3;
     var $limitEnvMail=2;
+    public static $limitEnvAUT=1;
     var $IVAdefault=14;//Valor de Iva por Defecto en Textos
     var $Author="Utimpor";
     var $rutaPDF="/opt/SEADOC/DOCPDF/";
@@ -39,12 +41,12 @@ class cls_Global {
     //FACTURA ELECTRONICA
     
     public static $seaDocXml = '/opt/SEADOC/GENERADO/';
-    public $seaDocFact = '/opt/SEADOC/FIRMADO/FACTURAS/';
+    public static $seaDocFact = '/opt/SEADOC/FIRMADO/FACTURAS/';
     public $seaDocRete = '/opt/SEADOC/FIRMADO/RETENCIONES/';
     public $seaDocNc = '/opt/SEADOC/FIRMADO/NC/';
     public $seaDocNd = '/opt/SEADOC/FIRMADO/ND/';
     public $seaDocGuia = '/opt/SEADOC/FIRMADO/GUIAS/';
-    public $seaDocAutFact = '/opt/SEADOC/AUTORIZADO/FACTURAS/';
+    public static $seaDocAutFact = '/opt/SEADOC/AUTORIZADO/FACTURAS/';
     public $seaDocAutRete = '/opt/SEADOC/AUTORIZADO/RETENCIONES/';
     public $seaDocAutNc = '/opt/SEADOC/AUTORIZADO/NC/';
     public $seaDocAutNd = '/opt/SEADOC/AUTORIZADO/ND/';

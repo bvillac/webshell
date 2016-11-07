@@ -22,6 +22,7 @@ class VSexception {
         $arroout["data"] = $data;
         if($status=="NO_OK"){
             cls_Global::putMessageLogFile($arroout);//Imprime el Error en Logs
+            //cls_Global::putMessageLogFile($message);
         }
         return $arroout;
     }
@@ -48,6 +49,7 @@ class VSexception {
         );
         if($status=="NO_OK"){
             cls_Global::putMessageLogFile($arroout);//Imprime el Error en Logs
+            cls_Global::putMessageLogFile($message);
         }
         return $arroout;
     }
@@ -91,7 +93,7 @@ class VSexception {
                 $messageError = 'His paper was rejected or denied.';
                 break;
             case 17://Su documento fue Devuelto por errores en el documento
-                $messageError = 'Your document was returned for errors in the voucher.';
+                $messageError = 'Su documento fue Devuelto por errores en el documento';
                 break;
             case 20://La solicitud fÚe realizada correctamente.
                 $messageError = 'The request was completed successfully.';
@@ -126,12 +128,12 @@ class VSexception {
         }
         return $messageError;
     }
-    public static function messageWSSRIError($op, $message) {
+    private static function messageWSSRIError($op, $message) {
         $messageError = '';
         switch ($op) {
             case 43:
                 //Clave de Acceso Registrada
-                $messageError = "Clave de acceso registrada, vuelva a intentarlo en unos minutos.";//Yii::t('EXCEPTION', 'Access key registered, retry in a few minutes.');
+                $messageError = "Clave de acceso registrada, vuelva a intentarlo en unos minutos. =>>> ".$message;
                 break;
             default:
                 $messageError = $message ." Error Nº ".$op;//

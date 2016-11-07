@@ -3,10 +3,8 @@
 class EMPRESA {
     //put your code here
     public function buscarDataEmpresa($emp_id,$est_id,$pemi_id) {
-        //$conApp = yii::app()->db;
         $obj_con = new cls_Base();
         $conApp = $obj_con->conexionAppWeb();
-        //$rawData = array();
         $sql = "SELECT A.EMP_ID,A.EMP_RUC Ruc,A.EMP_RAZONSOCIAL RazonSocial,A.EMP_NOM_COMERCIAL NombreComercial,
                     A.EMP_AMBIENTE Ambiente,A.EMP_TIPO_EMISION TipoEmision,EMP_DIRECCION_MATRIZ DireccionMatriz,EST_DIRECCION DireccionSucursal,
                     A.EMP_OBLIGA_CONTABILIDAD ObligadoContabilidad,EMP_CONTRI_ESPECIAL ContribuyenteEspecial,EMP_EMAIL_DIGITAL,
@@ -46,7 +44,7 @@ class EMPRESA {
         return $sentencia->fetch_assoc();
     }
     
-    public static function infoTributaria($cabDoc,$xml){
+    public static function infoTributariaXML($cabDoc,$xml){
         $valida= new cls_Global;
         $infoTributaria=$xml->createElement('infoTributaria');
         $infoTributaria->appendChild($xml->createElement('ambiente', $cabDoc[0]['Ambiente']));
@@ -60,23 +58,24 @@ class EMPRESA {
         $infoTributaria->appendChild($xml->createElement('ptoEmi', $cabDoc[0]['PuntoEmision']));
         $infoTributaria->appendChild($xml->createElement('secuencial', $cabDoc[0]['Secuencial']));
         $infoTributaria->appendChild($xml->createElement('dirMatriz', utf8_encode(trim($cabDoc[0]['DireccionMatriz']))));
-        
-        
-        /*$xmldata ='<infoTributaria>';
-            $xmldata .='<ambiente>' . $cabDoc["Ambiente"] . '</ambiente>';
-            $xmldata .='<tipoEmision>' . $cabDoc["TipoEmision"] . '</tipoEmision>';
-            $xmldata .='<razonSocial>' . utf8_encode($valida->limpioCaracteresXML(trim(Yii::app()->getSession()->get('RazonSocial', FALSE)))) . '</razonSocial>';
-            $xmldata .='<nombreComercial>' . utf8_encode($valida->limpioCaracteresXML(trim(Yii::app()->getSession()->get('NombreComercial', FALSE)))) . '</nombreComercial>';
-            $xmldata .='<ruc>' . utf8_encode(trim(Yii::app()->getSession()->get('Ruc', FALSE))) . '</ruc>';
-            $xmldata .='<claveAcceso>' . utf8_encode(trim($cabDoc["ClaveAcceso"])) . '</claveAcceso>';
-            $xmldata .='<codDoc>' . $cabDoc["CodigoDocumento"] . '</codDoc>';
-            $xmldata .='<estab>' . utf8_encode(trim($cabDoc["Establecimiento"])) . '</estab>';
-            $xmldata .='<ptoEmi>' . utf8_encode(trim($cabDoc["PuntoEmision"])) . '</ptoEmi>';
-            $xmldata .='<secuencial>' . utf8_encode(trim($cabDoc["Secuencial"])) . '</secuencial>';
-            $xmldata .='<dirMatriz>' . utf8_encode(trim($cabDoc["DireccionMatriz"])) . '</dirMatriz>';
-        $xmldata .='</infoTributaria>';
-        return $xmldata;*/
         return $infoTributaria;
+    }
+    
+    public static function infoAdicionalXML($adiFact,$xml){
+        //Razones por la que el Servicio Tomcat Se cae
+        //Verificar XML si esta Bien Generado (Probar el Error en Navegador)
+        //Evitar caracteres Especiales
+        $valida = new cls_Global;
+        $infoAdicional=$xml->createElement('infoAdicional');
+        for ($i = 0; $i < sizeof($adiFact); $i++) {
+            if(strlen(trim($adiFact[$i]['Descripcion']))>0){
+                //$xmldata .='<campoAdicional nombre="' . utf8_encode(trim($adiFact[$i]['Nombre'])) . '">' . utf8_encode($valida->limpioCaracteresXML(trim($adiFact[$i]['Descripcion']))) . '</campoAdicional>';
+                $campoA=$xml->createElement('campoAdicional',utf8_encode($valida->limpioCaracteresXML(trim($adiFact[$i]['Descripcion']))) );
+                $campoA->setAttribute('nombre', $valida->limpioCaracteresXML(trim($adiFact[$i]['Nombre'])));
+                $infoAdicional->appendChild($campoA);
+            }
+        }
+        return $infoAdicional;
     }
     
 }
