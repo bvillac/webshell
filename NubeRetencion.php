@@ -81,9 +81,9 @@ class NubeRetencion {
         $con = $obj_con->conexionIntermedio();
         $objEmpData= new EMPRESA();
         /****VARIBLES DE SESION*******/
-        $emp_id=$obj_var->emp_id;
-        $est_id=$obj_var->est_id;
-        $pemi_id=$obj_var->pemi_id;
+        $emp_id=cls_Global::$emp_id;
+        $est_id=cls_Global::$est_id;
+        $pemi_id=cls_Global::$pemi_id;
         try {
             $cabDoc = $this->buscarRetenciones($op,$NumPed);//Compras inventarios
             $empresaEnt=$objEmpData->buscarDataEmpresa($emp_id,$est_id,$pemi_id);//recuperar info deL Contribuyente
@@ -386,7 +386,7 @@ class NubeRetencion {
         $dataMail = new mailSystem();
         $rep = new REPORTES();
         //$con = $obj_con->conexionVsRAd();
-        $objEmp=$objEmpData->buscarDataEmpresa($obj_var->emp_id,$obj_var->est_id,$obj_var->pemi_id);//recuperar info deL Contribuyente
+        $objEmp=$objEmpData->buscarDataEmpresa(cls_Global::$emp_id,cls_Global::$est_id,cls_Global::$pemi_id);//recuperar info deL Contribuyente
         $con = $obj_con->conexionIntermedio();
      
         $dataMail->file_to_attachXML=$obj_var->rutaXML.'RETENCIONES/';//Rutas FACTURAS

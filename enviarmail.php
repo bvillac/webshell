@@ -1,9 +1,9 @@
 <?php
 include('NubeFactura.php');//para HTTP
 $FacObj = new NubeFactura();
-//$res= $FacObj->enviarMailDoc();
 //$res= $FacObj->insertarFacturas();
 $res=$FacObj->enviarDocumentos();
+$res= $FacObj->enviarMailDoc();
 //phpinfo();
 
 ?>

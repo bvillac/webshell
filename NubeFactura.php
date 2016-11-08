@@ -597,7 +597,7 @@ class NubeFactura {
         $dataMail = new mailSystem();
         $rep = new REPORTES();
         //$con = $obj_con->conexionVsRAd();
-        $objEmp=$objEmpData->buscarDataEmpresa($obj_var->emp_id,$obj_var->est_id,$obj_var->pemi_id);//recuperar info deL Contribuyente
+        $objEmp=$objEmpData->buscarDataEmpresa(cls_Global::$emp_id,cls_Global::$est_id,cls_Global::$pemi_id);//recuperar info deL Contribuyente
         $con = $obj_con->conexionIntermedio();
      
         $dataMail->file_to_attachXML=$obj_var->rutaXML.'FACTURAS/';//Rutas FACTURAS
@@ -684,7 +684,6 @@ class NubeFactura {
             $rawData = array();
             $fechaIni=$obj_var->dateStartFact;
             $limitEnvMail=$obj_var->limitEnvMail;
-
             $sql = "SELECT IdFactura Ids,AutorizacionSRI,FechaAutorizacion,IdentificacionComprador CedRuc,RazonSocialComprador RazonSoc,
                     'FACTURA' NombreDocumento,Ruc,Ambiente,TipoEmision,EstadoEnv,
                     ClaveAcceso,ImporteTotal Importe,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
@@ -742,7 +741,8 @@ class NubeFactura {
         $sql = "SELECT IdFactura Ids,UsuarioCreador UsuCre
             FROM " . $obj_con->BdIntermedio . ".NubeFactura WHERE Estado IN(1,4) "
                 . "AND EstadoEnv=2 AND FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
-                //. "AND IdFactura=22401 ";            
+                //. "AND IdFactura=22401 ";
+                //cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
@@ -760,10 +760,12 @@ class NubeFactura {
             $obj_con = new cls_Base();
             $con = $obj_con->conexionIntermedio();
             //$ids =0; //explode(",", $id);
-            $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con);             
+            $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con); 
+            cls_Global::putMessageLogFile($docAut);            
             for ($i = 0; $i < count($docAut); $i++) {
                 $ids=$docAut[$i]["Ids"];
-                if ($ids !== "") {                    
+                if ($ids !== "") {
+                    //Retorna Resultado Generado
                     $result = $this->generarFileXML($con,$obj_con,$ids);
                     $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
                     $DirDocFirmado=cls_Global::$seaDocFact;
@@ -797,7 +799,6 @@ class NubeFactura {
         if (count($cabFact)>0) {
             switch ($cabFact[0]["Estado"]) {
                 case 2://RECIBIDO SRI (AUTORIZADOS)
-                    //return $msgAuto->messageFileXML('NO_OK', $cabFact["NumDocumento"], null, 42, null, null);
                     return VSexception::messageFileXML('NO_OK', $cabFact[0]["NumDocumento"], null, 42, null, null);
                     break;
                 case 4://DEVUELTA (NO AUTORIZADOS EN PROCESO)
@@ -811,7 +812,6 @@ class NubeFactura {
                             return VSexception::messageFileXML('OK_REG', $cabFact[0]["NombreDocumento"], $cabFact[0]["ClaveAcceso"], 43, null, null);
                             break;
                         case 70://CLAVE DE ACCESO EN PROCESO
-                            //return $msgAuto->messageFileXML('OK', $cabFact["NombreDocumento"], $cabFact["ClaveAcceso"], 43, null, null);
                             return VSexception::messageFileXML('OK', $cabFact[0]["NombreDocumento"], $cabFact[0]["ClaveAcceso"], 43, null, null);
                             break;
                         default:
@@ -821,14 +821,12 @@ class NubeFactura {
                     }
                     break;
                 case 8://DOCUMENTO ANULADO
-                    //return $msgAuto->messageSystem('NO_OK', null,11,null, null);//Peticion Invalida
                     return VSexception::messageSystem('NO_OK', null,11,null, null);
                     break;
                 default:
             }
         }else{
             //Si la Cabecera no devuelve registros Retorna un resultado  de False
-            //return $msgAuto->messageFileXML('NO_OK', null, null, 1, null, null);
             return VSexception::messageFileXML('NO_OK', null, null, 1, null, null);
         }
         
@@ -934,7 +932,7 @@ class NubeFactura {
         $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
         $xml->save(cls_Global::$seaDocXml.$nomDocfile);
         
-        return VSexception::messageFileXML('OK', $nomDocfile, $cabFact["ClaveAcceso"], 2, null, null);
+        return VSexception::messageFileXML('OK', $nomDocfile, $cabFact[0]["ClaveAcceso"], 2, null, null);
     }
 
     public function totalImpuestoXML($impFact,$i,$xml){

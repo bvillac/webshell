@@ -1,5 +1,8 @@
-2016-11-07 00:50:34 {"status":"NO_OK","error":"","message":"Su documento fue Devuelto por errores en el documento","data":null}
-2016-11-07 00:56:46 {"status":"NO_OK","error":"","message":"Please come back in a while.","data":null}
-2016-11-07 00:56:46 No podemos encontrar la información que está solicitando.
-2016-11-07 01:04:54 {"status":"OK","error":null,"message":"Clave de acceso registrada, vuelva a intentarlo en unos minutos. =>>> IdFact=>22882 ID=>43 MensSri=>(CLAVE ACCESO REGISTRADA) InfAdicional=>()","data":null}
-2016-11-07 01:05:49 {"status":"NO_OK","error":"","message":"Su documento fue Devuelto por errores en el documento","data":null}
+2016-11-07 20:37:50 {"status":"NO_OK","error":"","message":"Su documento fue Devuelto por errores en el documento","data":null}
+2016-11-07 20:41:06 {"status":"NO_OK","error":"","message":"Su documento fue Devuelto por errores en el documento","data":null}
+2016-11-07 20:44:15 SELECT IdFactura Ids,UsuarioCreador UsuCre
+            FROM VSSEAINTERMEDIA.NubeFactura WHERE Estado IN(1,4) AND EstadoEnv=2 AND FechaCarga>='2016-10-29' limit 2 
+2016-11-07 20:44:17 {"status":"NO_OK","error":"","message":"Su documento fue Devuelto por errores en el documento","data":null}
+2016-11-07 21:26:00 [{"Ids":"22888","UsuCre":"02"}]
+2016-11-07 21:26:02 {"status":"NO_OK","error":"","message":"Su documento fue Devuelto por errores en el documento","data":null}
+2016-11-07 21:40:08 []
