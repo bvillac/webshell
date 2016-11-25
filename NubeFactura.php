@@ -775,7 +775,6 @@ class NubeFactura {
                         //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
                         //Autorizacion de Comprobantes 
                         return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
-                   
                     }else{
                         return $result;
                     }
