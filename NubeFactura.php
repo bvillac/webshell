@@ -734,13 +734,13 @@ class NubeFactura {
     /************************************************************/
     /*********CONSUMO DE WEB SERVICES
     /************************************************************/
-    private function buscarDocFactAUT($con,$obj_var,$obj_con) {
+    private function buscarDocFactAUT($con,$obj_var,$obj_con,$nEstado) {
         $rawData = array();
         $fechaIni=$obj_var->dateStartFact;
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
-        $sql = "SELECT IdFactura Ids,UsuarioCreador UsuCre
-            FROM " . $obj_con->BdIntermedio . ".NubeFactura WHERE Estado IN(1,4) "
-                . "AND EstadoEnv=2 AND FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
+        $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,NombreDocumento
+            FROM " . $obj_con->BdIntermedio . ".NubeFactura A WHERE A.Estado IN($nEstado) "
+                . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
                 //. "AND IdFactura=22401 ";
                 //cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
@@ -753,16 +753,18 @@ class NubeFactura {
 
     }
     
-    public function enviarDocumentos() {
+    public function enviarDocRecepcion() {
         try {
             $obj_var = new cls_Global();
             $autDoc=new VSAutoDocumento(); 
             $obj_con = new cls_Base();
             $con = $obj_con->conexionIntermedio();
             //$ids =0; //explode(",", $id);
-            $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con); 
-            cls_Global::putMessageLogFile($docAut);            
+            $nEstado="1,4";
+            $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con,$nEstado); 
+            //cls_Global::putMessageLogFile($docAut);            
             for ($i = 0; $i < count($docAut); $i++) {
+                //cls_Global::putMessageLogFile($docAut[$i]); 
                 $ids=$docAut[$i]["Ids"];
                 if ($ids !== "") {
                     //Retorna Resultado Generado
@@ -770,11 +772,12 @@ class NubeFactura {
                     $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
                     $DirDocFirmado=cls_Global::$seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
-                        return $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
+                        //return $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
+                        $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
                     }elseif ($result['status'] == 'OK_REG') {
                         //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
                         //Autorizacion de Comprobantes 
-                        return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                        //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
                     }else{
                         return $result;
                     }
@@ -782,7 +785,36 @@ class NubeFactura {
             }
             //return $errAuto->messageSystem('OK', null,40,null, null);
         } catch (Exception $e) { // se arroja una excepción si una consulta falla
-            //return $errAuto->messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+        }
+    }
+    
+    public function enviarDocAutorizacion() {
+        try {
+            $obj_var = new cls_Global();
+            $autDoc=new VSAutoDocumento(); 
+            $obj_con = new cls_Base();
+            $con = $obj_con->conexionIntermedio();
+            $nEstado="2";
+            $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con,$nEstado); 
+            //cls_Global::putMessageLogFile($docAut);            
+            for ($i = 0; $i < count($docAut); $i++) {
+                //cls_Global::putMessageLogFile($docAut[$i]); 
+                $ids=$docAut[$i]["Ids"];
+                if ($ids !== "") {
+                    $result = array(
+                        'status' => 'OK',
+                        'nomDoc' => $docAut[$i]["NombreDocumento"],  
+                        'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
+                    );
+                    $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
+                    $DirDocFirmado=cls_Global::$seaDocFact;
+                    $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                
+                }
+            }
+            //return $errAuto->messageSystem('OK', null,40,null, null);
+        } catch (Exception $e) { // se arroja una excepción si una consulta falla
             return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
         }
     }
@@ -796,7 +828,11 @@ class NubeFactura {
         $cabFact = $this->mostrarCabFactura($con,$obj_con,$ids);
         //cls_Global::putMessageLogFile($cabFact);
         if (count($cabFact)>0) {
-            switch ($cabFact[0]["Estado"]) {
+            $ErroDoc=VSexception::messageErrorDoc($cabFact[0]["Estado"],$cabFact[0]["NumDocumento"],$cabFact[0]["NombreDocumento"],$cabFact[0]["ClaveAcceso"],$cabFact[0]["CodigoError"] );
+            if ($ErroDoc['status'] != 'OK_GER'){
+                return $ErroDoc;
+            }
+            /*switch ($cabFact[0]["Estado"]) {
                 case 2://RECIBIDO SRI (AUTORIZADOS)
                     return VSexception::messageFileXML('NO_OK', $cabFact[0]["NumDocumento"], null, 42, null, null);
                     break;
@@ -823,7 +859,7 @@ class NubeFactura {
                     return VSexception::messageSystem('NO_OK', null,11,null, null);
                     break;
                 default:
-            }
+            }*/
         }else{
             //Si la Cabecera no devuelve registros Retorna un resultado  de False
             return VSexception::messageFileXML('NO_OK', null, null, 1, null, null);

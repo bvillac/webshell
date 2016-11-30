@@ -27,7 +27,7 @@ class cls_Global {
     public $SepdecimalPDF='.';
     var $limitEnv=3;
     var $limitEnvMail=2;
-    public static $limitEnvAUT=1;
+    public static $limitEnvAUT=2;
     var $IVAdefault=14;//Valor de Iva por Defecto en Textos
     var $Author="Utimpor";
     var $rutaPDF="/opt/SEADOC/DOCPDF/";

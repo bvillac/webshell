@@ -55,7 +55,7 @@ class VSexception {
     }
 
 
-    private function messageError($op, $message) {
+    private static function messageError($op, $message) {
         $messageError = '';
         switch ($op) {
             case 1:
@@ -90,7 +90,7 @@ class VSexception {
                 $messageError = '<strong>Well done!</strong> Your document was properly authorized.';
                 break;
             case 16://Datos eliminados Correctamente
-                $messageError = 'His paper was rejected or denied.';
+                $messageError = 'Su Documento fue rechazado o negado.';
                 break;
             case 17://Su documento fue Devuelto por errores en el documento
                 $messageError = 'Su documento fue Devuelto por errores en el documento';
@@ -114,7 +114,7 @@ class VSexception {
                 $messageError = 'Failed to send the document, check with your Web Manager.';
                 break;
             case 42://Este documento ya fue autorizado por SRI.
-                $messageError = 'This document was already authorized by SRI.';
+                $messageError = 'Este documento ya fue autorizado por SRI.';
                 break;
             case 43://Este documento ya fue autorizado por SRI.
                 $messageError = 'Access key registered, retry in a few minutes.';
@@ -128,6 +128,7 @@ class VSexception {
         }
         return $messageError;
     }
+    
     private static function messageWSSRIError($op, $message) {
         $messageError = '';
         switch ($op) {
@@ -139,6 +140,39 @@ class VSexception {
                 $messageError = $message ." Error Nº ".$op;//
         }
         return $messageError;
+    }
+    
+    public static function messageErrorDoc($Estado, $NumDoc, $NomDoc, $Clave, $CodigoError) {
+        switch ($Estado) {
+            case 2://RECIBIDO SRI (AUTORIZADOS)
+                return VSexception::messageFileXML('NO_OK', $NumDoc, null, 42, null, null);
+                break;
+            case 4://DEVUELTA (NO AUTORIZADOS EN PROCESO)
+                //Cuando son devueltas no se deben generar de nuevo la clave de acceso
+                //hay que esperar hasta que responda
+                switch ($CodigoError) {
+                    case 43://CLAVE DE ACCESO REGISTRADA
+                        //No genera Nada Envia los datos generados anteriormente
+                        //Retorna Automaticamente sin Generar Documento
+                        //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                        return VSexception::messageFileXML('OK_REG', $NomDoc, $Clave, 43, null, null);
+                        break;
+                    case 70://CLAVE DE ACCESO EN PROCESO
+                        return VSexception::messageFileXML('OK', $NomDoc, $Clave, 43, null, null);
+                        break;
+                    default:
+                    //Documento Devuelto hay que volver a generar la clave de Acceso
+                    //Esto es Opcional
+                }
+                break;
+            case 8://DOCUMENTO ANULADO
+                return VSexception::messageSystem('NO_OK', null, 11, null, null);
+                break;
+            default:
+        }
+        //Cuando no ingresa a ninguna opcion y se tiene que generar el XML
+        //OK_GER -> Genera el Archivo XML
+        return VSexception::messageFileXML('OK_GER', null, null, null, null, null);
     }
 
 }

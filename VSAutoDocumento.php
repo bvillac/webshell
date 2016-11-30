@@ -21,7 +21,10 @@ class VSAutoDocumento {
                 if ($estadoRac == 'RECIBIDA') {
                     //Continua con el Proceso
                     //Autorizacion de Comprobantes 
-                    return $this->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
+                    
+                    //CAMBIO METODO OFFLINE 29-11-2016
+                    //return $this->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
+                    return $this->actualizaDocRecibidoSri($Rac, $ids, $result['nomDoc'], $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
                 } else {
                     //Verifica si la Clave esta en Proceso de Validacion
                     if ($estadoRac == 'DEVUELTA') {
@@ -88,21 +91,28 @@ class VSAutoDocumento {
         $obj_con = new cls_Base();
         $con = $obj_con->conexionIntermedio();
         $msg= new VSexception();
+        $status="";
         try {
             $UsuId=1;//Usuario Admin //Yii::app()->getSession()->get('user_id', FALSE);
             $estado = $response['estado'];
-            $fecha = date("Y-m-d H:i:s", strtotime($response['fechaAutorizacion']));//date(Yii::app()->params["datebytime"], strtotime($response['fechaAutorizacion']));
+            $fecha = ($response['fechaAutorizacion']!=null)?date("Y-m-d H:i:s", strtotime($response['fechaAutorizacion'])):date('Y-m-d H:i:s');
             $numeroAutorizacion='';
             $CodigoError='';
             $DescripcionError='';
-            if($estado=='AUTORIZADO'){
-                $numeroAutorizacion = ($response['numeroAutorizacion']!=null)?$response['numeroAutorizacion']:'';
+            if($estado=='RECIBIDA'){
                 $codEstado='2';
                 $DirectorioDocumento=$DirDocAutorizado;
-                $op=15;//Su documento fue autorizado correctamente
-            }else{
+            }elseif($estado=='AUTORIZADO'){
+                //$fecha = date("Y-m-d H:i:s", strtotime($response['fechaAutorizacion']));//date(Yii::app()->params["datebytime"], strtotime($response['fechaAutorizacion']));
+                $numeroAutorizacion = ($response['numeroAutorizacion']!=null)?$response['numeroAutorizacion']:'';
                 $codEstado='3';
+                $DirectorioDocumento=$DirDocAutorizado;
+                $op=15;//Su documento fue autorizado correctamente
+                $status="OK";
+            }else{
+                $codEstado='6';
                 $op=16;//Su documento fue rechazado o negado
+                $status="NO_OK";
                 $mensaje=$response['mensajes']['mensaje'];//Array de Errores Sri
                 $this->mensajeErrorDocumentos($con,$mensaje,$ids,$DocErr);
                 $CodigoError=$mensaje[0]['identificador'];
@@ -124,7 +134,7 @@ class VSAutoDocumento {
             $con->commit();
             $con->close();
             //$mError="No podemos encontrar la información que está solicitando.";
-            return VSexception::messageSystem('NO_OK', '', 17, $DescripcionError, null);
+            return VSexception::messageSystem($status, $DescripcionError, $op, $DescripcionError, null);
         } catch (Exception $e) {
             $con->rollback();
             $con->close();
