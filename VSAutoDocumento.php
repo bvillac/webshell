@@ -93,7 +93,7 @@ class VSAutoDocumento {
         $msg= new VSexception();
         $status="";
         try {
-            $UsuId=1;//Usuario Admin //Yii::app()->getSession()->get('user_id', FALSE);
+            //$UsuId=1;//Usuario Admin //Yii::app()->getSession()->get('user_id', FALSE);
             $estado = $response['estado'];
             $fecha = ($response['fechaAutorizacion']!=null)?date("Y-m-d H:i:s", strtotime($response['fechaAutorizacion'])):date('Y-m-d H:i:s');
             $numeroAutorizacion='';
@@ -120,12 +120,12 @@ class VSAutoDocumento {
                 $DescripcionError=utf8_encode("IdFact=>$ids ID=>$CodigoError Error=> $InformacionAdicional");
                 $DirectorioDocumento=$DirDocFirmado;
             }
-            
+            //,USU_ID="'.$UsuId.'"
             $sql = 'UPDATE ' . $obj_con->BdIntermedio . '.'.$DBTabDoc.' SET 
                                 AutorizacionSRI="'.$numeroAutorizacion.'",FechaAutorizacion="'.$fecha.'",
                                 DirectorioDocumento="'.$DirectorioDocumento.'",NombreDocumento="'.$NombreDocumento.'",
                                 EstadoDocumento="'.$estado.'",Estado="'.$codEstado.'",
-                                DescripcionError="'.$DescripcionError.'",CodigoError="'.$CodigoError.'",USU_ID="'.$UsuId.'"
+                                DescripcionError="'.$DescripcionError.'",CodigoError="'.$CodigoError.'"
                             WHERE '.$CampoID.'='.$ids ;
             //echo $sql;
             $command = $con->prepare($sql);
@@ -147,7 +147,7 @@ class VSAutoDocumento {
         $obj_con = new cls_Base();
         $con = $obj_con->conexionIntermedio();
         try {
-            $UsuId=1;//Usuario Admin //Yii::app()->getSession()->get('user_id', FALSE);
+            //$UsuId=1;//Usuario Admin //Yii::app()->getSession()->get('user_id', FALSE);
             $estado = $response['estado'];
             $CodigoError = '';
             $DescripcionError = '';
@@ -161,10 +161,11 @@ class VSAutoDocumento {
             $DescripcionError = utf8_encode("IdFact=>$ids ID=>$CodigoError MensSri=>($MensajeSRI) InfAdicional=>($InformacionAdicional)");
             $DirectorioDocumento = $DirDocFirmado;
 
+            //,USU_ID="'.$UsuId.'"
             $sql = 'UPDATE ' . $obj_con->BdIntermedio . '.'.$DBTabDoc.' SET 
                                 DirectorioDocumento="'.$DirectorioDocumento.'",NombreDocumento="'.$NombreDocumento.'",
                                 EstadoDocumento="'.$estado.'",Estado="'.$codEstado.'",
-                                DescripcionError="'.$DescripcionError.'",CodigoError="'.$CodigoError.'",USU_ID="'.$UsuId.'"
+                                DescripcionError="'.$DescripcionError.'",CodigoError="'.$CodigoError.'"
                             WHERE '.$CampoID.'='.$ids ;
             //echo $sql;
             $command = $con->prepare($sql);
