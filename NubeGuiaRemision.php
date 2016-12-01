@@ -445,7 +445,7 @@ class NubeGuiaRemision {
                     ClaveAcceso,CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento
                 FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A"
                     ." INNER JOIN " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDestinatario B ON A.IdGuiaRemision=B.IdGuiaRemision "
-                    . " WHERE A.Estado=2 AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
+                    . " WHERE A.Estado=3 AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
