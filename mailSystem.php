@@ -55,7 +55,7 @@ class mailSystem {
         
         //##############################################
         //Separa en Array los Correos Ingresados para enviar
-        /*$DataCorreos = (trim($CabPed[$fil]["CorreoPer"])!='')?explode(";",$CabPed[$fil]["CorreoPer"]):0;
+        $DataCorreos = (trim($CabPed[$fil]["CorreoPer"])!='')?explode(";",$CabPed[$fil]["CorreoPer"]):0;
         for ($icor = 0; $icor < count($DataCorreos); $icor++) {
             if ($this->valid_email(trim($DataCorreos[$icor]))) {//Verifica Email Correcto
                 $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
@@ -65,7 +65,7 @@ class mailSystem {
                 $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
                 $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
             }
-        }*/
+        }
         //if($DataCorreos==0){
             //Correos Alternativos de admin  $adminMail
             //$mail->addBCC(trim($this->adminMail), trim("Gerencia"));

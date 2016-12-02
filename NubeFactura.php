@@ -689,7 +689,7 @@ class NubeFactura {
                     ClaveAcceso,ImporteTotal Importe,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
                 FROM " . $obj_con->BdIntermedio . ".NubeFactura WHERE Estado=3 "
                     . "AND EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
-                    //. "AND IdFactura=22401 ";  
+                    //. "AND IdFactura=24304 ";  
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
@@ -740,8 +740,8 @@ class NubeFactura {
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
         $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,NombreDocumento
             FROM " . $obj_con->BdIntermedio . ".NubeFactura A WHERE A.Estado IN($nEstado) "
-                . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
-                //. "AND IdFactura=22401 ";
+                //. "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
+                . "AND IdFactura=24163 ";
                 //cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
