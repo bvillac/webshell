@@ -92,8 +92,8 @@ class VSFirmaDigital {
             if ($err) {  // Muestra el error
                 //echo 'Error' . $err;
                 $arroout["status"] = "NO";
-                $arroout["error"] = $err . ':=> Error en la Respuesta Cliente o No esta habilitado el Servicio';
-                $arroout["message"] = 'Error en la Respuesta Cliente o No esta habilitado el Servicio';
+                $arroout["error"] = $err . ':=> Error en la Respuesta Cliente o No esta habilitado el Servicio > Uso de Caracteres Especiales';
+                $arroout["message"] = 'Error en la Respuesta Cliente o No esta habilitado el Servicio > Uso de Caracteres Especiales';
                 $arroout["data"] = null;
                 return $arroout;
             } else {  // Muestra el resultado
