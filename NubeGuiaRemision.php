@@ -6,6 +6,11 @@ include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
 include('REPORTES.php');
+//Autorizacion Automatica
+include('VSAutoDocumento.php');
+include('VSFirmaDigital.php');
+include('VSexception.php');
+
 class NubeGuiaRemision {
     private $tipoDoc='06';
     //put your code here
@@ -445,7 +450,9 @@ class NubeGuiaRemision {
                     ClaveAcceso,CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento
                 FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A"
                     ." INNER JOIN " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDestinatario B ON A.IdGuiaRemision=B.IdGuiaRemision "
-                    . " WHERE A.Estado=3 AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
+                    . " WHERE A.Estado=3  "
+                    . " AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";
+                    //. "AND A.IdGuiaRemision=17203 ";
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
@@ -457,16 +464,19 @@ class NubeGuiaRemision {
        
     }
     
+    /************************************************************/
+    /*********FUNCIONES IGUALES A LAS APLICACION WEB PARA PDF
+    /************************************************************/
     
     public function mostrarCabGuia($con, $obj_con, $id) {
         $rawData = array();
         $sql = "SELECT A.IdGuiaRemision IdDoc,A.Estado,A.SecuencialERP,A.UsuarioCreador,A.Ruc,
-                    A.FechaAutorizacion,A.AutorizacionSRI,A.ClaveAcceso,A.Ambiente,A.TipoEmision,
+                    A.FechaAutorizacion,A.RazonSocial,A.NombreComercial,A.AutorizacionSRI,A.ClaveAcceso,A.Ambiente,A.TipoEmision,
                     CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
                     A.DireccionPartida,A.RazonSocialTransportista,A.IdentificacionTransportista,
                     A.FechaInicioTransporte,A.FechaFinTransporte,A.Placa,A.DireccionEstablecimiento,A.USU_ID,
                     'GUIA DE REMISION' NombreDocumento,A.TipoIdentificacionTransportista,A.Rise,A.CodigoDocumento,A.FechaEmisionErp,
-                    A.Establecimiento,A.PuntoEmision,A.Secuencial,A.DireccionMatriz,A.ObligadoContabilidad,A.ContribuyenteEspecial
+                    A.Establecimiento,A.PuntoEmision,A.Secuencial,A.DireccionMatriz,A.ObligadoContabilidad,A.ContribuyenteEspecial,A.CodigoError
                     FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A
             WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdGuiaRemision =$id ";
         $sentencia = $con->query($sql);
@@ -478,7 +488,7 @@ class NubeGuiaRemision {
         return $rawData;
     }
     
-    public function mostrarDestinoGuia($con, $obj_con, $id) {
+    private function mostrarDestinoGuia($con, $obj_con, $id) {
         $rawData = array();
         $sql = "SELECT * FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemisionDestinatario WHERE IdGuiaRemision=$id";
         $sentencia = $con->query($sql);
@@ -529,5 +539,245 @@ class NubeGuiaRemision {
         }
         return $rawData;
     }
+    
+    
+    /************************************************************/
+    /*********CONSUMO DE WEB SERVICES
+    /************************************************************/
+    private function buscarDocGuiaAUT($con,$obj_var,$obj_con,$nEstado) {
+        $rawData = array();
+        $fechaIni=$obj_var->dateStartFact;
+        $limitEnvAUT=  cls_Global::$limitEnvAUT; 
+        $sql = "SELECT A.IdGuiaRemision Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
+            FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A WHERE A.Estado IN($nEstado) "
+                . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
+                //. "AND IdGuiaRemision=24163 ";
+                //cls_Global::putMessageLogFile($sql);
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+
+    }
+    
+    public function enviarDocRecepcion() {
+        try {
+            $obj_var = new cls_Global();
+            $autDoc=new VSAutoDocumento(); 
+            $obj_con = new cls_Base();
+            $con = $obj_con->conexionIntermedio();
+            //$ids =0; //explode(",", $id);
+            $nEstado="1,4";
+            $docAut= $this->buscarDocGuiaAUT($con, $obj_var, $obj_con,$nEstado); 
+            //cls_Global::putMessageLogFile($docAut);            
+            for ($i = 0; $i < count($docAut); $i++) {
+                //cls_Global::putMessageLogFile($docAut[$i]); 
+                $ids=$docAut[$i]["Ids"];
+                if ($ids !== "") {
+                    //Retorna Resultado Generado
+                    $result = $this->generarFileXML($con,$obj_con,$ids);
+                    $DirDocAutorizado=  cls_Global::$seaDocAutGuia; 
+                    $DirDocFirmado=cls_Global::$seaDocGuia;
+                    if ($result['status'] == 'OK') {//Retorna True o False 
+                        $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeGuiaRemision','GUIA','IdGuiaRemision');
+                    }elseif ($result['status'] == 'OK_REG') {
+                        //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                        //Autorizacion de Comprobantes 
+                        //return $autDoc->autorizaComprobante($result, $ids, $i, $DirDocAutorizado, $DirDocFirmado, 'NubeGuiaRemision','GUIA','IdGuiaRemision');
+                    }else{
+                        return $result;
+                    }
+                }
+            }
+            //return $errAuto->messageSystem('OK', null,40,null, null);
+        } catch (Exception $e) { // se arroja una excepción si una consulta falla
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+        }
+    }
+    
+    public function enviarDocAutorizacion() {
+        try {
+            $obj_var = new cls_Global();
+            $autDoc=new VSAutoDocumento(); 
+            $obj_con = new cls_Base();
+            $con = $obj_con->conexionIntermedio();
+            $nEstado="2";
+            $docAut= $this->buscarDocGuiaAUT($con, $obj_var, $obj_con,$nEstado); 
+            //cls_Global::putMessageLogFile($docAut);            
+            for ($i = 0; $i < count($docAut); $i++) {
+                //cls_Global::putMessageLogFile($docAut[$i]); 
+                $ids=$docAut[$i]["Ids"];
+                if ($ids !== "") {
+                    $result = array(
+                        'status' => 'OK',
+                        'nomDoc' => $docAut[$i]["NombreDocumento"],  
+                        'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
+                    );
+                    $DirDocAutorizado=  cls_Global::$seaDocAutGuia; 
+                    $DirDocFirmado=cls_Global::$seaDocGuia;
+                    $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado,'NubeGuiaRemision','GUIA','IdGuiaRemision');
+                
+                }
+            }
+            //return $errAuto->messageSystem('OK', null,40,null, null);
+        } catch (Exception $e) { // se arroja una excepción si una consulta falla
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+        }
+    }
+    
+    
+    private function generarFileXML($con,$obj_con,$ids) {
+        $autDoc=new VSAutoDocumento();
+
+        $valida= new cls_Global();
+        $codDoc = $this->tipoDoc; //Documento Guia de Remision
+        $cabFact = $this->mostrarCabGuia($con,$obj_con,$ids);
+        //cls_Global::putMessageLogFile($cabFact);
+        if (count($cabFact)>0) {
+            $ErroDoc=VSexception::messageErrorDoc($cabFact[0]["Estado"],$cabFact[0]["NumDocumento"],$cabFact[0]["NombreDocumento"],$cabFact[0]["ClaveAcceso"],$cabFact[0]["CodigoError"] );
+            if ($ErroDoc['status'] != 'OK_GER'){
+                return $ErroDoc;
+            }
+        }else{
+            //Si la Cabecera no devuelve registros Retorna un resultado  de False
+            return VSexception::messageFileXML('NO_OK', null, null, 1, null, null);
+        }
+        
+        $destDoc = $this->mostrarDestinoGuia($con,$obj_con,$ids);
+        $adiFact = $this->mostrarCabGuiaDataAdicional($con,$obj_con,$ids);
+
+        
+        //http://www.itsalif.info/content/php-5-domdocument-creating-basic-xml
+        $xml = new DomDocument('1.0', 'UTF-8');
+        $xml->standalone= TRUE;
+        
+        //NODO PRINCIPAL
+        $dom = $xml->createElement('guiaRemision');
+        $dom->setAttribute('id', 'comprobante');
+        $dom->setAttribute('version', '1.0.0');//Version Normal Para 2 Decimales
+        $dom = $xml->appendChild($dom);
+        
+        $dom->appendChild(EMPRESA::infoTributariaXML($cabFact,$xml));
+        
+            //INFORMACION DE GUIA REMISION
+            $infoGuiaRemision=$xml->createElement('infoGuiaRemision');
+            if(strlen(trim($cabFact[0]['DireccionEstablecimiento']))>0){
+                $infoGuiaRemision->appendChild($xml->createElement('dirEstablecimiento', utf8_encode(trim($cabFact[0]["DireccionEstablecimiento"]))));
+            }
+            $infoGuiaRemision->appendChild($xml->createElement('dirPartida', utf8_encode(trim($cabFact[0]["DireccionPartida"]))));
+            $infoGuiaRemision->appendChild($xml->createElement('razonSocialTransportista', utf8_encode($valida->limpioCaracteresXML(trim($cabFact[0]["RazonSocialTransportista"])))));
+            $infoGuiaRemision->appendChild($xml->createElement('tipoIdentificacionTransportista', utf8_encode(trim($cabFact[0]["TipoIdentificacionTransportista"]))));
+            $infoGuiaRemision->appendChild($xml->createElement('rucTransportista', trim($cabFact[0]["IdentificacionTransportista"])));
+            
+            if(strlen(trim($cabFact[0]['Rise']))>0){
+                 $infoGuiaRemision->appendChild($xml->createElement('rise', utf8_encode(trim($cabFact[0]["Rise"]))));//Obligado cuando Corresponda
+            }
+            if(strlen(trim($cabFact[0]['ObligadoContabilidad']))>0){
+                 $infoGuiaRemision->appendChild($xml->createElement('obligadoContabilidad', $cabFact[0]["ObligadoContabilidad"]));//Obligado cuando Corresponda
+            }
+            if(strlen(trim($cabFact[0]['ContribuyenteEspecial']))>0){
+                 $infoGuiaRemision->appendChild($xml->createElement('contribuyenteEspecial', $cabFact[0]["ContribuyenteEspecial"]));//Obligado cuando Corresponda
+            }
+            
+            $infoGuiaRemision->appendChild($xml->createElement('fechaIniTransporte', date(cls_Global::$dateXML, strtotime($cabFact[0]["FechaInicioTransporte"]))));
+            $infoGuiaRemision->appendChild($xml->createElement('fechaFinTransporte', date(cls_Global::$dateXML, strtotime($cabFact[0]["FechaFinTransporte"]))));
+            $infoGuiaRemision->appendChild($xml->createElement('placa',trim($cabFact[0]["Placa"]) ));
+            
+        $dom->appendChild($infoGuiaRemision);
+            
+            $destinatarios=$xml->createElement('destinatarios');
+            for ($i = 0; $i < sizeof($destDoc); $i++) {
+                $destinatario=$xml->createElement('destinatario');                
+                    $destinatario->appendChild($xml->createElement('identificacionDestinatario', utf8_encode(trim($destDoc[$i]['IdentificacionDestinatario']))));
+                    $destinatario->appendChild($xml->createElement('razonSocialDestinatario', $valida->limpioCaracteresXML(trim($destDoc[$i]["RazonSocialDestinatario"]))));
+                    $destinatario->appendChild($xml->createElement('dirDestinatario', $valida->limpioCaracteresXML(trim($destDoc[$i]["DirDestinatario"]))));
+                    $destinatario->appendChild($xml->createElement('motivoTraslado', $valida->limpioCaracteresXML(trim($destDoc[$i]["MotivoTraslado"]))));
+
+                    //NOTA Verificar si estos campos No Obligados son Necesarios si en algun momento almens uno se cumple
+                    if(strlen(trim($destDoc[$i]['DocAduaneroUnico']))>0){
+                        $destinatario->appendChild($xml->createElement('docAduaneroUnico', $valida->limpioCaracteresXML(trim($destDoc[$i]["DocAduaneroUnico"]))));
+                        //$xmldata .='<docAduaneroUnico>' . utf8_encode(trim($destDoc[$i]['DocAduaneroUnico'])) . '</docAduaneroUnico>';//Obligado cuando Corresponda
+                    }
+                    if(strlen(trim($destDoc[$i]['CodEstabDestino']))>0){
+                        $destinatario->appendChild($xml->createElement('codEstabDestino', trim($destDoc[$i]["CodEstabDestino"])));
+                        //$xmldata .='<codEstabDestino>' . utf8_encode(trim($destDoc[$i]['CodEstabDestino'])) . '</codEstabDestino>';//Obligado cuando Corresponda
+                    }
+                    if(strlen(trim($destDoc[$i]['Ruta']))>0){
+                        $destinatario->appendChild($xml->createElement('ruta', $valida->limpioCaracteresXML(trim($destDoc[$i]["Ruta"]))));
+                        //$xmldata .='<ruta>' . $valida->limpioCaracteresXML(trim($destDoc[$i]["Ruta"])) . '</ruta>';//Obligado cuando Corresponda
+                    }
+                    if(strlen(trim($destDoc[$i]['CodDocSustento']))>0){
+                        $destinatario->appendChild($xml->createElement('codDocSustento',trim($destDoc[$i]["CodDocSustento"])));
+                        //$xmldata .='<codDocSustento>' . utf8_encode(trim($destDoc[$i]['CodDocSustento'])) . '</codDocSustento>';//Obligado cuando Corresponda
+                    }
+                    if(strlen(trim($destDoc[$i]['NumDocSustento']))>0){
+                        $destinatario->appendChild($xml->createElement('numDocSustento', trim($destDoc[$i]["NumDocSustento"])));
+                        //$xmldata .='<numDocSustento>' . utf8_encode(trim($destDoc[$i]['NumDocSustento'])) . '</numDocSustento>';//Obligado cuando Corresponda
+                    }
+                    if(strlen(trim($destDoc[$i]['NumAutDocSustento']))>0){
+                        $destinatario->appendChild($xml->createElement('numAutDocSustento', trim($destDoc[$i]["NumAutDocSustento"])));
+                        //$xmldata .='<numAutDocSustento>' . utf8_encode(trim($destDoc[$i]['NumAutDocSustento'])) . '</numAutDocSustento>';//Obligado cuando Corresponda
+                    }
+                    if(trim($destDoc[$i]['FechaEmisionDocSustento'])<>'0000-00-00'){//Formato de Fecha Mysql
+                        $destinatario->appendChild($xml->createElement('fechaEmisionDocSustento', date(cls_Global::$dateXML, strtotime($destDoc[$i]["FechaEmisionDocSustento"]))));
+                        //$xmldata .='<fechaEmisionDocSustento>' . date(Yii::app()->params["dateXML"], strtotime($destDoc[$i]["FechaEmisionDocSustento"])) . '</fechaEmisionDocSustento>';//Obligado cuando Corresponda
+                    }
+                    
+                    //DETALLE DE GUIA DE REMISION
+                    $detalles=$xml->createElement('detalles');
+                    $detDoc=$destDoc[$i]['GuiaDet'];//Extrae el Detalle de la Guia de Remision
+                        for ($j = 0; $j < sizeof($detDoc); $j++) {
+                            $detalle=$xml->createElement('detalle');
+                                $detalle->appendChild($xml->createElement('codigoInterno', trim($detDoc[$j]['CodigoInterno'])));
+                                if(strlen(trim($detDoc[$j]['CodigoAdicional']))>0){
+                                    $detalle->appendChild($xml->createElement('codigoAdicional', trim($detDoc[$j]['CodigoAdicional'])));
+                                    //$xmldata .='<codigoAdicional>' . utf8_encode(trim($detDoc[$j]['CodigoAdicional'])) . '</codigoAdicional>';//Obligado cuando Corresponda
+                                }
+                                $detalle->appendChild($xml->createElement('descripcion', $valida->limpioCaracteresXML(trim($detDoc[$j]['Descripcion']))));
+                                $detalle->appendChild($xml->createElement('cantidad', cls_Global::formatoDecXML($detDoc[$j]['Cantidad'])));
+                                $detAdi=$detDoc[$j]['GuiaDetAdi'];//Recupera Datos Adicionales del Detalle de la GUia
+                                if(sizeof($detAdi)>0){
+                                    //$xmldata .= $this->guiadetallesAdicionales($detAdi,$xml);
+                                    $detalle->appendChild($this->guiadetallesAdicionales($detAdi,$xml));
+                                }
+                            $detalles->appendChild($detalle);
+                        }
+                    $destinatario->appendChild($detalles);
+                $destinatarios->appendChild($destinatario);
+            }
+            
+        $dom->appendChild($destinatarios);
+        
+        //INFORMACION ADICIONAL
+        $dom->appendChild(EMPRESA::infoAdicionalXML($adiFact, $xml));
+        
+        $xml->formatOutput = true;
+
+        $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
+        $xml->save(cls_Global::$seaDocXml.$nomDocfile);
+        
+        return VSexception::messageFileXML('OK', $nomDocfile, $cabFact[0]["ClaveAcceso"], 2, null, null);
+    }
+    
+    private function guiadetallesAdicionales($adiDoc,$xml){
+        //$valida = new VSValidador;
+        $detallesAdicionales=$xml->createElement('detallesAdicionales');
+        for ($xi = 0; $xi < sizeof($adiDoc); $xi++) {
+            if(strlen(trim($adiDoc[$xi]['Descripcion']))>0){
+                $detAdicional->appendChild($xml->createElement('detAdicional', $valida->limpioCaracteresXML(trim($adiDoc[$xi]["Descripcion"]))));
+                //$xmldata .='<detAdicional nombre="' . trim($adiDoc[$i]['Nombre']) . '" valor="' . $valida->limpioCaracteresXML(trim($adiDoc[$i]['Descripcion'])) . '">';
+                $detAdicional->setAttribute('nombre', $valida->limpioCaracteresXML(trim($adiDoc[$xi]['Nombre'])));
+                $detallesAdicionales->appendChild($detAdicional);
+            }
+        }
+        return $detallesAdicionales;
+    }
+
+    
+    
+    
 
 }

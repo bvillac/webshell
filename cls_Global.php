@@ -20,7 +20,7 @@ class cls_Global {
     public static $ambt_id='1';//Ambiente de Pruebas por Defecto =1 =>2 Produccion
     //public static $IdsUsu='1';//Valor por defecto(Alimenta al Autorizar el Documento)
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2016-12-01';//'2016-08-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2016-12-10';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     public static $dateXML = "d/m/Y";
     public $decimalPDF=2;
@@ -42,15 +42,15 @@ class cls_Global {
     
     public static $seaDocXml = '/opt/SEADOC/GENERADO/';
     public static $seaDocFact = '/opt/SEADOC/FIRMADO/FACTURAS/';
-    public $seaDocRete = '/opt/SEADOC/FIRMADO/RETENCIONES/';
-    public $seaDocNc = '/opt/SEADOC/FIRMADO/NC/';
-    public $seaDocNd = '/opt/SEADOC/FIRMADO/ND/';
-    public $seaDocGuia = '/opt/SEADOC/FIRMADO/GUIAS/';
+    public static $seaDocRete = '/opt/SEADOC/FIRMADO/RETENCIONES/';
+    public static $seaDocNc = '/opt/SEADOC/FIRMADO/NC/';
+    public static $seaDocNd = '/opt/SEADOC/FIRMADO/ND/';
+    public static $seaDocGuia = '/opt/SEADOC/FIRMADO/GUIAS/';
     public static $seaDocAutFact = '/opt/SEADOC/AUTORIZADO/FACTURAS/';
-    public $seaDocAutRete = '/opt/SEADOC/AUTORIZADO/RETENCIONES/';
-    public $seaDocAutNc = '/opt/SEADOC/AUTORIZADO/NC/';
-    public $seaDocAutNd = '/opt/SEADOC/AUTORIZADO/ND/';
-    public $seaDocAutGuia = '/opt/SEADOC/AUTORIZADO/GUIAS/';
+    public static $seaDocAutRete = '/opt/SEADOC/AUTORIZADO/RETENCIONES/';
+    public static $seaDocAutNc = '/opt/SEADOC/AUTORIZADO/NC/';
+    public static $seaDocAutNd = '/opt/SEADOC/AUTORIZADO/ND/';
+    public static $seaDocAutGuia = '/opt/SEADOC/AUTORIZADO/GUIAS/';
 
 
     //function __construct() {  }

@@ -7,7 +7,7 @@ include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
 include('REPORTES.php');
-
+//Autorizacin Automatica
 include('VSAutoDocumento.php');
 include('VSFirmaDigital.php');
 include('VSexception.php');
@@ -738,7 +738,7 @@ class NubeFactura {
         $rawData = array();
         $fechaIni=$obj_var->dateStartFact;
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
-        $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,NombreDocumento
+        $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
             FROM " . $obj_con->BdIntermedio . ".NubeFactura A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
                 //. "AND IdFactura=24163 ";
