@@ -7,6 +7,12 @@ include('VSValidador.php');
 include('VSClaveAcceso.php');
 include('mailSystem.php');
 include('REPORTES.php');
+
+//Autorizacin Automatica
+include('VSAutoDocumento.php');
+include('VSFirmaDigital.php');
+include('VSexception.php');
+
 class NubeNotasCredito {
     private $tipDev="DV";
     private $tipoDoc='04';
@@ -610,7 +616,8 @@ class NubeNotasCredito {
                     'NOTA DE CREDITO' NombreDocumento,A.Ruc,A.Ambiente,A.TipoEmision,A.EstadoEnv,
                     A.ClaveAcceso,CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento
                 FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A "
-                    . " WHERE A.Estado=3 AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
+                    . " WHERE A.Estado=3 "
+                    . " AND A.EstadoEnv=2 AND A.FechaAutorizacion>='$fechaIni' limit $limitEnvMail ";             
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
@@ -624,7 +631,7 @@ class NubeNotasCredito {
     public function mostrarCabNc($con,$obj_con,$id) {
         $rawData = array();        
         $sql = "SELECT A.IdNotaCredito IdDoc,A.Estado,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
-                        A.FechaAutorizacion,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
+                        A.FechaAutorizacion,A.RazonSocial,A.NombreComercial,A.AutorizacionSRI,A.DireccionMatriz,A.DireccionEstablecimiento,
                         CONCAT(A.Establecimiento,'-',A.PuntoEmision,'-',A.Secuencial) NumDocumento,
                         A.ContribuyenteEspecial,A.ObligadoContabilidad,A.TipoIdentificacionComprador,
                         A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,
@@ -695,6 +702,246 @@ class NubeNotasCredito {
         }
         return $rawData;
     }
+    
+    /************************************************************/
+    /*********CONSUMO DE WEB SERVICES
+    /************************************************************/
+    private function buscarDocNcAUT($con,$obj_var,$obj_con,$nEstado) {
+        $rawData = array();
+        $fechaIni=$obj_var->dateStartFact;
+        $limitEnvAUT=  cls_Global::$limitEnvAUT; 
+        $sql = "SELECT A.IdNotaCredito Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
+            FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A WHERE A.Estado IN($nEstado) "
+                //. "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
+                . "AND IdNotaCredito=166 ";
+                //cls_Global::putMessageLogFile($sql);
+        $sentencia = $con->query($sql);
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+
+    }
+    
+    public function enviarDocRecepcion() {
+        try {
+            $obj_var = new cls_Global();
+            $autDoc=new VSAutoDocumento(); 
+            $obj_con = new cls_Base();
+            $con = $obj_con->conexionIntermedio();
+            //$ids =0; //explode(",", $id);
+            $nEstado="1,4";
+            $docAut= $this->buscarDocNcAUT($con, $obj_var, $obj_con,$nEstado); 
+            //cls_Global::putMessageLogFile($docAut);            
+            for ($i = 0; $i < count($docAut); $i++) {
+                //cls_Global::putMessageLogFile($docAut[$i]); 
+                $ids=$docAut[$i]["Ids"];
+                if ($ids !== "") {
+                    //Retorna Resultado Generado
+                    $result = $this->generarFileXML($con,$obj_con,$ids);
+                    $DirDocAutorizado=  cls_Global::$seaDocAutNc; 
+                    $DirDocFirmado=cls_Global::$seaDocNc;
+                    if ($result['status'] == 'OK') {//Retorna True o False 
+                        //return $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
+                        $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeNotaCredito','NOTA DE CREDITO','IdNotaCredito');
+                    }elseif ($result['status'] == 'OK_REG') {
+                        //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                        //Autorizacion de Comprobantes 
+                        //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                    }else{
+                        return $result;
+                    }
+                }
+            }
+            //return $errAuto->messageSystem('OK', null,40,null, null);
+        } catch (Exception $e) { // se arroja una excepción si una consulta falla
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+        }
+    }
+    
+    public function enviarDocAutorizacion() {
+        try {
+            $obj_var = new cls_Global();
+            $autDoc=new VSAutoDocumento(); 
+            $obj_con = new cls_Base();
+            $con = $obj_con->conexionIntermedio();
+            $nEstado="2";
+            $docAut= $this->buscarDocNcAUT($con, $obj_var, $obj_con,$nEstado); 
+            //cls_Global::putMessageLogFile($docAut);            
+            for ($i = 0; $i < count($docAut); $i++) {
+                //cls_Global::putMessageLogFile($docAut[$i]); 
+                $ids=$docAut[$i]["Ids"];
+                if ($ids !== "") {
+                    $result = array(
+                        'status' => 'OK',
+                        'nomDoc' => $docAut[$i]["NombreDocumento"],  
+                        'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
+                    );
+                    $DirDocAutorizado=cls_Global::$seaDocAutNc; 
+                    $DirDocFirmado=cls_Global::$seaDocNc;
+                    $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado,'NubeNotaCredito','NOTA DE CREDITO','IdNotaCredito');
+                
+                }
+            }
+            //return $errAuto->messageSystem('OK', null,40,null, null);
+        } catch (Exception $e) { // se arroja una excepción si una consulta falla
+            return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+        }
+    }
+    
+    private function generarFileXML($con,$obj_con,$ids) {
+        $autDoc=new VSAutoDocumento();
+
+        $valida= new cls_Global();
+        //$xmlGen=new VSXmlGenerador();
+        $codDoc = $this->tipoDoc; //Documento Factura
+        $cabFact = $this->mostrarCabNc($con,$obj_con,$ids);
+        //cls_Global::putMessageLogFile($cabFact);
+        if (count($cabFact)>0) {
+            $ErroDoc=VSexception::messageErrorDoc($cabFact[0]["Estado"],$cabFact[0]["NumDocumento"],$cabFact[0]["NombreDocumento"],$cabFact[0]["ClaveAcceso"],$cabFact[0]["CodigoError"] );
+            if ($ErroDoc['status'] != 'OK_GER'){
+                return $ErroDoc;
+            }
+        }else{
+            //Si la Cabecera no devuelve registros Retorna un resultado  de False
+            return VSexception::messageFileXML('NO_OK', null, null, 1, null, null);
+        }
+        
+        $detFact = $this->mostrarDetNc($con,$obj_con,$ids);
+        $impFact = $this->mostrarNcImp($con,$obj_con,$ids);
+        $adiFact = $this->mostrarNcDataAdicional($con,$obj_con,$ids);
+        //$pagFact = $this->mostrarFormaPago($con,$obj_con,$ids);//Agregar forma de pago
+
+        
+        //http://www.itsalif.info/content/php-5-domdocument-creating-basic-xml
+        $xml = new DomDocument('1.0', 'UTF-8');
+        //$xml->version='1.0';
+        //$xml->encoding='UTF-8';
+        $xml->standalone= TRUE;
+        
+        //NODO PRINCIPAL
+        $dom = $xml->createElement('notaCredito');
+        $dom->setAttribute('id', 'comprobante');
+        $dom->setAttribute('version', '1.1.0');
+        $dom = $xml->appendChild($dom);
+        
+        $dom->appendChild(EMPRESA::infoTributariaXML($cabFact,$xml));
+        
+            //INFORMACION DE NOTA CREDITO
+            $infoNotaCredito=$xml->createElement('infoNotaCredito');
+            $infoNotaCredito->appendChild($xml->createElement('fechaEmision', date(cls_Global::$dateXML, strtotime($cabFact[0]["FechaEmision"]))));
+            $infoNotaCredito->appendChild($xml->createElement('dirEstablecimiento', utf8_encode(trim($cabFact[0]["DireccionEstablecimiento"]))));
+            $infoNotaCredito->appendChild($xml->createElement('tipoIdentificacionComprador', $cabFact[0]["TipoIdentificacionComprador"]));
+            $infoNotaCredito->appendChild($xml->createElement('razonSocialComprador', utf8_encode($valida->limpioCaracteresXML(trim($cabFact[0]["RazonSocialComprador"])))));
+            $infoNotaCredito->appendChild($xml->createElement('identificacionComprador', $cabFact[0]["IdentificacionComprador"]));
+            if(strlen(trim($cabFact[0]['ContribuyenteEspecial']))>0){                
+                $infoNotaCredito->appendChild($xml->createElement('contribuyenteEspecial', $cabFact[0]["ContribuyenteEspecial"]));
+            }
+            if(strlen(trim($cabFact[0]['ObligadoContabilidad']))>0){                
+                $infoNotaCredito->appendChild($xml->createElement('obligadoContabilidad', $cabFact[0]["ObligadoContabilidad"]));
+            }            
+            $infoNotaCredito->appendChild($xml->createElement('codDocModificado', $cabFact[0]["CodDocModificado"]));
+            $infoNotaCredito->appendChild($xml->createElement('numDocModificado', $cabFact[0]["NumDocModificado"]));
+            $infoNotaCredito->appendChild($xml->createElement('fechaEmisionDocSustento', date(cls_Global::$dateXML, strtotime($cabFact[0]["FechaEmisionDocModificado"]))));
+            $infoNotaCredito->appendChild($xml->createElement('totalSinImpuestos', cls_Global::formatoDecXML($cabFact[0]["TotalSinImpuesto"])));
+            $infoNotaCredito->appendChild($xml->createElement('valorModificacion', cls_Global::formatoDecXML($cabFact[0]["ValorModificacion"])));
+            $infoNotaCredito->appendChild($xml->createElement('moneda', $cabFact[0]["Moneda"]));
+            
+            //$infoFactura->appendChild($xml->createElement('totalDescuento', cls_Global::formatoDecXML($cabFact[0]["ValorModificacion"])));
+           
+                $TConImpuestos=$xml->createElement('totalConImpuestos');
+                $IRBPNR = 0; //NOta validar si existe casos para estos
+                $ICE = 0;
+                for ($i = 0; $i < sizeof($impFact); $i++) {
+                    if ($impFact[$i]['Codigo'] == '2') {//Valores de IVA
+                        switch ($impFact[$i]['CodigoPorcentaje']) {
+                            case 0:
+                                //$BASEIVA0=$impFact[$i]['BaseImponible'];
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 2://IVA 12%
+                                //$BASEIVA12 = $impFact[$i]['BaseImponible'];
+                                //$VALORIVA12 = $impFact[$i]['Valor'];
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 3://IVA 14%
+                                //$BASEIVA12 = $impFact[$i]['BaseImponible'];
+                                //$VALORIVA12 = $impFact[$i]['Valor'];
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 6://No objeto Iva
+                                //$NOOBJIVA=$impFact[$i]['BaseImponible'];
+                                break;
+                            case 7://Excento de Iva
+                                //$EXENTOIVA=$impFact[$i]['BaseImponible'];
+                                break;
+                            default:
+                        }
+                    }
+                    //NOta Verificar cuando el COdigo sea igual a 3 o 5 Para los demas impuestos
+                    $infoNotaCredito->appendChild($TConImpuestos);
+                } 
+            $infoNotaCredito->appendChild($xml->createElement('motivo', $cabFact[0]["MotivoModificacion"]));
+            //$infoFactura->appendChild($xml->createElement('propina', cls_Global::formatoDecXML($cabFact[0]["Propina"])));
+            //$infoFactura->appendChild($xml->createElement('importeTotal', cls_Global::formatoDecXML($cabFact[0]["ImporteTotal"])));
+ 
+        $dom->appendChild($infoNotaCredito);
+        
+            //DETALLE DE NOTA CREDITO
+            $detalles=$xml->createElement('detalles');
+            for ($i = 0; $i < sizeof($detFact); $i++) {//DETALLE DE FACTURAS
+                $detalle=$xml->createElement('detalle');
+                $detalle->appendChild($xml->createElement('codigoInterno', utf8_encode(trim($detFact[$i]['CodigoPrincipal']))));
+                //$detalle->appendChild($xml->createElement('codigoAdicional', utf8_encode(trim($detFact[$i]['CodigoAuxiliar']))));
+                $detalle->appendChild($xml->createElement('descripcion', $valida->limpioCaracteresXML(trim($detFact[$i]['Descripcion']))));
+                $detalle->appendChild($xml->createElement('cantidad', cls_Global::formatoDecXML($detFact[$i]['Cantidad'])));
+                $detalle->appendChild($xml->createElement('precioUnitario', (string)$detFact[$i]['PrecioUnitario']));
+                $detalle->appendChild($xml->createElement('descuento', cls_Global::formatoDecXML($detFact[$i]['Descuento'])));
+                $detalle->appendChild($xml->createElement('precioTotalSinImpuesto', cls_Global::formatoDecXML($detFact[$i]['PrecioTotalSinImpuesto'])));
+                $detalle->appendChild($this->impuestosXML($detFact[$i]['impuestos'], $xml));
+
+                $detalles->appendChild($detalle);
+
+            }
+        $dom->appendChild($detalles);
+        
+        //INFORMACION ADICIONAL
+        $dom->appendChild(EMPRESA::infoAdicionalXML($adiFact, $xml));
+        
+        $xml->formatOutput = true;
+
+        $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
+        $xml->save(cls_Global::$seaDocXml.$nomDocfile);
+        
+        return VSexception::messageFileXML('OK', $nomDocfile, $cabFact[0]["ClaveAcceso"], 2, null, null);
+    }
+    
+    public function totalImpuestoXML($impFact,$i,$xml){
+        $TImpuesto=$xml->createElement('totalImpuesto');
+        $TImpuesto->appendChild($xml->createElement('codigo', $impFact[$i]["Codigo"]));
+        $TImpuesto->appendChild($xml->createElement('codigoPorcentaje', $impFact[$i]["CodigoPorcentaje"]));
+        $TImpuesto->appendChild($xml->createElement('baseImponible', cls_Global::formatoDecXML($impFact[$i]["BaseImponible"])));
+        //$TImpuesto->appendChild($xml->createElement('tarifa', $impFact[$i]["Tarifa"]));
+        $TImpuesto->appendChild($xml->createElement('valor', cls_Global::formatoDecXML($impFact[$i]["Valor"])));
+        return $TImpuesto;
+    }
+    
+    public function impuestosXML($impuesto,$xml){
+        $impuestosG=$xml->createElement('impuestos');
+        for ($j = 0; $j < sizeof($impuesto); $j++) {//DETALLE IMPUESTO DE FACTURA
+            $imp=$xml->createElement('impuesto');
+            $imp->appendChild($xml->createElement('codigo',$impuesto[$j]['Codigo']));
+            $imp->appendChild($xml->createElement('codigoPorcentaje',$impuesto[$j]['CodigoPorcentaje']));
+            $imp->appendChild($xml->createElement('tarifa',cls_Global::formatoDecXML($impuesto[$j]['Tarifa'])));
+            $imp->appendChild($xml->createElement('baseImponible',cls_Global::formatoDecXML($impuesto[$j]['BaseImponible'])));
+            $imp->appendChild($xml->createElement('valor',cls_Global::formatoDecXML($impuesto[$j]['Valor'])));
+            $impuestosG->appendChild($imp);
+        }
+        return $impuestosG;
+    }
+
     
     
     
