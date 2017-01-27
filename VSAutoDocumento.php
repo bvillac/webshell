@@ -20,8 +20,7 @@ class VSAutoDocumento {
                 $estadoRac = $Rac['estado'];
                 if ($estadoRac == 'RECIBIDA') {
                     //Continua con el Proceso
-                    //Autorizacion de Comprobantes 
-                    
+                    //Autorizacion de Comprobantes                     
                     //CAMBIO METODO OFFLINE 29-11-2016
                     //return $this->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
                     return $this->actualizaDocRecibidoSri($Rac, $ids, $result['nomDoc'], $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
@@ -29,7 +28,7 @@ class VSAutoDocumento {
                     //Verifica si la Clave esta en Proceso de Validacion
                     if ($estadoRac == 'DEVUELTA') {
                         //Actualiza Errores de Documento Devuelto...
-                        $AdrSri= $this->recibeDocSriDevuelto($Rac, $ids, $result['nomDoc'], $DirDocFirmado,$DBTabDoc,$CampoID);
+                        $AdrSri= $this->recibeDocSriDevuelto($Rac, $ids, $result['nomDoc'], $DirDocFirmado,$DBTabDoc,$DocErr,$CampoID);
                         if (count($ids) == 1) {//Sale directamente si solo tiene un Domento para validadr
                             return $AdrSri; //Si la autorizacion es uno a uno.
                         }
@@ -115,8 +114,10 @@ class VSAutoDocumento {
                 $status="NO_OK";
                 $mensaje=$response['mensajes']['mensaje'];//Array de Errores Sri
                 $this->mensajeErrorDocumentos($con,$mensaje,$ids,$DocErr);
-                $CodigoError=$mensaje[0]['identificador'];
-                $InformacionAdicional=(!empty($mensaje[0]['informacionAdicional']))?$mensaje[0]['informacionAdicional']:'';
+                //$CodigoError=$mensaje[0]['identificador'];
+                //$InformacionAdicional=(!empty($mensaje[0]['informacionAdicional']))?$mensaje[0]['informacionAdicional']:'';
+                $CodigoError=$mensaje['identificador'];
+                $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
                 $DescripcionError=utf8_encode("IdFact=>$ids ID=>$CodigoError Error=> $InformacionAdicional");
                 $DirectorioDocumento=$DirDocFirmado;
             }
@@ -143,7 +144,7 @@ class VSAutoDocumento {
         }
     }
     
-    private function recibeDocSriDevuelto($response, $ids, $NombreDocumento, $DirDocFirmado,$DBTabDoc,$CampoID) {
+    private function recibeDocSriDevuelto($response, $ids, $NombreDocumento, $DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
         $obj_con = new cls_Base();
         $con = $obj_con->conexionIntermedio();
         try {
@@ -151,15 +152,28 @@ class VSAutoDocumento {
             $estado = $response['estado'];
             $CodigoError = '';
             $DescripcionError = '';
-            $comprobanteRac = $response['comprobantes']['comprobante'];
-            $codEstado = '4';
+            $comprobanteRac = $response['comprobantes']['comprobante'];            
             $mensaje = $comprobanteRac['mensajes']['mensaje']; //Array de Errores Sri
-            //$this->mensajeErrorDocumentos($con, $mensaje, $ids, 'FACTURA');
-            $CodigoError = $mensaje['identificador'];
-            $MensajeSRI = $mensaje['mensaje'];
-            $InformacionAdicional = (!empty($mensaje['informacionAdicional'])) ? $mensaje['informacionAdicional'] : '';
+            $this->mensajeErrorDocumentos($con,$mensaje,$ids,$DocErr);
+            if (sizeof($mensaje)>0){
+                //Cuando es Varios Mensajes Guarda solo el ultimo.
+                $nEnd=sizeof($mensaje)-1;//El ultimo Items
+                $CodigoError = $mensaje[$nEnd]['identificador'];
+                $MensajeSRI = $mensaje[$nEnd]['mensaje'];
+                $InformacionAdicional = (!empty($mensaje[$nEnd]['informacionAdicional'])) ? $mensaje[$nEnd]['informacionAdicional'] : ''; 
+            }else{
+                //Para 1 solo mensaje
+                $CodigoError = $mensaje['identificador'];
+                $MensajeSRI = $mensaje['mensaje'];
+                $InformacionAdicional = (!empty($mensaje['informacionAdicional'])) ? $mensaje['informacionAdicional'] : '';
+            }
             $DescripcionError = utf8_encode("IdFact=>$ids ID=>$CodigoError MensSri=>($MensajeSRI) InfAdicional=>($InformacionAdicional)");
             $DirectorioDocumento = $DirDocFirmado;
+            
+            //Verificar Codigo Error para Actualizar Estado
+            //$codEstado = '4';
+            $codEstado = $this->estadoError($CodigoError);
+            
 
             //,USU_ID="'.$UsuId.'"
             $sql = 'UPDATE ' . $obj_con->BdIntermedio . '.'.$DBTabDoc.' SET 
@@ -184,6 +198,31 @@ class VSAutoDocumento {
         }
     }
     
+    private function estadoError($Numero) {
+        /*  0 = NO ENVIADO
+            1 = ENVIADO BASE INTERMEDIA
+            2 = RECIBIDO SRI 
+            3 = AUTORIZADO SRI 
+            4 = DEVUELTA (NO AUTORIZADOS EN PROCESO)
+            5 = ELIMINADO DEL SISTEMA
+            6 = RECHAZADO (NO AUTORIZADOS O NEGADO) =>SOLUC VOLVER ENVIAR CON ESTADO 1
+            8 = DOCUMENTO ANULADO*/
+         switch ($Numero) {
+             case 58://Error en la estructura de clave acceso 
+                return 6;
+                break;
+            case 70://Clave de acceso en procesamiento 
+                return 4;
+                break;            
+            case 65://Fecha de emisión  extemporánea 
+                return 6;
+                break;
+            default:
+                return 6;
+        }
+    }
+
+
     private function mensajeErrorDocumentos($con, $mensaje, $ids, $tipDoc) {
         $IdFactura='';$IdRetencion='';$IdNotaCredito='';$IdNotaDebito='';$IdGuiaRemision='';
         switch ($tipDoc) {
@@ -202,19 +241,39 @@ class VSAutoDocumento {
             default:
                 $IdGuiaRemision=$ids;
         }
-        for ($i = 0; $i < sizeof($mensaje); $i++) {
-            $Identificador=$mensaje[$i]['identificador'];
-            $TipoMensaje=$mensaje[$i]['tipo'];
-            $Mensaje=$mensaje[$i]['mensaje'];
-            $InformacionAdicional=(!empty($mensaje[$i]['informacionAdicional']))?$mensaje[$i]['informacionAdicional']:'';
+        if (sizeof($mensaje)>0){
+            //Se Guardan Varios Mensajes.
+            for ($i = 0; $i < sizeof($mensaje); $i++) {
+                $Identificador = $mensaje[$i]['identificador'];
+                $TipoMensaje = $mensaje[$i]['tipo'];
+                $Mensaje = $mensaje[$i]['mensaje'];
+                $InformacionAdicional = (!empty($mensaje[$i]['informacionAdicional'])) ? $mensaje[$i]['informacionAdicional'] : '';
+                $sql = "INSERT INTO " . $con->BdIntermedio . ".NubeMensajeError 
+                 (IdFactura,IdRetencion,IdNotaCredito,IdNotaDebito,IdGuiaRemision,Identificador,TipoMensaje,Mensaje,InformacionAdicional)
+                 VALUES
+                 ('$IdFactura','$IdRetencion','$IdNotaCredito','$IdNotaDebito','$IdGuiaRemision','$Identificador','$TipoMensaje','$Mensaje','$InformacionAdicional')";
+                $command = $con->prepare($sql);
+                $command->execute();
+                //$status, $error, $op, $message, $data
+                $DescripcionError=utf8_encode("IdFact=>$ids ID=>$Identificador Error=> $InformacionAdicional");
+                VSexception::messageSystem("NO_OK", $TipoMensaje, 0, $Mensaje,$DescripcionError);//Print Error
+            }
+        }  else {
+            //Solo para 1 solo Mensaje
+            $Identificador=$mensaje['identificador'];
+            $TipoMensaje=$mensaje['tipo'];
+            $Mensaje=$mensaje['mensaje'];
+            $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
             $sql = "INSERT INTO " . $con->BdIntermedio . ".NubeMensajeError 
                  (IdFactura,IdRetencion,IdNotaCredito,IdNotaDebito,IdGuiaRemision,Identificador,TipoMensaje,Mensaje,InformacionAdicional)
                  VALUES
                  ('$IdFactura','$IdRetencion','$IdNotaCredito','$IdNotaDebito','$IdGuiaRemision','$Identificador','$TipoMensaje','$Mensaje','$InformacionAdicional')";
-
             $command = $con->prepare($sql);
             $command->execute();
+            $DescripcionError=utf8_encode("IdFact=>$ids ID=>$Identificador Error=> $InformacionAdicional");
+            VSexception::messageSystem("NO_OK", $TipoMensaje, 0, $Mensaje,$DescripcionError);//Print Error
         }
+        
     }
     
     private function newXMLDocRecibidoSri($response,$NombreDocumento,$DirDocAutorizado) {

@@ -551,8 +551,8 @@ class NubeGuiaRemision {
         $sql = "SELECT A.IdGuiaRemision Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
             FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
-                //. "AND IdGuiaRemision=24163 ";
-                //cls_Global::putMessageLogFile($sql);
+                //. "AND IdGuiaRemision=17637 ";
+                cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
@@ -571,6 +571,7 @@ class NubeGuiaRemision {
             $con = $obj_con->conexionIntermedio();
             //$ids =0; //explode(",", $id);
             $nEstado="1,4";
+            //$nEstado="4,5,6";//Descomentar Solo Pruebas
             $docAut= $this->buscarDocGuiaAUT($con, $obj_var, $obj_con,$nEstado); 
             //cls_Global::putMessageLogFile($docAut);            
             for ($i = 0; $i < count($docAut); $i++) {

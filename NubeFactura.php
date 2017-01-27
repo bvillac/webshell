@@ -26,10 +26,10 @@ class NubeFactura {
             $sql = "SELECT TIP_NOF, NUM_NOF,
                             CED_RUC,NOM_CLI,FEC_VTA,DIR_CLI,VAL_BRU,POR_DES,VAL_DES,VAL_FLE,BAS_IVA,
                             BAS_IV0,POR_IVA,VAL_IVA,VAL_NET,POR_R_F,VAL_R_F,POR_R_I,VAL_R_I,GUI_REM,0 PROPINA,
-                            USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC,'' CLAVE,FOR_PAG_SRI,PAG_PLZ,PAG_TMP
-                        FROM " .  $obj_con->BdServidor . ".VC010101 
-                    WHERE IND_UPD='L' AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
-            //$sql .= " WHERE NUM_NOF='0000138449' AND TIP_NOF='F4' ";//Probar Factura
+                            USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC,ClaveAcceso CLAVE,FOR_PAG_SRI,PAG_PLZ,PAG_TMP
+                        FROM " .  $obj_con->BdServidor . ".VC010101 WHERE IND_UPD='L' ";
+            //$sql .=         "AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
+            $sql .= " AND NUM_NOF='0000146377' AND TIP_NOF='F4' ";//Probar Factura
             //echo $sql;
             $sentencia = $conCont->query($sql);
             if ($sentencia->num_rows > 0) {
@@ -93,7 +93,7 @@ class NubeFactura {
             }
             $con->commit();
             $con->close();
-            $this->actualizaErpCabFactura($cabFact);
+            //$this->actualizaErpCabFactura($cabFact);
             //echo "ERP Actualizado";
             return true;
         } catch (Exception $e) {
@@ -118,7 +118,8 @@ class NubeFactura {
         $objCla = new VSClaveAcceso();
         $serie = $objEmp['Establecimiento'] . $objEmp['PuntoEmision'];
         $fec_doc = date("Y-m-d", strtotime($objEnt[$i]['FEC_VTA']));
-        $ClaveAcceso = $objCla->claveAcceso($codDoc, $fec_doc, $objEmp['Ruc'], $objEmp['Ambiente'], $serie, $Secuencial, $objEmp['TipoEmision']);
+        
+        $ClaveAcceso =$objEnt[$i]['ClaveAcceso']; //$objCla->claveAcceso($codDoc, $fec_doc, $objEmp['Ruc'], $objEmp['Ambiente'], $serie, $Secuencial, $objEmp['TipoEmision']);
         /** ********************** */
         $nomCliente=str_replace("'","`",$objEnt[$i]['NOM_CLI']);// Error del ' en el Text se lo Reemplaza `
         //$nomCliente=$objEnt[$i]['NOM_CLI'];// Error del ' en el Text
@@ -174,7 +175,8 @@ class NubeFactura {
             if ($detFact[$i]['I_M_IVA'] == '1') {
                 //$val_iva12 = $val_iva12 + floatval($detFact[$i]['VAL_IVA']);
                 //MOdificacion por que iva no cuadra con los totales
-                $val_iva12 = $val_iva12 + (floatval($detFact[$i]['CAN_DES'])*floatval($detFact[$i]['P_VENTA'])* (floatval($por_iva)/100));
+                //$val_iva12 = $val_iva12 + (floatval($detFact[$i]['CAN_DES'])*floatval($detFact[$i]['P_VENTA'])* (floatval($por_iva)/100));
+                $val_iva12 = $val_iva12 + ((floatval($detFact[$i]['CAN_DES'])*floatval($detFact[$i]['P_VENTA'])-floatval($detFact[$i]['VAL_DES']))* (floatval($por_iva)/100));
                 $vet_iva12 = $vet_iva12 + $valSinImp;
             } else {
                 $val_iva0 = 0;
@@ -735,13 +737,14 @@ class NubeFactura {
     /*********CONSUMO DE WEB SERVICES
     /************************************************************/
     private function buscarDocFactAUT($con,$obj_var,$obj_con,$nEstado) {
+        //Solo Envia los Documentos Recibidos
         $rawData = array();
         $fechaIni=$obj_var->dateStartFact;
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
         $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
             FROM " . $obj_con->BdIntermedio . ".NubeFactura A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
-                //. "AND IdFactura=24163 ";
+                //. "AND IdFactura=26216 ";
                 //cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
@@ -760,7 +763,9 @@ class NubeFactura {
             $obj_con = new cls_Base();
             $con = $obj_con->conexionIntermedio();
             //$ids =0; //explode(",", $id);
+            //Envia Documentos Ingrsados y Clave en Proceso
             $nEstado="1,4";
+            //$nEstado="4,5,6";//Descomentar Solo Pruebas
             $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con,$nEstado); 
             //cls_Global::putMessageLogFile($docAut);            
             for ($i = 0; $i < count($docAut); $i++) {
@@ -832,34 +837,7 @@ class NubeFactura {
             if ($ErroDoc['status'] != 'OK_GER'){
                 return $ErroDoc;
             }
-            /*switch ($cabFact[0]["Estado"]) {
-                case 2://RECIBIDO SRI (AUTORIZADOS)
-                    return VSexception::messageFileXML('NO_OK', $cabFact[0]["NumDocumento"], null, 42, null, null);
-                    break;
-                case 4://DEVUELTA (NO AUTORIZADOS EN PROCESO)
-                    //Cuando son devueltas no se deben generar de nuevo la clave de acceso
-                    //hay que esperar hasta que responda
-                    switch ($cabFact[0]["CodigoError"]) {
-                        case 43://CLAVE DE ACCESO REGISTRADA
-                            //No genera Nada Envia los datos generados anteriormente
-                            //Retorna Automaticamente sin Generar Documento
-                            //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
-                            return VSexception::messageFileXML('OK_REG', $cabFact[0]["NombreDocumento"], $cabFact[0]["ClaveAcceso"], 43, null, null);
-                            break;
-                        case 70://CLAVE DE ACCESO EN PROCESO
-                            return VSexception::messageFileXML('OK', $cabFact[0]["NombreDocumento"], $cabFact[0]["ClaveAcceso"], 43, null, null);
-                            break;
-                        default:
-                            //Documento Devuelto hay que volver a generar la clave de Acceso
-                            //Esto es Opcional
-
-                    }
-                    break;
-                case 8://DOCUMENTO ANULADO
-                    return VSexception::messageSystem('NO_OK', null,11,null, null);
-                    break;
-                default:
-            }*/
+            
         }else{
             //Si la Cabecera no devuelve registros Retorna un resultado  de False
             return VSexception::messageFileXML('NO_OK', null, null, 1, null, null);
