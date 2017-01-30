@@ -142,7 +142,7 @@ class VSexception {
         return $messageError;
     }
     
-    public static function messageErrorDoc($Estado, $NumDoc, $NomDoc, $Clave, $CodigoError) {
+    public static function messageErrorDoc($ids,$DBTabDoc,$CampoID,$Estado, $NumDoc, $NomDoc, $Clave, $CodigoError) {
         switch ($Estado) {
             case 2://RECIBIDO SRI (AUTORIZADOS)
                 return VSexception::messageFileXML('NO_OK', $NumDoc, null, 42, null, null);
@@ -155,6 +155,7 @@ class VSexception {
                         //No genera Nada Envia los datos generados anteriormente
                         //Retorna Automaticamente sin Generar Documento
                         //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                        VSexception::actualizaEstado($ids, 2, $DBTabDoc, $CampoID);
                         return VSexception::messageFileXML('OK_REG', $NomDoc, $Clave, 43, null, null);
                         break;
                     case 70://CLAVE DE ACCESO EN PROCESO
@@ -173,6 +174,28 @@ class VSexception {
         //Cuando no ingresa a ninguna opcion y se tiene que generar el XML
         //OK_GER -> Genera el Archivo XML
         return VSexception::messageFileXML('OK_GER', null, null, null, null, null);
+    }
+    
+    public static function actualizaEstado($ids,$estado,$DBTabDoc,$CampoID) {
+        $obj_con = new cls_Base();
+        $conx = $obj_con->conexionIntermedio();
+
+        try {
+            //DescripcionError="'.$DescripcionError.'",CodigoError="'.$CodigoError.'"
+            $sql = "UPDATE " . $conx->dbname . ".$DBTabDoc SET Estado='$estado' WHERE $CampoID='$ids'";
+            //echo $sql;
+            $command = $conx->prepare($sql);
+            $command->execute();
+
+            $conx->commit();
+            $conx->close();
+            return true;
+        } catch (Exception $e) {
+            $conx->rollback();
+            $conx->close();
+            //throw $e;
+            return false;
+        }
     }
 
 }

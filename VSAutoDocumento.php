@@ -315,23 +315,5 @@ class VSAutoDocumento {
         return $fecha;
     }
     
-    public function actualizaClaveAccesoDocumento($ids,$clave,$DBTabDoc,$CampoID) {
-        $con = Yii::app()->dbvsseaint;
-        $trans = $con->beginTransaction();
-        try {
-            $sql = "UPDATE " . $con->dbname . ".$DBTabDoc SET ClaveAcceso='$clave' WHERE $CampoID='$ids'";
-            //echo $sql;
-            $command = $con->createCommand($sql);
-            $command->execute();
-            $trans->commit();
-            $con->active = false;
-            return true;
-        } catch (Exception $e) {
-            $trans->rollback();
-            $con->active = false;
-            throw $e;
-            return false;
-        }
-    }
 
 }

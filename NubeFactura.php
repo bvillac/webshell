@@ -773,7 +773,7 @@ class NubeFactura {
                 $ids=$docAut[$i]["Ids"];
                 if ($ids !== "") {
                     //Retorna Resultado Generado
-                    $result = $this->generarFileXML($con,$obj_con,$ids);
+                    $result = $this->generarFileXML($con,$obj_con,$ids,'NubeFactura','IdFactura');
                     $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
                     $DirDocFirmado=cls_Global::$seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
@@ -824,7 +824,7 @@ class NubeFactura {
         }
     }
     
-    private function generarFileXML($con,$obj_con,$ids) {
+    private function generarFileXML($con,$obj_con,$ids,$DBTabDoc,$CampoID) {
         $autDoc=new VSAutoDocumento();
 
         $valida= new cls_Global();
@@ -833,7 +833,7 @@ class NubeFactura {
         $cabFact = $this->mostrarCabFactura($con,$obj_con,$ids);
         //cls_Global::putMessageLogFile($cabFact);
         if (count($cabFact)>0) {
-            $ErroDoc=VSexception::messageErrorDoc($cabFact[0]["Estado"],$cabFact[0]["NumDocumento"],$cabFact[0]["NombreDocumento"],$cabFact[0]["ClaveAcceso"],$cabFact[0]["CodigoError"] );
+            $ErroDoc=VSexception::messageErrorDoc($ids,$DBTabDoc,$CampoID,$cabFact[0]["Estado"],$cabFact[0]["NumDocumento"],$cabFact[0]["NombreDocumento"],$cabFact[0]["ClaveAcceso"],$cabFact[0]["CodigoError"] );
             if ($ErroDoc['status'] != 'OK_GER'){
                 return $ErroDoc;
             }
