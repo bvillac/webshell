@@ -712,8 +712,8 @@ class NubeNotasCredito {
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
         $sql = "SELECT A.IdNotaCredito Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
             FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A WHERE A.Estado IN($nEstado) "
-                //. "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
-                . "AND IdNotaCredito=166 ";
+                . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
+                //. "AND IdNotaCredito=166 ";
                 //cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
@@ -745,7 +745,7 @@ class NubeNotasCredito {
                     $DirDocFirmado=cls_Global::$seaDocNc;
                     if ($result['status'] == 'OK') {//Retorna True o False 
                         //return $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
-                        $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeNotaCredito','NOTA DE CREDITO','IdNotaCredito');
+                        $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeNotaCredito','NOTA_CREDITO','IdNotaCredito');
                     }elseif ($result['status'] == 'OK_REG') {
                         //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
                         //Autorizacion de Comprobantes 

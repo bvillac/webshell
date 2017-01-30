@@ -552,7 +552,7 @@ class NubeGuiaRemision {
             FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
                 //. "AND IdGuiaRemision=17637 ";
-                cls_Global::putMessageLogFile($sql);
+                //cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
             while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
