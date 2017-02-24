@@ -117,6 +117,7 @@ class cls_Global {
     }
     
     private function InsertarUsuario($con, $objEnt,$obj_con, $IdPer,$DBTable,$i) {
+        $emp_id=cls_Global::$emp_id;
         $usuNombre = $objEnt[$i]['CedRuc'];
         $RazonSoc = $objEnt[$i]['RazonSoc'];
         $correo = ($objEnt[$i]['CorreoPer']<>'')?$objEnt[$i]['CorreoPer']:$this->buscarCorreoERP($obj_con,$usuNombre,$DBTable);//Consulta Tabla Clientes
@@ -133,7 +134,7 @@ class cls_Global {
         $RolId = $this->retornaRolUser($DBTable);//Retorna el Rol segunta tabla Roles
         $sql = "INSERT INTO " . $obj_con->BdAppweb . ".USUARIO_EMPRESA
                 (EMP_ID,USU_ID,ROL_ID,EST_LOG)VALUES
-                ($this->emp_id,$UsuId,$RolId,1) ";
+                ($emp_id,$UsuId,$RolId,1) ";
         $command = $con->prepare($sql);
         $command->execute();
         
