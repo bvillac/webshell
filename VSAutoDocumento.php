@@ -52,6 +52,7 @@ class VSAutoDocumento {
         $autComp = $firmaDig->autorizacionComprobanteWS($result['ClaveAcceso']); //Envio CLave de Acceso
         if ($autComp['status'] == 'OK') {
             //Validamos el Numero de Autorizacin que debe ser Mayor a 0
+            //Nota verificar si en el metodo Of line devuelve la autorizacion 
             $numeroAutorizacion = (int) $autComp['data']['RespuestaAutorizacionComprobante']['numeroComprobantes'];
             /*             * ****************************************************** */
             //Operacion de Stop, si no hay ningun Documento AUtorizado sale automaticamente de la funcion Autoriza
