@@ -59,7 +59,7 @@ class VSAutoDocumento {
             //Su finalidad es que no siga realizado el resto de las operaciones y continuar con la siguiente.
             if ($numeroAutorizacion == 0) {
                 //$mError="No podemos encontrar la información que está solicitando.";
-                return VSexception::messageSystem('NO_OK', "Ids=$ids =>>".$autComp["error"], 22, null, null);
+                return VSexception::messageSystem('NO_OK', "$DBTabDoc=>> $CampoID=$ids =>>".$autComp["error"], 22, null, null);
             }//Por favor volver a Intentar en unos minutos
             /*             * ****************************************************** */
             $autorizacion = $autComp['data']['RespuestaAutorizacionComprobante']['autorizaciones']['autorizacion'];
@@ -243,8 +243,9 @@ class VSAutoDocumento {
                 $IdGuiaRemision=$ids;
         }
         if (sizeof($mensaje)>0){
+            //Descomentar cuando existan varios Mensajes.
             //Se Guardan Varios Mensajes.
-            for ($i = 0; $i < sizeof($mensaje); $i++) {
+            /*for ($i = 0; $i < sizeof($mensaje); $i++) {
                 $Identificador = $mensaje[$i]['identificador'];
                 $TipoMensaje = $mensaje[$i]['tipo'];
                 $Mensaje = $mensaje[$i]['mensaje'];
@@ -256,10 +257,10 @@ class VSAutoDocumento {
                 $command = $con->prepare($sql);
                 $command->execute();
                 //$status, $error, $op, $message, $data
-                $DescripcionError=utf8_encode("IdFact=>$ids ID=>$Identificador Error=> $InformacionAdicional");
+                $DescripcionError=utf8_encode("$tipDoc Ids=>$ids ID=>$Identificador Error=> $InformacionAdicional");
                 VSexception::messageSystem("NO_OK", $TipoMensaje, 0, $Mensaje,$DescripcionError);//Print Error
             }
-        }  else {
+        }  else {*/
             //Solo para 1 solo Mensaje
             $Identificador=$mensaje['identificador'];
             $TipoMensaje=$mensaje['tipo'];
@@ -271,7 +272,7 @@ class VSAutoDocumento {
                  ('$IdFactura','$IdRetencion','$IdNotaCredito','$IdNotaDebito','$IdGuiaRemision','$Identificador','$TipoMensaje','$Mensaje','$InformacionAdicional')";
             $command = $con->prepare($sql);
             $command->execute();
-            $DescripcionError=utf8_encode("IdFact=>$ids ID=>$Identificador Error=> $InformacionAdicional");
+            $DescripcionError=utf8_encode("$tipDoc Ids=>$ids ID=>$Identificador Error=> $InformacionAdicional");
             VSexception::messageSystem("NO_OK", $TipoMensaje, 0, $Mensaje,$DescripcionError);//Print Error
         }
         
