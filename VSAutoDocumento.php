@@ -50,21 +50,30 @@ class VSAutoDocumento {
         //Continua con el Proceso
         //Autorizacion de Comprobantes
         $autComp = $firmaDig->autorizacionComprobanteWS($result['ClaveAcceso']); //Envio CLave de Acceso
+        //cls_Global::putMessageLogFile($autComp);
         if ($autComp['status'] == 'OK') {
             //Validamos el Numero de Autorizacin que debe ser Mayor a 0
-            //Nota verificar si en el metodo Of line devuelve la autorizacion 
+            //Nota verificar si en el metodo Offline devuelve la autorizacion 
             $numeroAutorizacion = (int) $autComp['data']['RespuestaAutorizacionComprobante']['numeroComprobantes'];
-            /*             * ****************************************************** */
+            /******************************************************* */
             //Operacion de Stop, si no hay ningun Documento AUtorizado sale automaticamente de la funcion Autoriza
             //Su finalidad es que no siga realizado el resto de las operaciones y continuar con la siguiente.
             if ($numeroAutorizacion == 0) {
                 //$mError="No podemos encontrar la información que está solicitando.";
-                return VSexception::messageSystem('NO_OK', "$DBTabDoc=>> $CampoID=$ids =>>".$autComp["error"], 22, null, null);
-            }//Por favor volver a Intentar en unos minutos
-            /*             * ****************************************************** */
+                if ($autComp['error'] == 0) {                    
+                    $autorizacion = $autComp['data']['RespuestaAutorizacionComprobante']['autorizaciones']['autorizacion'];
+                    return $this->actualizaDocRecibidoSri($autorizacion, $ids, $result['nomDoc'], $DirDocAutorizado, 
+                                                            $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
+                }else{
+                    return VSexception::messageSystem('NO_OK', "$DBTabDoc=>> $CampoID=$ids =>>".$autComp["error"], 22, null, null);
+                }
+            }
+            //Por favor volver a Intentar en unos minutos
+            /******************************************************* */
             $autorizacion = $autComp['data']['RespuestaAutorizacionComprobante']['autorizaciones']['autorizacion'];
             if ($numeroAutorizacion == 1) {//Verifica si Autorizo algun Comprobante Apesar de recibirlo Autorizo Comprobante
                 $AdrSri = $this->actualizaDocRecibidoSri($autorizacion, $ids, $result['nomDoc'], $DirDocAutorizado, $DirDocFirmado, $DBTabDoc, $DocErr, $CampoID);
+                //Guarda Documento Autorizado
                 $this->newXMLDocRecibidoSri($autorizacion, $result['nomDoc'], $DirDocAutorizado);
                 if (count($ids) == 1) {//Sale directamente si solo tiene un Domento para validadr
                     return $AdrSri; //Si la autorizacion es uno a uno.
@@ -101,7 +110,7 @@ class VSAutoDocumento {
             $DescripcionError='';
             if($estado=='RECIBIDA'){
                 $codEstado='2';
-                $DirectorioDocumento=$DirDocAutorizado;
+                $DirectorioDocumento=$DirDocAutorizado;            
             }elseif($estado=='AUTORIZADO'){
                 //$fecha = date("Y-m-d H:i:s", strtotime($response['fechaAutorizacion']));//date(Yii::app()->params["datebytime"], strtotime($response['fechaAutorizacion']));
                 $numeroAutorizacion = ($response['numeroAutorizacion']!=null)?$response['numeroAutorizacion']:'';
@@ -109,7 +118,12 @@ class VSAutoDocumento {
                 $DirectorioDocumento=$DirDocAutorizado;
                 $op=15;//Su documento fue autorizado correctamente
                 $status="OK";
+            }elseif($estado=='EN PROCESO'){
+                //DOCUMENTO RECIBIDO Y EN PROCESO DE AUTORIZACION
+                $codEstado='9';
+                $DirectorioDocumento=$DirDocAutorizado;
             }else{
+                //NO AUTORIZADOS,RECHAZADO, NEGADO O DEVUELTAS
                 $codEstado='6';
                 $op=16;//Su documento fue rechazado o negado
                 $status="NO_OK";
@@ -119,7 +133,7 @@ class VSAutoDocumento {
                 //$InformacionAdicional=(!empty($mensaje[0]['informacionAdicional']))?$mensaje[0]['informacionAdicional']:'';
                 $CodigoError=$mensaje['identificador'];
                 $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
-                $DescripcionError=utf8_encode("IdFact=>$ids ID=>$CodigoError Error=> $InformacionAdicional");
+                $DescripcionError=utf8_encode("$CampoID=>$ids ID=>$CodigoError Error=> $InformacionAdicional");
                 $DirectorioDocumento=$DirDocFirmado;
             }
             //,USU_ID="'.$UsuId.'"
@@ -168,7 +182,7 @@ class VSAutoDocumento {
                 $MensajeSRI = $mensaje['mensaje'];
                 $InformacionAdicional = (!empty($mensaje['informacionAdicional'])) ? $mensaje['informacionAdicional'] : '';
             }
-            $DescripcionError = utf8_encode("IdFact=>$ids ID=>$CodigoError MensSri=>($MensajeSRI) InfAdicional=>($InformacionAdicional)");
+            $DescripcionError = utf8_encode("$CampoID=>$ids ID=>$CodigoError MensSri=>($MensajeSRI) InfAdicional=>($InformacionAdicional)");
             $DirectorioDocumento = $DirDocFirmado;
             
             //Verificar Codigo Error para Actualizar Estado
@@ -204,10 +218,12 @@ class VSAutoDocumento {
             1 = ENVIADO BASE INTERMEDIA
             2 = RECIBIDO SRI 
             3 = AUTORIZADO SRI 
-            4 = DEVUELTA (NO AUTORIZADOS EN PROCESO)
+            4 = EN PROCESO (CLAVE DE ACCESO) Recibir
             5 = ELIMINADO DEL SISTEMA
             6 = RECHAZADO (NO AUTORIZADOS O NEGADO) =>SOLUC VOLVER ENVIAR CON ESTADO 1
-            8 = DOCUMENTO ANULADO*/
+            8 = DOCUMENTO ANULADO
+            9 = EN PROCESO (AUTORIZACION)
+         */
          switch ($Numero) {
              case 58://Error en la estructura de clave acceso 
                 return 6;
