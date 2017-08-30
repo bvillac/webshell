@@ -160,6 +160,7 @@ class VSAutoDocumento {
     }
     
     private function recibeDocSriDevuelto($response, $ids, $NombreDocumento, $DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
+        $valida= new cls_Global();
         $obj_con = new cls_Base();
         $con = $obj_con->conexionIntermedio();
         try {
@@ -173,14 +174,25 @@ class VSAutoDocumento {
             if (sizeof($mensaje)>0){
                 //Cuando es Varios Mensajes Guarda solo el ultimo.
                 $nEnd=sizeof($mensaje)-1;//El ultimo Items
-                $CodigoError = $mensaje[$nEnd]['identificador'];
-                $MensajeSRI = $mensaje[$nEnd]['mensaje'];
-                $InformacionAdicional = (!empty($mensaje[$nEnd]['informacionAdicional'])) ? $mensaje[$nEnd]['informacionAdicional'] : ''; 
+                if($mensaje[$nEnd]['identificador']<>''){
+                    $CodigoError = $mensaje[$nEnd]['identificador'];                
+                    //$MensajeSRI = $mensaje[$nEnd]['mensaje'];
+                    //$InformacionAdicional = (!empty($mensaje[$nEnd]['informacionAdicional'])) ? $mensaje[$nEnd]['informacionAdicional'] : ''; 
+                    $MensajeSRI=utf8_encode($valida->limpioCaracteresXML(trim($mensaje[$nEnd]['mensaje'])));
+                    $InformacionAdicional=(!empty($mensaje[$nEnd]['informacionAdicional']))?utf8_encode($valida->limpioCaracteresXML(trim($mensaje[$nEnd]['informacionAdicional']))):'';
+                }else{
+                    //En Caso de que sea 1SOLO mensaje
+                    $CodigoError = $mensaje['identificador'];
+                    $MensajeSRI=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));
+                    $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?utf8_encode($valida->limpioCaracteresXML(trim($mensaje['informacionAdicional']))):'';
+                }              
             }else{
                 //Para 1 solo mensaje
                 $CodigoError = $mensaje['identificador'];
-                $MensajeSRI = $mensaje['mensaje'];
-                $InformacionAdicional = (!empty($mensaje['informacionAdicional'])) ? $mensaje['informacionAdicional'] : '';
+                //$MensajeSRI = $mensaje['mensaje'];
+                $MensajeSRI=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));
+                //$InformacionAdicional = (!empty($mensaje['informacionAdicional'])) ? $mensaje['informacionAdicional'] : '';
+                $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?utf8_encode($valida->limpioCaracteresXML(trim($mensaje['informacionAdicional']))):'';
             }
             $DescripcionError = utf8_encode("$CampoID=>$ids ID=>$CodigoError MensSri=>($MensajeSRI) InfAdicional=>($InformacionAdicional)");
             $DirectorioDocumento = $DirDocFirmado;
@@ -220,7 +232,7 @@ class VSAutoDocumento {
             3 = AUTORIZADO SRI 
             4 = EN PROCESO (CLAVE DE ACCESO) Recibir
             5 = ELIMINADO DEL SISTEMA
-            6 = RECHAZADO (NO AUTORIZADOS O NEGADO) =>SOLUC VOLVER ENVIAR CON ESTADO 1
+            6 = RECHAZADO (NO AUTORIZADOS, NEGADO o DEVUELTAS) =>SOLUC VOLVER ENVIAR CON ESTADO 1
             8 = DOCUMENTO ANULADO
             9 = EN PROCESO (AUTORIZACION)
          */
@@ -241,6 +253,7 @@ class VSAutoDocumento {
 
 
     private function mensajeErrorDocumentos($con, $mensaje, $ids, $tipDoc) {
+        $valida= new cls_Global();
         $IdFactura='';$IdRetencion='';$IdNotaCredito='';$IdNotaDebito='';$IdGuiaRemision='';
         switch ($tipDoc) {
             case 'FACTURA':
@@ -280,8 +293,11 @@ class VSAutoDocumento {
             //Solo para 1 solo Mensaje
             $Identificador=$mensaje['identificador'];
             $TipoMensaje=$mensaje['tipo'];
-            $Mensaje=$mensaje['mensaje'];
-            $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
+            //$Mensaje=$mensaje['mensaje']; //Error por Problema de Caracteres Especiales           
+            $Mensaje=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));            
+            //$InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
+            $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?utf8_encode($valida->limpioCaracteresXML(trim($mensaje['informacionAdicional']))):'';
+            
             $sql = "INSERT INTO " . $con->BdIntermedio . ".NubeMensajeError 
                  (IdFactura,IdRetencion,IdNotaCredito,IdNotaDebito,IdGuiaRemision,Identificador,TipoMensaje,Mensaje,InformacionAdicional)
                  VALUES
