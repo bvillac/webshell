@@ -397,8 +397,9 @@ class NubeGuiaRemision {
                     $mPDF1->SetTitle($dataMail->filePDF);
                     $cabFact = $this->mostrarCabGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $destDoc = $this->mostrarDestinoGuia($con,$obj_con,$cabDoc[$i]["Ids"]);
-                    $adiDoc = $this->mostrarCabGuiaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
-                    include('formatGuia/guiaremiPDF.php');
+                    $adiDoc = $this->mostrarCabGuiaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);//Correo del Usuario de autoriza
+                    include('formatGuia/guiaremiPDF.php');                    
                     
                     //COMETAR EN CASO DE NO PRESENTAR ESTA INFO
                     $mPDF1->SetWatermarkText('ESTA INFORMACIÓN ES UNA PRUEBA');
@@ -409,8 +410,6 @@ class NubeGuiaRemision {
                     
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
-                    
-                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
                     
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){

@@ -70,8 +70,8 @@ $mensajePDF='
             $mensajePDF .= '<table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td style="width:50%;vertical-align: central">
-                            <img src="logoPDF.png" style="width:340px;height:110px;">
+                        <td style="width:50%;vertical-align: central" align="center">
+                            <img src="logoPDF.png" style="width:250px;height:110px;">
                         </td>
                         <td rowspan="2" style="width:50%">';
                         include("formatGuia/_frm_CabDoc.php"); //echo $this->renderPartial("_frm_CabFact", array("cabFact" => $cabFact)); 

@@ -429,7 +429,8 @@ class NubeRetencion {
                     $mPDF1->SetTitle($dataMail->filePDF);
                     $cabFact = $this->mostrarCabRetencion($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $detDoc = $this->mostrarDetRetencion($con,$obj_con,$cabDoc[$i]["Ids"]);
-                    $adiDoc = $this->mostrarRetencionDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
+                    $adiDoc = $this->mostrarRetencionDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);//Correo del Uusiro que Autoriza
                     include('formatRet/retencionPDF.php');
                     
                     //COMETAR EN CASO DE NO PRESENTAR ESTA INFO
@@ -441,8 +442,6 @@ class NubeRetencion {
                     
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
-                    
-                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
                     
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){

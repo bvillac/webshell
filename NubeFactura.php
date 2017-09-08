@@ -642,6 +642,8 @@ class NubeFactura {
                     $impFact = $this->mostrarFacturaImp($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $pagFact = $this->mostrarFormaPago($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $adiFact = $this->mostrarFacturaDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);//DATOS vendedor Correos
                     include('formatFact/facturaPDF.php');
                   
                     //COMETAR EN CASO DE NO PRESENTAR ESTA INFO
@@ -653,7 +655,8 @@ class NubeFactura {
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO
                     
-                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);                    
+                    //$usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);                    
+                    
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
@@ -691,7 +694,7 @@ class NubeFactura {
                     ClaveAcceso,ImporteTotal Importe,CONCAT(Establecimiento,'-',PuntoEmision,'-',Secuencial) NumDocumento
                 FROM " . $obj_con->BdIntermedio . ".NubeFactura WHERE Estado=3 "
                     . "AND EstadoEnv=2 AND FechaAutorizacion>='$fechaIni' limit $limitEnvMail "; 
-                    //. "AND IdFactura=24304 ";  
+                    //. "AND IdFactura=1654 ";  
             $sentencia = $con->query($sql);
             if ($sentencia->num_rows > 0) {
                 while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo

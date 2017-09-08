@@ -108,7 +108,7 @@ $mensajePDF='
                                 //echo $this->renderPartial("_frm_TotFact", array("impFact" => $impFact, "cabFact => $cabFact));
                             $mensajePDF .= '</div>
                         </td>
-                    </tr>
+                    </tr>                    
                 </tbody>
             </table>';
          } 

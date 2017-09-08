@@ -64,8 +64,8 @@ $mensajePDF='
             $mensajePDF .= '<table style="width:100%;">
                 <tbody>
                     <tr>
-                        <td style="width:50%;vertical-align: central">
-                            <img src="logoPDF.png" style="width:340px;height:110px;">
+                        <td style="width:50%;vertical-align: central" align="center">
+                            <img src="logoPDF.png" style="width:250px;height:110px;">
                         </td>
                         <td rowspan="2" style="width:50%">';
                         include("formatFact/_frm_CabDoc.php"); //echo $this->renderPartial("_frm_CabFact", array("cabFact" => $cabFact)); 
@@ -113,6 +113,16 @@ $mensajePDF='
                             include("formatFact/_frm_TotFact.php");    //echo $this->renderPartial("_frm_TotFact", array("impFact" => $impFact, "cabFact => $cabFact));
                             $mensajePDF .= $cabDocPDF;
                             $mensajePDF .= '</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <p>
+                                    "<b style="color:red">NOTA:</b> UTIMPOR S.A. Solicita a usted enviar el comprobante de retención a <b>retenciones@utimpor.com</b>  en un máximo en los (5) días hábiles posteriores a la emisión de la facturas de acuerdo con el Art. 95 del RALRTI.
+                                    Agradecemos confirmar la recepción de éste documento en: <b style="color:green">'. $usuData["CorreoUser"] .'</b>"
+                                </p>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

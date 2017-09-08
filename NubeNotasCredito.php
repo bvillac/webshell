@@ -565,7 +565,8 @@ class NubeNotasCredito {
                     $cabFact = $this->mostrarCabNc($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $detDoc = $this->mostrarDetNc($con,$obj_con,$cabDoc[$i]["Ids"]);
                     $impDoc = $this->mostrarNcImp($con,$obj_con,$cabDoc[$i]["Ids"]);
-                    $adiDoc = $this->mostrarNcDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);;
+                    $adiDoc = $this->mostrarNcDataAdicional($con,$obj_con,$cabDoc[$i]["Ids"]);
+                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);//Correo del Usuario que Autoriza
                     include('formatNc/ncPDF.php');
                     
                     //COMETAR EN CASO DE NO PRESENTAR ESTA INFO
@@ -577,9 +578,7 @@ class NubeNotasCredito {
                     
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
-                    
-                    $usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);
-                    
+
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
