@@ -698,13 +698,17 @@ class NubeRetencion {
                 $impuesto->appendChild($xml->createElement('baseImponible', cls_Global::formatoDecXML($detDoc[$i]['BaseImponible'])));
                 $impuesto->appendChild($xml->createElement('porcentajeRetener', (int)$detDoc[$i]["PorcentajeRetener"]));
                 $impuesto->appendChild($xml->createElement('valorRetenido', cls_Global::formatoDecXML($detDoc[$i]['ValorRetenido'])));
-                $impuesto->appendChild($xml->createElement('codDocSustento', $detDoc[$i]["CodDocRetener"]));
-                if(strlen(trim($cabFact[0]['NumDocRetener']))>0){ //OPCIONAL CUANDO EXISTA               
+                $impuesto->appendChild($xml->createElement('codDocSustento', $detDoc[$i]["CodDocRetener"]));                
+                //CAMBIO BYRON 21-09-2017
+                $impuesto->appendChild($xml->createElement('numDocSustento', $detDoc[$i]["NumDocRetener"]));
+                $impuesto->appendChild($xml->createElement('fechaEmisionDocSustento', date(cls_Global::$dateXML, strtotime($detDoc[$i]["FechaEmisionDocRetener"]))));
+                
+                /*if(strlen(trim($cabFact[0]['NumDocRetener']))>0){ //OPCIONAL CUANDO EXISTA               
                     $impuesto->appendChild($xml->createElement('numDocSustento', $detDoc[0]["NumDocRetener"]));
                 }
                 if(strlen(trim($cabFact[0]['FechaEmisionDocRetener']))>0){ //Obligatorio cuando corresponda             
                     $impuesto->appendChild($xml->createElement('fechaEmisionDocSustento', date(cls_Global::$dateXML, strtotime($detDoc[$i]["FechaEmisionDocRetener"]))));
-                }
+                }*/
                 $impuestos->appendChild($impuesto);
             }
         $dom->appendChild($impuestos);
