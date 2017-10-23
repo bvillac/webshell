@@ -248,7 +248,8 @@ class cls_Global {
         //Implementado Byron 14-12-2016
         $String = str_replace("<","&lt;",$String);
         $String = str_replace(">","&gt",$String);
-        $String = str_replace("&","&amp",$String);
+        $String = str_replace("&","&amp;",$String);
+        //$String = str_replace("&","&#38;",$String);
         $String = str_replace("'","&apos",$String);
         
         $String = str_replace("ç","c",$String);

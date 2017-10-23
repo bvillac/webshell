@@ -747,7 +747,7 @@ class NubeFactura {
         $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
             FROM " . $obj_con->BdIntermedio . ".NubeFactura A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
-                //. "AND IdFactura=30746 ";
+                //. "AND IdFactura=2584 ";
                 //cls_Global::putMessageLogFile($sql);
         $sentencia = $con->query($sql);
         if ($sentencia->num_rows > 0) {
