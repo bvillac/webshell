@@ -4,5 +4,4 @@ $obj = new NubeFactura();
 //$res= $obj->insertarFacturas();
 //$res=$obj->enviarDocRecepcion();
 $res=$obj->enviarDocAutorizacion();
-
 ?>

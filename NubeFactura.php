@@ -989,7 +989,29 @@ class NubeFactura {
         }
         return $impuestosG;
     }
-
-
     
+    //*************************************************
+    //Funcion solo para Actualizar y Renovar la Informacion de la Firma
+    //$res=$obj->actDataFD(2,'xxxx');
+    public function actDataFD($ids, $clave) {//Actualiza Firma Digital
+        $obj_con = new cls_Base();
+        $conCont = $obj_con->conexionAppWeb();
+        try {
+            //APPWEB.VSFirmaDigital V;          
+            $sql = "UPDATE " . $obj_con->BdAppweb . ".VSFirmaDigital SET  Clave= '" . base64_encode($clave) . "' WHERE Id='$ids';";
+            //echo $sql;
+            $command = $conCont->prepare($sql);
+            $command->execute();
+            $conCont->commit();
+            $conCont->close();
+            return true;
+        } catch (Exception $e) {
+            $conCont->rollback();
+            $conCont->close();
+            throw $e;
+            return false;
+        }
+    }
+    //*************************************************
+
 }
