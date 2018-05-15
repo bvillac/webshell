@@ -55,15 +55,26 @@ class VSFirmaDigital {
 
     public function validarComprobanteWS($Documento,$DirDocFirmado) {
         $filexml = $DirDocFirmado . $Documento;
-        $filebyte = $this->StrToByteArray(file_get_contents($filexml));
-        $file64base = base64_encode(file_get_contents($filexml));
-        $wdsl = $this->Recepcion;//Yii::app()->getSession()->get('Recepcion', FALSE);//wsdl dependiendo del ambiente Configurado
-        //$wdsl = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantes?wsdl'; //Ruta del Web service SRI RecepcionComprobantes
-        $param = array(
-            'xml' => $file64base
-        );
-        $metodo = 'validarComprobante';
-        return $this->webServiceNuSoap($wdsl, $param, $metodo);
+        if (file_exists($filexml)) {//si la Ruta y el archivo Existe Continua
+            //Archivo Existe
+            $filebyte = $this->StrToByteArray(file_get_contents($filexml));
+            $file64base = base64_encode(file_get_contents($filexml));
+            $wdsl = $this->Recepcion;//Yii::app()->getSession()->get('Recepcion', FALSE);//wsdl dependiendo del ambiente Configurado
+            //$wdsl = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantes?wsdl'; //Ruta del Web service SRI RecepcionComprobantes
+            $param = array(
+                'xml' => $file64base
+            );
+            $metodo = 'validarComprobante';
+            return $this->webServiceNuSoap($wdsl, $param, $metodo);
+        }else{
+            //Archivo No existe
+            $arroout["status"] = "NO";
+            $arroout["error"] = 'Error No Existe el Archivo';
+            $arroout["message"] = 'Error No Existe el Archivo';
+            $arroout["data"] = null;
+            return $arroout;            
+        }
+        
     }
 
     private function webServiceNuSoap($wdsl, $param, $metodo) {

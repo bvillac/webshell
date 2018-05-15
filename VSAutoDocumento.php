@@ -36,6 +36,7 @@ class VSAutoDocumento {
                 }
             } else {
                 //Si Existe un error al realizar la peticion al Web Servicies
+                //Si Existe un Error y no Encontro el Archivo Generado
                 return VSexception::messageSystem('NO_OK', $valComp["error"], 4, "Ids=>$ids", null);
             }
         } else {
