@@ -28,8 +28,8 @@ class NubeFactura {
                             BAS_IV0,POR_IVA,VAL_IVA,VAL_NET,POR_R_F,VAL_R_F,POR_R_I,VAL_R_I,GUI_REM,0 PROPINA,
                             USUARIO,LUG_DES,NOM_CTO,ATIENDE,'' ID_DOC,ClaveAcceso CLAVE,FOR_PAG_SRI,PAG_PLZ,PAG_TMP
                         FROM " .  $obj_con->BdServidor . ".VC010101 WHERE IND_UPD='L' ";
-            //$sql .=         "AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
-            $sql .= " AND NUM_NOF='0000146377' AND TIP_NOF='F4' ";//Probar Factura
+            $sql .=         "AND FEC_VTA>'$fechaIni' AND ENV_DOC='0' LIMIT $limitEnv";
+            //$sql .= " AND NUM_NOF='0000146377' AND TIP_NOF='F4' ";//Probar Factura
             //echo $sql;
             $sentencia = $conCont->query($sql);
             if ($sentencia->num_rows > 0) {
@@ -657,7 +657,7 @@ class NubeFactura {
                     
                     //$usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);                    
                     
-                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
@@ -777,7 +777,7 @@ class NubeFactura {
                 if ($ids !== "") {
                     //Retorna Resultado Generado
                     $result = $this->generarFileXML($con,$obj_con,$ids,'NubeFactura','IdFactura');
-                    $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
+                    /*$DirDocAutorizado=  cls_Global::$seaDocAutFact; 
                     $DirDocFirmado=cls_Global::$seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
                         //return $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
@@ -788,7 +788,7 @@ class NubeFactura {
                         //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
                     }else{
                         return $result;
-                    }
+                    }*/
                 }
             }
             //return $errAuto->messageSystem('OK', null,40,null, null);

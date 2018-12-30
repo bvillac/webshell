@@ -22,9 +22,11 @@ class cls_Base {
     public function conexionServidor() {
         //Configuracion Local
         $bd_host = "192.168.10.1";
+        //$bd_host = "192.168.1.3";
         //$bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = "root00";
+        //$bd_password = "";
         $bd_base = $this->BdServidor;
         //$con = mysql_connect($bd_host, $bd_usuario, $bd_password) or die("Error en la conexión a MySql");
         //mysql_select_db($bd_base, $con);
