@@ -11,7 +11,8 @@ class mailSystem {
     private $mailSMTP='mail.utimpor.com';
     private $noResponder='no-responder@utimpor.com';
     private $adminMail='ecastro@utimpor.com';
-    private $noResponderPass='F0E4CwUyWy?h';
+    //private $noResponderPass='F0E4CwUyWy?h';
+    private $noResponderPass='R?YX)3{XFW1C';
     public $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
     public $file_to_attachXML='';
     public $file_to_attachPDF='';
@@ -70,7 +71,7 @@ class mailSystem {
             //Correos Alternativos de admin  $adminMail
             //$mail->addBCC(trim($this->adminMail), trim("Gerencia"));
             $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
-            $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
+            //$mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
         //}
         
         //##############################################

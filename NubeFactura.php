@@ -606,10 +606,12 @@ class NubeFactura {
         $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
+		
             //Se procede a preparar con los correos para enviar.
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 //Retorna Informacion de Correos
                 $rowUser=$obj_var->buscarCedRuc($cabDoc[$i]['CedRuc']);//Verifico si Existe la Cedula o Ruc
+                
                 if($rowUser['status'] == 'OK'){
                     //Existe el Usuario y su Correo Listo para enviar
                     $row=$rowUser['data'];
@@ -657,7 +659,8 @@ class NubeFactura {
                     
                     //$usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);                    
                     
-                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+			cls_Global::putMessageLogFile($resulMail);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
@@ -777,10 +780,9 @@ class NubeFactura {
                 if ($ids !== "") {
                     //Retorna Resultado Generado
                     $result = $this->generarFileXML($con,$obj_con,$ids,'NubeFactura','IdFactura');
-                    /*$DirDocAutorizado=  cls_Global::$seaDocAutFact; 
+                    $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
                     $DirDocFirmado=cls_Global::$seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
-                        //return $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
                         $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
                     }elseif ($result['status'] == 'OK_REG') {
                         //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
@@ -788,7 +790,7 @@ class NubeFactura {
                         //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
                     }else{
                         return $result;
-                    }*/
+                    }
                 }
             }
             //return $errAuto->messageSystem('OK', null,40,null, null);
