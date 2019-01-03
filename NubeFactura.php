@@ -660,7 +660,7 @@ class NubeFactura {
                     //$usuData=$objEmpData->buscarDatoVendedor($cabFact[0]["USU_ID"]);                    
                     
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
-			cls_Global::putMessageLogFile($resulMail);
+	            //cls_Global::putMessageLogFile($resulMail);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{

@@ -11,8 +11,7 @@ class mailSystem {
     private $mailSMTP='mail.utimpor.com';
     private $noResponder='no-responder@utimpor.com';
     private $adminMail='ecastro@utimpor.com';
-    //private $noResponderPass='F0E4CwUyWy?h';
-    private $noResponderPass='R?YX)3{XFW1C';
+    private $noResponderPass='ect{UZCJ6hvR';
     public $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
     public $file_to_attachXML='';
     public $file_to_attachPDF='';
@@ -41,11 +40,15 @@ class mailSystem {
         $mail->Port = 465;
         // la dirección del servidor, p. ej.: smtp.servidor.com
         $mail->Host = $this->mailSMTP;//"mail.utimpor.com";
+   
+        
+        
+        //$mail->SMTPKeepAlive = true;   
+        //$mail->Mailer = "smtp";
 
         // dirección remitente, p. ej.: no-responder@miempresa.com
         // nombre remitente, p. ej.: "Servicio de envío automático"
         $mail->setFrom($this->noResponder, 'Servicio de envío automático '.$this->domEmpresa);
-        //$mail->setFrom('bvillacreses@utimpor.com', 'Utimpor.com');
 
         // asunto y cuerpo alternativo del mensaje
         $mail->Subject = $this->Subject;
@@ -70,8 +73,8 @@ class mailSystem {
         //if($DataCorreos==0){
             //Correos Alternativos de admin  $adminMail
             //$mail->addBCC(trim($this->adminMail), trim("Gerencia"));
-            $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
-            //$mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
+            //$mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
+            $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
         //}
         
         //##############################################
@@ -96,7 +99,7 @@ class mailSystem {
         $mail->Username = $this->noResponder;
         $mail->Password = $this->noResponderPass;
         $mail->CharSet = 'UTF-8';
-        //$mail->SMTPDebug = 1;//Muestra el Error
+        //$mail->SMTPDebug = 4;//Muestra el Error
 
         if (!$mail->Send()) {
             //echo "Error enviando: " . $mail->ErrorInfo;
