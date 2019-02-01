@@ -20,8 +20,9 @@ class ShellSea {
         //echo "llego2";
         $codLin = '02';
         $tipConsult = $tipo;
-        $dtActFecha = '2019-01';//date("Y-m", strtotime(date()));
-        $dtAntFecha = '2018-12';//date("Y-m", strtotime(date()));//restarle 1 mes
+        $dtActFecha = date("Y-m", strtotime(date()));//'2019-02';//
+        //$dtAntFecha = date("Y-m", strtotime(date()));//restarle 1 mes//'2019-01';//
+	$dtAntFecha = date("Y-m", strtotime('-1 month', strtotime(date())));//Se resta 1 mes.
         try {
             $obj_con = new cls_Base();
             $obj_var = new cls_Global();
@@ -31,7 +32,7 @@ class ShellSea {
             
             $sql = "SELECT A.COD_LIN, A.COD_TIP, A.COD_MAR, D.NOM_LIN, E.NOM_TIP, F.NOM_MAR,"
                     . "SUM(A.P_PROME*B.EXI_TOT)  AS COS_ACT, ";
-            $sql .= "IFNULL((SELECT X.COSTO_T FROM utimpor2019.IG0007 X "
+            $sql .= "IFNULL((SELECT X.COSTO_T FROM " . $obj_con->BdServidor . ".IG0007 X "
                     . " WHERE X.COD_LIN=A.COD_LIN AND X.COD_MAR=A.COD_MAR AND TIP_CON='$tipConsult' "
                     . " AND ANO_MES='$dtAntFecha'),0) COS_ANT ";            
             $sql .= "    FROM " . $obj_con->BdServidor . ".IG0020 A ";
