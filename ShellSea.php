@@ -23,6 +23,11 @@ class ShellSea {
         $dtActFecha = date("Y-m", strtotime(date()));//'2019-02';//
         //$dtAntFecha = date("Y-m", strtotime(date()));//restarle 1 mes//'2019-01';//
 	$dtAntFecha = date("Y-m", strtotime('-1 month', strtotime(date())));//Se resta 1 mes.
+        //Generar Manualmente
+        //$dtActFecha ='2019-04';
+        //$dtAntFecha ='2019-03';
+        
+        
         try {
             $obj_con = new cls_Base();
             $obj_var = new cls_Global();

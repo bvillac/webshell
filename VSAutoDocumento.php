@@ -13,7 +13,7 @@ class VSAutoDocumento {
         //Verifica Errores del Firmado
         if ($firma['status'] == 'OK') {
             //Validad COmprobante
-            $valComp = $firmaDig->validarComprobanteWS($result['nomDoc'],$DirDocFirmado); //Envio NOmbre Documento
+            //$valComp = $firmaDig->validarComprobanteWS($result['nomDoc'],$DirDocFirmado); //Envio NOmbre Documento
             if ($valComp['status'] == 'OK') {//Retorna Datos del Comprobacion
                 //Verifica si el Doc Fue Recibido Correctamente...
                 $Rac = $valComp['data']['RespuestaRecepcionComprobante'];
