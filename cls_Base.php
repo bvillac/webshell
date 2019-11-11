@@ -24,7 +24,7 @@ class cls_Base {
         $bd_host = "192.168.10.1";
         //$bd_host = "localhost";
         $bd_usuario = "root";
-        $bd_password = "root00";
+        $bd_password = "Root$s34";
         //$bd_password = "";
         $bd_base = $this->BdServidor;
         //$con = mysql_connect($bd_host, $bd_usuario, $bd_password) or die("Error en la conexión a MySql");
@@ -49,7 +49,7 @@ class cls_Base {
         //$bd_host = "192.168.10.200";
         $bd_host = "localhost";
         $bd_usuario = "root";
-        $bd_password = "root00";
+        $bd_password = "Root$s34w3b";
         $bd_base = $this->BdIntermedio;
         //$con = mysql_connect($bd_host, $bd_usuario, $bd_password) or die("Error en la conexión a MySql");
         //mysql_select_db($bd_base, $con);
@@ -70,7 +70,7 @@ class cls_Base {
         //$bd_host = "192.168.10.200";
         $bd_host = "localhost";
         $bd_usuario = "root";
-        $bd_password = "root00";
+        $bd_password = "Root$s34w3b";
         $bd_base = $this->BdAppweb;
         //$con = mysql_connect($bd_host, $bd_usuario, $bd_password) or die("Error en la conexión a MySql");
         //mysql_select_db($bd_base, $con);
@@ -90,7 +90,7 @@ class cls_Base {
         //$bd_host = "192.168.10.200";
         $bd_host = "localhost";
         $bd_usuario = "root";
-        $bd_password = "root00";
+        $bd_password = "Root$s34w3b";
         $bd_base = $this->BdRad;
         $con = new mysqli($bd_host,$bd_usuario,$bd_password,$bd_base);
         $con->set_charset('utf8');//Convierte todo lo que esté codificado de latin1 a UTF-8 Errore de Ñ o Caractes especiales 
