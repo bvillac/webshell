@@ -11,7 +11,7 @@ class mailSystem {
     private $mailSMTP='mail.utimpor.com';
     private $noResponder='no-responder@utimpor.com';
     private $adminMail='ecastro@utimpor.com';
-    private $noResponderPass='ect{UZCJ6hvR';
+    private $noResponderPass='MP1TQyb=PkcZ';//'ect{UZCJ6hvR';
     public $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
     public $file_to_attachXML='';
     public $file_to_attachPDF='';
