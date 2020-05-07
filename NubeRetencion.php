@@ -696,7 +696,8 @@ class NubeRetencion {
                 $impuesto->appendChild($xml->createElement('codigo', $detDoc[$i]["Codigo"]));
                 $impuesto->appendChild($xml->createElement('codigoRetencion', $detDoc[$i]["CodigoRetencion"]));
                 $impuesto->appendChild($xml->createElement('baseImponible', cls_Global::formatoDecXML($detDoc[$i]['BaseImponible'])));
-                $impuesto->appendChild($xml->createElement('porcentajeRetener', (int)$detDoc[$i]["PorcentajeRetener"]));
+                //$impuesto->appendChild($xml->createElement('porcentajeRetener', (int)$detDoc[$i]["PorcentajeRetener"]));
+                $impuesto->appendChild($xml->createElement('porcentajeRetener', cls_Global::formatoDecXML($detDoc[$i]["PorcentajeRetener"])));
                 $impuesto->appendChild($xml->createElement('valorRetenido', cls_Global::formatoDecXML($detDoc[$i]['ValorRetenido'])));
                 $impuesto->appendChild($xml->createElement('codDocSustento', $detDoc[$i]["CodDocRetener"]));                
                 //CAMBIO BYRON 21-09-2017
