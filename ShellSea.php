@@ -90,5 +90,100 @@ class ShellSea {
         }
     }
     
+    public function buscarArticulosSEA() {
+        //Consulta los datos Serverdor Sea
+        $rawData = array();
+        $obj_con = new cls_Base();
+        $conApp = $obj_con->conexionServidor();
+        $sql = "SELECT COD_ART,DES_COM,COD_LIN,COD_TIP,COD_MAR,EXI_TOT,PAUX_03,P_PROME,P_COSTO "
+                . " FROM " . $obj_con->BdServidor . ".IG0020 WHERE EST_LOG=1 AND EXI_TOT>0 ";
+        $sentencia = $conApp->query($sql);
+        //return $sentencia->fetch_assoc();
+        if ($sentencia->num_rows > 0) {
+            while ($fila = $sentencia->fetch_assoc()) {//Array Asociativo
+                $rawData[] = $fila;
+            }
+        }
+        return $rawData;
+    }
+
+    public function actulizarProductos() {
+        try {
+            $rawDataACT = array();
+            $rawDataACT=$this->buscarArticulosSEA();
+            $obj_con = new cls_Base();
+            $obj_var = new cls_Global();
+            $con = $obj_con->conexionPedidos(); 
+            
+            $this->desactivarArticulos($con);//Deshabilita los Items
+            //cls_Global::putMessageLogFile($sql);
+            for ($i = 0; $i < sizeof($rawDataACT); $i++) {
+                $codArt=$rawDataACT[$i]['COD_ART'];
+                if($this->buscarArticulo($con, $codArt)){
+                    //Retorna True si existe
+                    $sql="UPDATE " . $con->BdPedido . ".ARTICULO 
+                                SET ART_EST_LOG=1,
+                                    ART_DES_COM='" . $rawDataACT[$i]['DES_COM'] . "',
+                                    ART_P_VENTA='" . $rawDataACT[$i]['PAUX_03'] . "',
+                                    ART_P_PROME='" . $rawDataACT[$i]['P_PROME'] . "',
+                                    ART_P_COSTO='" . $rawDataACT[$i]['P_COSTO'] . "'
+                            WHERE COD_ART = '$codArt'; ";
+                }else{
+                    //Retorna false si no existe
+                    $sql="INSERT INTO " . $con->BdPedido . ".ARTICULO 
+                        (COD_ART,ART_DES_COM,COD_LIN,COD_TIP,COD_MAR,ART_I_M_IVA,ART_P_VENTA,ART_P_PROME,ART_P_COSTO,ART_EST_LOG)VALUES 
+                        ('" . $rawDataACT[$i]['COD_ART'] . "',
+                        '" . $rawDataACT[$i]['DES_COM'] . "',
+                        '" . $rawDataACT[$i]['COD_LIN'] . "',
+                        '" . $rawDataACT[$i]['COD_TIP'] . "',
+                        '" . $rawDataACT[$i]['COD_MAR'] . "',
+                        '" . $rawDataACT[$i]['I_M_IVA'] . "',
+                        '" . $rawDataACT[$i]['PAUX_03'] . "',
+                        '" . $rawDataACT[$i]['P_PROME'] . "',
+                        '" . $rawDataACT[$i]['P_COSTO'] . "',
+                        '1')";
+                }
+                
+                /*$sql="UPDATE " . $obj_con->BdPedido . ".PRECIO_CLIENTE A
+                        INNER JOIN VSSEAPEDIDO.ARTICULO B
+                            ON A.ART_ID=B.ART_ID
+                    SET A.COD_ART = B.COD_ART,A.PCLI_EST_LOG=B.ART_EST_LOG,
+                        A.ART_P_VENTA = B.PAUX_03,A.ART_P_PROME=B.P_PROME,A.ART_P_COSTO=B.P_COSTO;";*/
+
+                //cls_Global::putMessageLogFile($rawDataACT[$i]['COS_ACT']);
+                //cls_Global::putMessageLogFile($sql);
+                $command = $con->prepare($sql);                
+                $command->execute();
+            }            
+
+            $con->commit();
+            $con->close();
+            return true;
+        } catch (Exception $e) { // se arroja una excepción si una consulta falla
+            //return VSexception::messageSystem('NO_OK', $e->getMessage(), 41, null, null);
+            $con->rollback();
+            $con->close();
+            throw $e;
+            return false;
+        }
+    }
+    
+    private function buscarArticulo($con,$codArt) {
+            $rawData = 0;  //Retorna 0 si no existe.   
+            $sql = "SELECT * FROM " . $con->BdPedido . ".ARTICULO WHERE COD_ART='$codArt';";            
+            //echo $sql;
+            $sentencia = $con->query($sql);
+            if ($sentencia->num_rows > 0) {
+                //Retorna Solo 1 si existe el Registro
+                $rawData=1; 
+            }
+            return $rawData;
+    }
+    private function desactivarArticulos($con) {
+        $sql = "UPDATE " . $con->BdPedido . ".ARTICULO SET ART_EST_LOG=0;";
+        $command = $con->prepare($sql);
+        $command->execute();
+    }
+    
     
 }

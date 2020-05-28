@@ -7,7 +7,8 @@
  */
 include('ShellSea.php');//para HTTP
 $obj = new ShellSea();
-$res=$obj->importacionLinea('TD');
-$res=$obj->importacionLinea('T4');
-$res=$obj->importacionLinea('TA');
+$res=$obj->actulizarProductos();
+//$res=$obj->importacionLinea('TD');
+//$res=$obj->importacionLinea('T4');
+//$res=$obj->importacionLinea('TA');
 ?>

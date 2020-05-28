@@ -18,6 +18,7 @@ class cls_Base {
     var $BdAppweb="APPWEB"; 
     var $BdIntermedio="VSSEAINTERMEDIA";
     var $BdRad="VSSEARAD"; 
+    var $BdPedido="VSSEAPEDIDO"; 
     //SERVIDOR LOCAL APP SEA
     public function conexionServidor() {
         //Configuracion Local
@@ -101,6 +102,26 @@ class cls_Base {
     }
     public function getBdVsRAd() {
         return $this->BdRad;
+    }
+    
+    //SERVIDOR REMOTO PEDIDOS EN LINEA
+    public function conexionPedidos() {
+        //Configuracion Local
+        //$bd_host = "192.168.10.1";
+        $bd_host = "localhost";
+        $bd_usuario = "root";
+        $bd_password = 'Root$s34w3b';
+        $bd_base = $this->BdPedido;
+        $con = new mysqli($bd_host,$bd_usuario,$bd_password,$bd_base);
+        $con->set_charset('utf8');//Convierte todo lo que esté codificado de latin1 a UTF-8 Errore de Ñ o Caractes especiales        
+        if($con->connect_error){
+            die("Error en la conexion : ".$con->connect_errno."-".$con->connect_error);
+        }
+        //Si nada sucede retornamos la conexión
+        return $con;
+    }
+    public function getBdPedido() {
+        return $this->BdPedido;
     }
 
 }
