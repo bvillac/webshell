@@ -51,6 +51,7 @@ class cls_Base {
         $bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = 'Root$s34w3b';
+        //$bd_password = 'root00';        
         $bd_base = $this->BdIntermedio;
         //$con = mysql_connect($bd_host, $bd_usuario, $bd_password) or die("Error en la conexión a MySql");
         //mysql_select_db($bd_base, $con);
@@ -72,6 +73,7 @@ class cls_Base {
         $bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = 'Root$s34w3b';
+        //$bd_password = 'root00'; 
         $bd_base = $this->BdAppweb;
         //$con = mysql_connect($bd_host, $bd_usuario, $bd_password) or die("Error en la conexión a MySql");
         //mysql_select_db($bd_base, $con);

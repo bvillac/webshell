@@ -8,7 +8,8 @@
 require_once('PHPMailerAutoload.php');
 class mailSystem {
     private $domEmpresa='Utimpor.com';
-    private $mailSMTP='mail.utimpor.com';
+    //private $mailSMTP='mail.utimpor.com';
+    private $mailSMTP='marquis.websitewelcome.com';
     private $noResponder='no-responder@utimpor.com';
     private $adminMail='ecastro@utimpor.com';
     private $noResponderPass='MP1TQyb=PkcZ';//'ect{UZCJ6hvR';
@@ -65,7 +66,6 @@ class mailSystem {
                 $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
             }else{
                 //Correos Alternativos de admin  $adminMail
-                //$mail->addBCC(trim($this->adminMail), trim("Gerencia"));
                 $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
                 $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
             }
@@ -73,7 +73,7 @@ class mailSystem {
         //if($DataCorreos==0){
             //Correos Alternativos de admin  $adminMail
             //$mail->addBCC(trim($this->adminMail), trim("Gerencia"));
-            //$mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
+            $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
             $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
         //}
         
