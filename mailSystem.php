@@ -73,7 +73,7 @@ class mailSystem {
         //if($DataCorreos==0){
             //Correos Alternativos de admin  $adminMail
             //$mail->addBCC(trim($this->adminMail), trim("Gerencia"));
-            $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
+            //$mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
             $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
         //}
         
