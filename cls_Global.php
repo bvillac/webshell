@@ -14,13 +14,13 @@
 //include('cls_Base.php');//para HTTP
 class cls_Global {
     //put your code here
-    public static $emp_id='1';//Empresa
-    public static $est_id='1';//Establecimiento
-    public static $pemi_id='1';//Punto Emision
+    public static $emp_id='2';//Empresa
+    public static $est_id='2';//Establecimiento
+    public static $pemi_id='2';//Punto Emision
     public static $ambt_id='2';//Ambiente de Pruebas por Defecto =1 =>2 Produccion (cambiar en caso de Pruebas)
     //public static $IdsUsu='1';//Valor por defecto(Alimenta al Autorizar el Documento)
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2018-07-15';//'2016-08-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2020-01-01';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     public static $dateXML = "d/m/Y";
     public $decimalPDF=2;
@@ -32,7 +32,7 @@ class cls_Global {
     var $Author="Utimpor";
     var $rutaPDF="/opt/SEADOC/DOCPDF/";
     var $rutaXML="/opt/SEADOC/AUTORIZADO/";
-    var $rutaLink='http://docsea.utimpor.com';
+    var $rutaLink='http://docsea.dominio.com';
     var $tipoFacLocal='F4';
     var $tipoGuiLocal='GR';
     var $tipoRetLocal='RT';

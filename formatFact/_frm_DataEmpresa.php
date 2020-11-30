@@ -33,6 +33,11 @@ $cabDocPDF .='<tr>
                 </td>
                 
             </tr>
+            <tr>
+                <td>                    
+                   <span>AGENTE DE RETENCION SEGÚN RESOLUCIÓN N° NAC-DNCRASC20-00001</span>
+                </td>                
+            </tr>
             
         </tbody>
         
