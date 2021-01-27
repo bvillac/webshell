@@ -42,7 +42,7 @@ $cabDocPDF .='<tr>
             if($objEmp['AgenteRet']<>''){            
                 $cabDocPDF .= '<tr>
                     <td>
-                        <span class="titleLabel">Agente de Retención Resolución N.'.$objEmp['AgenteRet'].'</span>
+                        <span class="titleLabel">Agente de Retención Resolución No. 00'.$objEmp['AgenteRet'].'</span>
                     </td>
                 </tr>';
             }
