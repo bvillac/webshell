@@ -35,10 +35,11 @@ $cabDocPDF .='<tr>
             if(var_dump(isset($objEmp['RegMicro']))){
                 //devuelve fALSE si la variable esta declarada y tiene un valor null
                 //y true si tieene un valor diferente de null
+                //verificacion de info
                 if($objEmp['RegMicro']<>''){            
                     $cabDocPDF .= '<tr>
                         <td>
-                            <span class="titleLabel">'.utf8_encode($objEmp['RegMicro']).'</span>             
+                             <span class="titleLabel">'.utf8_encode($objEmp['RegMicro']).'</span>             
                         </td>
                     </tr>';
                 } 
