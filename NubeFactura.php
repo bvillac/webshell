@@ -659,7 +659,7 @@ class NubeFactura {
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
                     
-                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
 	            //cls_Global::putMessageLogFile($resulMail);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
