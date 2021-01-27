@@ -8,7 +8,8 @@ class EMPRESA {
         $sql = "SELECT A.EMP_ID,A.EMP_RUC Ruc,A.EMP_RAZONSOCIAL RazonSocial,A.EMP_NOM_COMERCIAL NombreComercial,A.EMP_LOGO,
                     A.EMP_AMBIENTE Ambiente,A.EMP_TIPO_EMISION TipoEmision,EMP_DIRECCION_MATRIZ DireccionMatriz,EST_DIRECCION DireccionSucursal,
                     A.EMP_OBLIGA_CONTABILIDAD ObligadoContabilidad,EMP_CONTRI_ESPECIAL ContribuyenteEspecial,A.EMP_EMAIL_DIGITAL,A.EMP_EMAIL_CONTA,
-                    B.EST_NUMERO Establecimiento,C.PEMI_NUMERO PuntoEmision,A.EMP_MONEDA Moneda
+                    B.EST_NUMERO Establecimiento,C.PEMI_NUMERO PuntoEmision,A.EMP_MONEDA Moneda,
+                    A.EMP_REGIMEN_MICRO RegMicro,A.EMP_AGENTE_RETEN AgenteRet
                     FROM " . $obj_con->BdAppweb . ".EMPRESA A
                             INNER JOIN (" . $obj_con->BdAppweb . ".ESTABLECIMIENTO B
                                             INNER JOIN " . $obj_con->BdAppweb . ".PUNTO_EMISION C
@@ -58,6 +59,8 @@ class EMPRESA {
         $infoTributaria->appendChild($xml->createElement('ptoEmi', $cabDoc[0]['PuntoEmision']));
         $infoTributaria->appendChild($xml->createElement('secuencial', $cabDoc[0]['Secuencial']));
         $infoTributaria->appendChild($xml->createElement('dirMatriz', utf8_encode(trim($cabDoc[0]['DireccionMatriz']))));
+        $infoTributaria->appendChild($xml->createElement('regimenMicroempresas', utf8_encode(trim($cabDoc[0]['RegimenMicroempresas']))));
+        $infoTributaria->appendChild($xml->createElement('agenteRetencion', trim($cabDoc[0]['AgenteRetencion'])));
         return $infoTributaria;
     }
     

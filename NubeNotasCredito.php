@@ -638,7 +638,7 @@ class NubeNotasCredito {
                         A.CodDocModificado,A.NumDocModificado,A.FechaEmisionDocModificado,
                         A.TotalSinImpuesto,A.ValorModificacion,A.MotivoModificacion,A.USU_ID,
                         'NOTA DE CREDITO' NombreDocumento,A.AutorizacionSri,A.ClaveAcceso,A.FechaAutorizacion,
-                        A.Ambiente,A.TipoEmision,A.Moneda,A.Ruc,A.CodigoError
+                        A.Ambiente,A.TipoEmision,A.Moneda,A.Ruc,A.CodigoError,A.RegimenMicroempresas,A.AgenteRetencion
                         FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A
                 WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdNotaCredito =$id ";
         //echo $sql;

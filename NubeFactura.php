@@ -499,7 +499,8 @@ class NubeFactura {
     /************************************************************/
     /*********FUNCIONES IGUALES A LAS APLICACION WEB PARA PDF
     /************************************************************/
-    
+        
+
     private function mostrarCabFactura($con,$obj_con,$id) {
         $rawData = array();
         $sql = "SELECT A.IdFactura IdDoc,A.Estado,A.EstadoEnv,A.CodigoTransaccionERP,A.SecuencialERP,A.UsuarioCreador,
@@ -509,7 +510,8 @@ class NubeFactura {
                         A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,
                         A.FechaEmision,A.IdentificacionComprador,A.RazonSocialComprador,
                         A.TotalSinImpuesto,A.TotalDescuento,A.Propina,A.ImporteTotal,A.USU_ID,
-                        'FACTURA' NombreDocumento,A.ClaveAcceso,A.Ambiente,A.TipoEmision,A.GuiaRemision,A.Moneda,A.Ruc,A.CodigoError
+                        'FACTURA' NombreDocumento,A.ClaveAcceso,A.Ambiente,A.TipoEmision,A.GuiaRemision,A.Moneda,A.Ruc,A.CodigoError,
+                        A.RegimenMicroempresas,A.AgenteRetencion
                         FROM " . $obj_con->BdIntermedio . ".NubeFactura A
                 WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdFactura =$id ";
             $sentencia = $con->query($sql);

@@ -475,7 +475,8 @@ class NubeGuiaRemision {
                     A.DireccionPartida,A.RazonSocialTransportista,A.IdentificacionTransportista,
                     A.FechaInicioTransporte,A.FechaFinTransporte,A.Placa,A.DireccionEstablecimiento,A.USU_ID,
                     'GUIA DE REMISION' NombreDocumento,A.TipoIdentificacionTransportista,A.Rise,A.CodigoDocumento,A.FechaEmisionErp,
-                    A.Establecimiento,A.PuntoEmision,A.Secuencial,A.DireccionMatriz,A.ObligadoContabilidad,A.ContribuyenteEspecial,A.CodigoError
+                    A.Establecimiento,A.PuntoEmision,A.Secuencial,A.DireccionMatriz,A.ObligadoContabilidad,A.ContribuyenteEspecial,A.CodigoError,
+                    A.RegimenMicroempresas,A.AgenteRetencion
                     FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A
             WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdGuiaRemision =$id ";
         $sentencia = $con->query($sql);

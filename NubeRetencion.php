@@ -505,7 +505,7 @@ class NubeRetencion {
                     A.CodigoDocumento,A.Establecimiento,A.PuntoEmision,A.Secuencial,A.PeriodoFiscal,
                     A.FechaEmision,A.IdentificacionSujetoRetenido,A.RazonSocialSujetoRetenido,
                     A.TotalRetencion,'COMPROBANTE DE RETENCION' NombreDocumento,A.ClaveAcceso,A.FechaAutorizacion,
-                    A.Ambiente,A.TipoEmision,A.Ruc,A.CodigoError
+                    A.Ambiente,A.TipoEmision,A.Ruc,A.CodigoError,A.RegimenMicroempresas,A.AgenteRetencion
                     FROM " . $obj_con->BdIntermedio . ".NubeRetencion A
                 WHERE A.CodigoDocumento='$this->tipoDoc' AND A.IdRetencion =$id ";
         //echo $sql;

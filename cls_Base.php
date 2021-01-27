@@ -14,7 +14,7 @@
  * http://xaviesteve.com/354/acentos-y-enes-aparecen-mal-a%C2%B1-en-php-con-mysql-utf-8-iso-8859-1/
  */
 class cls_Base {
-    var $BdServidor="innovaticsea"; 
+    var $BdServidor="innovaticsea"; //innovaticsea//sea2020
     var $BdAppweb="VSSEAWEB"; 
     var $BdIntermedio="VSSEADOCUMENTOS";
     //SERVIDOR LOCAL APP SEA

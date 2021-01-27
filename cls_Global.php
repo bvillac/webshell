@@ -14,6 +14,8 @@
 //include('cls_Base.php');//para HTTP
 class cls_Global {
     //put your code here
+    //Datos de Empresa para Facturas Eletroncia
+    //SOLUCIONES = 1 Y INNOVTIC =2
     public static $emp_id='2';//Empresa
     public static $est_id='2';//Establecimiento
     public static $pemi_id='2';//Punto Emision

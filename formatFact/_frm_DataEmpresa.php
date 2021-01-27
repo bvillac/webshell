@@ -30,17 +30,28 @@ $cabDocPDF .='<tr>
                 <td>
                     <span class="titleLabel">OBLIGADO A LLEVAR CONTABILIDAD:</span>
                     <span>'.strtoupper($objEmp['ObligadoContabilidad']) .'</span>
-                </td>
-                
-            </tr>
-            <tr>
-                <td>                    
-                   <span>AGENTE DE RETENCION SEGÚN RESOLUCIÓN N° NAC-DNCRASC20-00001</span>
                 </td>                
-            </tr>
-            
-        </tbody>
-        
+            </tr>';
+            if($objEmp['RegMicro']<>''){            
+                $cabDocPDF .= '<tr>
+                    <td>
+                        <span class="titleLabel">'.utf8_encode($objEmp['RegMicro']).'</span>             
+                    </td>
+                </tr>';
+            }
+            if($objEmp['AgenteRet']<>''){            
+                $cabDocPDF .= '<tr>
+                    <td>
+                        <span class="titleLabel">Agente de Retención Resolución N.'.$objEmp['AgenteRet'].'</span>
+                    </td>
+                </tr>';
+            }
+$cabDocPDF .='</tbody>      
     </table>
 </div>';
+//<tr>
+//                <td>                    
+//                   <span>AGENTE DE RETENCION SEGÚN RESOLUCIÓN N° NAC-DNCRASC20-00001</span>
+//                </td>                
+//            </tr>
 ?>
