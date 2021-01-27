@@ -32,13 +32,18 @@ $cabDocPDF .='<tr>
                     <span>'.strtoupper($objEmp['ObligadoContabilidad']) .'</span>
                 </td>                
             </tr>';
-            if($objEmp['RegMicro']<>''){            
-                $cabDocPDF .= '<tr>
-                    <td>
-                        <span class="titleLabel">'.utf8_encode($objEmp['RegMicro']).'</span>             
-                    </td>
-                </tr>';
-            }
+            if(var_dump(isset($objEmp['RegMicro']))){
+                //devuelve fALSE si la variable esta declarada y tiene un valor null
+                //y true si tieene un valor diferente de null
+                if($objEmp['RegMicro']<>''){            
+                    $cabDocPDF .= '<tr>
+                        <td>
+                            <span class="titleLabel">'.utf8_encode($objEmp['RegMicro']).'</span>             
+                        </td>
+                    </tr>';
+                } 
+            } 
+            
             if($objEmp['AgenteRet']<>''){            
                 $cabDocPDF .= '<tr>
                     <td>
