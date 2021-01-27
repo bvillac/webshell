@@ -16,13 +16,13 @@ class cls_Global {
     //put your code here
     //Datos de Empresa para Facturas Eletroncia
     //SOLUCIONES = 1 Y INNOVTIC =2
-    public static $emp_id='2';//Empresa
-    public static $est_id='2';//Establecimiento
-    public static $pemi_id='2';//Punto Emision
+    public static $emp_id='1';//Empresa
+    public static $est_id='1';//Establecimiento
+    public static $pemi_id='1';//Punto Emision
     public static $ambt_id='2';//Ambiente de Pruebas por Defecto =1 =>2 Produccion (cambiar en caso de Pruebas)
     //public static $IdsUsu='1';//Valor por defecto(Alimenta al Autorizar el Documento)
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2020-01-01';//'2016-08-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2021-01-01';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     public static $dateXML = "d/m/Y";
     public $decimalPDF=2;
