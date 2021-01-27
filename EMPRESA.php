@@ -59,8 +59,13 @@ class EMPRESA {
         $infoTributaria->appendChild($xml->createElement('ptoEmi', $cabDoc[0]['PuntoEmision']));
         $infoTributaria->appendChild($xml->createElement('secuencial', $cabDoc[0]['Secuencial']));
         $infoTributaria->appendChild($xml->createElement('dirMatriz', utf8_encode(trim($cabDoc[0]['DireccionMatriz']))));
-        $infoTributaria->appendChild($xml->createElement('regimenMicroempresas', utf8_encode(trim($cabDoc[0]['RegimenMicroempresas']))));
-        $infoTributaria->appendChild($xml->createElement('agenteRetencion', trim($cabDoc[0]['AgenteRetencion'])));
+        if(strlen(trim($cabDoc[0]['RegimenMicroempresas']))>0){//Si existe agrega al XML
+            $infoTributaria->appendChild($xml->createElement('regimenMicroempresas', utf8_encode(trim($cabDoc[0]['RegimenMicroempresas']))));
+        }
+        if(strlen(trim($cabDoc[0]['AgenteRetencion']))>0){//Si existe agrega al XML
+            $infoTributaria->appendChild($xml->createElement('agenteRetencion', trim($cabDoc[0]['AgenteRetencion'])));
+        }
+        
         return $infoTributaria;
     }
     
