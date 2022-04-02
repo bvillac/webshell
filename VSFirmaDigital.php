@@ -58,7 +58,7 @@ class VSFirmaDigital {
         if (file_exists($filexml)) {//si la Ruta y el archivo Existe Continua
             //Archivo Existe
             $filebyte = $this->StrToByteArray(file_get_contents($filexml));
-            $file64base = base64_encode(file_get_contents($filexml));
+            $file64base = base64_encode(file_get_contents($filexml));			
             $wdsl = $this->Recepcion;//Yii::app()->getSession()->get('Recepcion', FALSE);//wsdl dependiendo del ambiente Configurado
             //$wdsl = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantes?wsdl'; //Ruta del Web service SRI RecepcionComprobantes
             $param = array(
@@ -108,7 +108,7 @@ class VSFirmaDigital {
                 $arroout["data"] = null;
                 return $arroout;
             } else {  // Muestra el resultado
-                //print_r($response);
+                //print_r($response);//Descomentar para ver el error
                 $arroout["status"] = "OK";
                 $arroout["error"] = $err;
                 $arroout["message"] = 'Respuesta Ok WebService: '.$metodo;

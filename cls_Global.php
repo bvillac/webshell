@@ -22,7 +22,7 @@ class cls_Global {
     public static $ambt_id='2';//Ambiente de Pruebas por Defecto =1 =>2 Produccion (cambiar en caso de Pruebas)
     //public static $IdsUsu='1';//Valor por defecto(Alimenta al Autorizar el Documento)
     var $consumidorfinal='9999999999';
-    var $dateStartFact='2021-01-01';//'2016-08-01';//'2015-03-20';//2015-07-20
+    var $dateStartFact='2022-01-01';//'2016-08-01';//'2015-03-20';//2015-07-20
     var $datebydefault='d-m-Y';
     public static $dateXML = "d/m/Y";
     public $decimalPDF=2;

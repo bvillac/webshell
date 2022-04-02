@@ -659,7 +659,7 @@ class NubeFactura {
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
                     
-                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
 	            //cls_Global::putMessageLogFile($resulMail);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
@@ -762,12 +762,13 @@ class NubeFactura {
 
     }
     
-    public function enviarDocRecepcion() {
+    public function enviarDocRecepcion() {//envia primero
         try {
             $obj_var = new cls_Global();
             $autDoc=new VSAutoDocumento(); 
             $obj_con = new cls_Base();
             $con = $obj_con->conexionIntermedio();
+			//cls_Global::putMessageLogFile("llego");  
             //$ids =0; //explode(",", $id);
             //Envia Documentos Ingrsados y Clave en Proceso
             $nEstado="1,4";
@@ -780,6 +781,7 @@ class NubeFactura {
                 if ($ids !== "") {
                     //Retorna Resultado Generado
                     $result = $this->generarFileXML($con,$obj_con,$ids,'NubeFactura','IdFactura');
+					//cls_Global::putMessageLogFile($result);  
                     $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
                     $DirDocFirmado=cls_Global::$seaDocFact;
                     if ($result['status'] == 'OK') {//Retorna True o False 
@@ -799,11 +801,13 @@ class NubeFactura {
         }
     }
     
-    public function enviarDocAutorizacion() {
+    public function enviarDocAutorizacion() {//envia segundo
         try {
+             
             $obj_var = new cls_Global();
             $autDoc=new VSAutoDocumento(); 
             $obj_con = new cls_Base();
+            
             $con = $obj_con->conexionIntermedio();
             $nEstado="2";
             $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con,$nEstado); 
@@ -835,7 +839,7 @@ class NubeFactura {
         $valida= new cls_Global();
         //$xmlGen=new VSXmlGenerador();
         $codDoc = $this->tipoDoc; //Documento Factura
-        $cabFact = $this->mostrarCabFactura($con,$obj_con,$ids);
+        $cabFact = $this->mostrarCabFactura($con,$obj_con,$ids);		
         //cls_Global::putMessageLogFile($cabFact);
         if (count($cabFact)>0) {
             $ErroDoc=VSexception::messageErrorDoc($ids,$DBTabDoc,$CampoID,$cabFact[0]["Estado"],$cabFact[0]["NumDocumento"],$cabFact[0]["NombreDocumento"],$cabFact[0]["ClaveAcceso"],$cabFact[0]["CodigoError"] );
@@ -852,7 +856,7 @@ class NubeFactura {
         $impFact = $this->mostrarFacturaImp($con,$obj_con,$ids);
         $adiFact = $this->mostrarFacturaDataAdicional($con,$obj_con,$ids);
         $pagFact = $this->mostrarFormaPago($con,$obj_con,$ids);//Agregar forma de pago
-
+		
         
         //http://www.itsalif.info/content/php-5-domdocument-creating-basic-xml
         $xml = new DomDocument('1.0', 'UTF-8');
@@ -946,10 +950,10 @@ class NubeFactura {
         
         $xml->formatOutput = true;
         //$strings_xml = $xml->saveXML();
-	//echo $strings_xml;
-        $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
-        $xml->save(cls_Global::$seaDocXml.$nomDocfile);
-        
+	    //echo $strings_xml;
+        $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml'; 
+		//cls_Global::putMessageLogFile("data: ".$nomDocfile);
+        $xml->save(cls_Global::$seaDocXml.$nomDocfile);        
         return VSexception::messageFileXML('OK', $nomDocfile, $cabFact[0]["ClaveAcceso"], 2, null, null);
     }
 

@@ -46,6 +46,7 @@ class EMPRESA {
     }
     
     public static function infoTributariaXML($cabDoc,$xml){
+		
         $valida= new cls_Global;
         $infoTributaria=$xml->createElement('infoTributaria');
         $infoTributaria->appendChild($xml->createElement('ambiente', $cabDoc[0]['Ambiente']));
@@ -59,13 +60,21 @@ class EMPRESA {
         $infoTributaria->appendChild($xml->createElement('ptoEmi', $cabDoc[0]['PuntoEmision']));
         $infoTributaria->appendChild($xml->createElement('secuencial', $cabDoc[0]['Secuencial']));
         $infoTributaria->appendChild($xml->createElement('dirMatriz', utf8_encode(trim($cabDoc[0]['DireccionMatriz']))));
-        if(strlen(trim($cabDoc[0]['RegimenMicroempresas']))>0){//Si existe agrega al XML
-            $infoTributaria->appendChild($xml->createElement('regimenMicroempresas', utf8_encode(trim($cabDoc[0]['RegimenMicroempresas']))));
-        }
+        //if(strlen(trim($cabDoc[0]['RegimenMicroempresas']))>0){//Si existe agrega al XML
+            //$infoTributaria->appendChild($xml->createElement('regimenMicroempresas', utf8_encode(trim($cabDoc[0]['RegimenMicroempresas']))));//real
+            //$infoTributaria->appendChild($xml->createElement('regimenMicroempresas', utf8_encode($valida->limpioCaracteresXML(trim(strtoupper($cabDoc[0]['RegimenMicroempresas']))))));
+            //$infoTributaria->appendChild($xml->createElement('regimenMicroempresas', utf8_decode(trim($cabDoc[0]['RegimenMicroempresas']))));
+            //$infoTributaria->appendChild($xml->createElement('regimenMicroempresas', 'CONTRIBUYENTE RÉGIMEN MICROEMPRESAS'));
+        //}
+		
         if(strlen(trim($cabDoc[0]['AgenteRetencion']))>0){//Si existe agrega al XML
             $infoTributaria->appendChild($xml->createElement('agenteRetencion', trim($cabDoc[0]['AgenteRetencion'])));
         }
-        
+		//Nota poner atencion en el formato xml las tildes de los conceptos
+		if(strlen(trim($cabDoc[0]['RegimenMicroempresas']))>0){//Nota Modificar Factura Electronia a Rimpe de Negocios
+			$infoTributaria->appendChild($xml->createElement('contribuyenteRimpe', 'CONTRIBUYENTE RÉGIMEN RIMPE'));
+		}
+		
         return $infoTributaria;
     }
     

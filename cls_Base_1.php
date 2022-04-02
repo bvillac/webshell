@@ -20,8 +20,8 @@ class cls_Base {
     //SERVIDOR LOCAL APP SEA
     public function conexionServidor() {
         //Configuracion Local
-        $bd_host = "192.168.1.100";
-        //$bd_host = "localhost";
+        //$bd_host = "192.168.1.100";
+        $bd_host = "localhost";
         $bd_usuario = "root";
         $bd_password = 'root00';
         //$bd_password = "";

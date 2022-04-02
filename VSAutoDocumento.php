@@ -9,11 +9,12 @@ class VSAutoDocumento {
 
     public function AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
         $firmaDig = new VSFirmaDigital();
-        $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);
+        $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);		 
         //Verifica Errores del Firmado
         if ($firma['status'] == 'OK') {
             //Validad COmprobante
             $valComp = $firmaDig->validarComprobanteWS($result['nomDoc'],$DirDocFirmado); //Envio NOmbre Documento
+			//cls_Global::putMessageLogFile($valComp); 
             if ($valComp['status'] == 'OK') {//Retorna Datos del Comprobacion
                 //Verifica si el Doc Fue Recibido Correctamente...
                 $Rac = $valComp['data']['RespuestaRecepcionComprobante'];
@@ -295,10 +296,10 @@ class VSAutoDocumento {
             $Identificador=$mensaje['identificador'];
             $TipoMensaje=$mensaje['tipo'];
             //$Mensaje=$mensaje['mensaje']; //Error por Problema de Caracteres Especiales           
-            $Mensaje=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));            
+            $Mensaje=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));
+            //cls_Global::putMessageLogFile($Mensaje);              
             //$InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
             $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?utf8_encode($valida->limpioCaracteresXML(trim($mensaje['informacionAdicional']))):'';
-            
             $sql = "INSERT INTO " . $con->BdIntermedio . ".NubeMensajeError 
                  (IdFactura,IdRetencion,IdNotaCredito,IdNotaDebito,IdGuiaRemision,Identificador,TipoMensaje,Mensaje,InformacionAdicional)
                  VALUES
