@@ -9,16 +9,17 @@ class VSAutoDocumento {
 
     public function AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
         $firmaDig = new VSFirmaDigital();
-        $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);		 
+        $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);	
+        //cls_Global::putMessageLogFile($firma); 	 
         //Verifica Errores del Firmado
         if ($firma['status'] == 'OK') {
             //Validad COmprobante
             $valComp = $firmaDig->validarComprobanteWS($result['nomDoc'],$DirDocFirmado); //Envio NOmbre Documento
-			//cls_Global::putMessageLogFile($valComp); 
             if ($valComp['status'] == 'OK') {//Retorna Datos del Comprobacion
                 //Verifica si el Doc Fue Recibido Correctamente...
                 $Rac = $valComp['data']['RespuestaRecepcionComprobante'];
-                $estadoRac = $Rac['estado'];
+                //$estadoRac = $Rac['estado'];
+                $estadoRac = 'RECIBIDA';//Solo para las pruebas.
                 if ($estadoRac == 'RECIBIDA') {
                     //Continua con el Proceso
                     //Autorizacion de Comprobantes                     
@@ -296,14 +297,13 @@ class VSAutoDocumento {
             $Identificador=$mensaje['identificador'];
             $TipoMensaje=$mensaje['tipo'];
             //$Mensaje=$mensaje['mensaje']; //Error por Problema de Caracteres Especiales           
-            $Mensaje=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));
-            //cls_Global::putMessageLogFile($Mensaje);              
+            $Mensaje=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));         
             //$InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
             $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?utf8_encode($valida->limpioCaracteresXML(trim($mensaje['informacionAdicional']))):'';
             $sql = "INSERT INTO " . $con->BdIntermedio . ".NubeMensajeError 
                  (IdFactura,IdRetencion,IdNotaCredito,IdNotaDebito,IdGuiaRemision,Identificador,TipoMensaje,Mensaje,InformacionAdicional)
                  VALUES
-                 ('$IdFactura','$IdRetencion','$IdNotaCredito','$IdNotaDebito','$IdGuiaRemision','$Identificador','$TipoMensaje','$Mensaje','$InformacionAdicional')";
+                 ('$IdFactura','$IdRetencion','$IdNotaCredito','$IdNotaDebito','$IdGuiaRemision','$Identificador','$TipoMensaje','$Mensaje','$InformacionAdicional')";  
             $command = $con->prepare($sql);
             $command->execute();
             $DescripcionError=utf8_encode("$tipDoc Ids=>$ids ID=>$Identificador Error=> $InformacionAdicional");
@@ -316,6 +316,7 @@ class VSAutoDocumento {
         $estado = $response['estado'];
         if ($estado == 'AUTORIZADO') {
             $xmldata=$this->xmlAutoSri($response);
+            cls_Global::rutaPath($DirDocAutorizado);//Crea la Ruta pos si no existe.
             file_put_contents($DirDocAutorizado . $NombreDocumento, $xmldata); //Escribo el Archivo Xml
             $arroout["status"] = "OK";
             $arroout["error"] = null;

@@ -709,7 +709,7 @@ class NubeNotasCredito {
         $rawData = array();
         $fechaIni=$obj_var->dateStartFact;
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
-        $sql = "SELECT A.IdNotaCredito Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
+        $sql = "SELECT A.IdNotaCredito Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento,A.Ruc
             FROM " . $obj_con->BdIntermedio . ".NubeNotaCredito A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
                 //. "AND IdNotaCredito=241 ";
@@ -740,10 +740,11 @@ class NubeNotasCredito {
                 if ($ids !== "") {
                     //Retorna Resultado Generado
                     $result = $this->generarFileXML($con,$obj_con,$ids,'NubeNotaCredito','IdNotaCredito');
-                    $DirDocAutorizado=  cls_Global::$seaDocAutNc; 
-                    $DirDocFirmado=cls_Global::$seaDocNc;
-                    if ($result['status'] == 'OK') {//Retorna True o False 
-                        //return $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
+                    //$DirDocAutorizado=  cls_Global::$seaDocAutNc; 
+                    //$DirDocFirmado=cls_Global::$seaDocNc;
+                    $DirDocAutorizado=cls_Global::$seaDocAutNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                    $DirDocFirmado=cls_Global::$seaDocNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                    if ($result['status'] == 'OK') {//Retorna True o False                         
                         $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeNotaCredito','NOTA_CREDITO','IdNotaCredito');
                     }elseif ($result['status'] == 'OK_REG') {
                         //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
@@ -778,8 +779,11 @@ class NubeNotasCredito {
                         'nomDoc' => $docAut[$i]["NombreDocumento"],  
                         'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
                     );
-                    $DirDocAutorizado=cls_Global::$seaDocAutNc; 
-                    $DirDocFirmado=cls_Global::$seaDocNc;
+                    //$DirDocAutorizado=cls_Global::$seaDocAutNc; 
+                    //$DirDocFirmado=cls_Global::$seaDocNc;
+                    $DirDocAutorizado=cls_Global::$seaDocAutNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                    $DirDocFirmado=cls_Global::$seaDocNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                  
                     $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado,'NubeNotaCredito','NOTA DE CREDITO','IdNotaCredito');
                 
                 }
@@ -910,9 +914,11 @@ class NubeNotasCredito {
         $dom->appendChild(EMPRESA::infoAdicionalXML($adiFact, $xml));
         
         $xml->formatOutput = true;
-
+        
+        $rucDir=$cabFact[0]["Ruc"].'/';//Ruta Ruc para Separar carpetas
+        cls_Global::rutaPath(cls_Global::$seaDocXml.$rucDir);//Crea la Ruta pos si no existe.
         $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
-        $xml->save(cls_Global::$seaDocXml.$nomDocfile);
+        $xml->save(cls_Global::$seaDocXml.$rucDir.$nomDocfile);
         
         return VSexception::messageFileXML('OK', $nomDocfile, $cabFact[0]["ClaveAcceso"], 2, null, null);
     }

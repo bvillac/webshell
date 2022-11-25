@@ -18,7 +18,12 @@ class VSFirmaDigital {
     public function recuperarFirmaDigital($id) {
         $obj_con = new cls_Base();
         $conApp = $obj_con->conexionAppWeb();
-        $sql = "SELECT Clave,RutaFile,Wdsl_local,SeaDocXml FROM " . $obj_con->BdAppweb . ".VSFirmaDigital WHERE EMP_ID=$id AND Estado=1";
+        //$sql = "SELECT Clave,RutaFile,Wdsl_local,SeaDocXml FROM " . $obj_con->BdAppweb . ".VSFirmaDigital WHERE EMP_ID=$id AND Estado=1";
+        $sql = "SELECT A.Clave,A.RutaFile,A.Wdsl_local,A.SeaDocXml,B.EMP_RUC Ruc
+                    FROM " . $obj_con->BdAppweb . ".VSFirmaDigital A
+                        INNER JOIN " . $obj_con->BdAppweb . ".EMPRESA B
+                        ON A.EMP_ID=B.EMP_ID
+                    WHERE A.EMP_ID=$id AND A.Estado=1";
         $sentencia = $conApp->query($sql);
         $conApp->close();
         return $sentencia->fetch_assoc();
@@ -30,7 +35,7 @@ class VSFirmaDigital {
         $Dataf = $this->recuperarFirmaDigital(cls_Global::$emp_id);
         $fileCertificado = $this->seaFirma . base64_decode($Dataf['RutaFile']);
         $pass = base64_decode($Dataf['Clave']);
-        $filexml = $Dataf['SeaDocXml'].$Documento;
+        $filexml = $Dataf['SeaDocXml'].$Dataf['Ruc'].'/'.$Documento;
         $wdsl = $Dataf['Wdsl_local'];//'http://127.0.0.1:8080/FIRMARSRI/FirmaElectronicaSRI?wsdl';
         $param = array(
             'pathOrigen' => $filexml,
@@ -39,7 +44,7 @@ class VSFirmaDigital {
             'clave' => $pass,
             'nombreFirmado' => $Documento
         );
-        //cls_Global::putMessageLogFile($obj_var->emp_id);
+        //cls_Global::putMessageLogFile($param);
         $metodo = 'firmar';
         return $this->webServiceNuSoap($wdsl, $param, $metodo);
     }

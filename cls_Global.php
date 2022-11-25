@@ -16,10 +16,10 @@ class cls_Global {
     //put your code here
     //Datos de Empresa para Facturas Eletroncia
     //SOLUCIONES = 1 Y INNOVTIC =2
-    public static $emp_id='1';//Empresa
+    public static $emp_id='3';//Empresa
     public static $est_id='1';//Establecimiento
     public static $pemi_id='1';//Punto Emision
-    public static $ambt_id='2';//Ambiente de Pruebas por Defecto =1 =>2 Produccion (cambiar en caso de Pruebas)
+    public static $ambt_id='1';//Ambiente de Pruebas por Defecto =1 =>2 Produccion (cambiar en caso de Pruebas)
     //public static $IdsUsu='1';//Valor por defecto(Alimenta al Autorizar el Documento)
     var $consumidorfinal='9999999999';
     var $dateStartFact='2022-01-01';//'2016-08-01';//'2015-03-20';//2015-07-20
@@ -390,6 +390,13 @@ class cls_Global {
     public static function formatoDecXML($valor){
         $obj_var = new cls_Global();
         return number_format($valor, $obj_var->decimalPDF, $obj_var->SepdecimalPDF, '');
+    }
+
+    public static function rutaPath($path) {
+        if(!file_exists($path)){
+            mkdir($path, 0777, true);
+            chmod($path, 0777);
+        }
     }
     
 

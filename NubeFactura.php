@@ -657,10 +657,12 @@ class NubeFactura {
                     $mPDF1->showWatermarkText=($cabDoc[$i]["Ambiente"]==1)?TRUE:FALSE; // 1=Pruebas y 2=Produccion
                     //****************************************                    
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
-                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
-                    
+                    //$mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
+                    cls_Global::putMessageLogFile($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF);
+                    cls_Global::rutaPath($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/');//Crea la Ruta pos si no existe.
+                    $mPDF1->Output($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
                     //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
-	            //cls_Global::putMessageLogFile($resulMail);
+	                //cls_Global::putMessageLogFile($resulMail);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
@@ -747,7 +749,7 @@ class NubeFactura {
         $rawData = array();
         $fechaIni=$obj_var->dateStartFact;
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
-        $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
+        $sql = "SELECT A.IdFactura Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento,A.Ruc
             FROM " . $obj_con->BdIntermedio . ".NubeFactura A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
                 //. "AND IdFactura=2584 ";
@@ -782,8 +784,8 @@ class NubeFactura {
                     //Retorna Resultado Generado
                     $result = $this->generarFileXML($con,$obj_con,$ids,'NubeFactura','IdFactura');
 					//cls_Global::putMessageLogFile($result);  
-                    $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
-                    $DirDocFirmado=cls_Global::$seaDocFact;
+                    $DirDocAutorizado=cls_Global::$seaDocAutFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                    $DirDocFirmado=cls_Global::$seaDocFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
                     if ($result['status'] == 'OK') {//Retorna True o False 
                         $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
                     }elseif ($result['status'] == 'OK_REG') {
@@ -821,8 +823,10 @@ class NubeFactura {
                         'nomDoc' => $docAut[$i]["NombreDocumento"],  
                         'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
                     );
-                    $DirDocAutorizado=  cls_Global::$seaDocAutFact; 
-                    $DirDocFirmado=cls_Global::$seaDocFact;
+                    $DirDocAutorizado=cls_Global::$seaDocAutFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                    $DirDocFirmado=cls_Global::$seaDocFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                    //$DirDocAutorizado=  cls_Global::$seaDocAutFact; 
+                    //$DirDocFirmado=cls_Global::$seaDocFact;
                     $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
                 
                 }
@@ -839,7 +843,8 @@ class NubeFactura {
         $valida= new cls_Global();
         //$xmlGen=new VSXmlGenerador();
         $codDoc = $this->tipoDoc; //Documento Factura
-        $cabFact = $this->mostrarCabFactura($con,$obj_con,$ids);		
+        $cabFact = $this->mostrarCabFactura($con,$obj_con,$ids);
+        		
         //cls_Global::putMessageLogFile($cabFact);
         if (count($cabFact)>0) {
             $ErroDoc=VSexception::messageErrorDoc($ids,$DBTabDoc,$CampoID,$cabFact[0]["Estado"],$cabFact[0]["NumDocumento"],$cabFact[0]["NombreDocumento"],$cabFact[0]["ClaveAcceso"],$cabFact[0]["CodigoError"] );
@@ -953,7 +958,9 @@ class NubeFactura {
 	    //echo $strings_xml;
         $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml'; 
 		//cls_Global::putMessageLogFile("data: ".$nomDocfile);
-        $xml->save(cls_Global::$seaDocXml.$nomDocfile);        
+        $rucDir=$cabFact[0]["Ruc"].'/';//Ruta Ruc para Separar carpetas
+        cls_Global::rutaPath(cls_Global::$seaDocXml.$rucDir);//Crea la Ruta pos si no existe.
+        $xml->save(cls_Global::$seaDocXml.$rucDir.$nomDocfile);        
         return VSexception::messageFileXML('OK', $nomDocfile, $cabFact[0]["ClaveAcceso"], 2, null, null);
     }
 

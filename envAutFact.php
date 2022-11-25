@@ -1,4 +1,5 @@
 <?php
+//Segunda Tarea
 include('NubeFactura.php');//para HTTP
 $obj = new NubeFactura();
 $res=$obj->enviarDocAutorizacion();//Solo Utimpor

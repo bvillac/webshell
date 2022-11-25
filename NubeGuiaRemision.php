@@ -548,7 +548,7 @@ class NubeGuiaRemision {
         $rawData = array();
         $fechaIni=$obj_var->dateStartFact;
         $limitEnvAUT=  cls_Global::$limitEnvAUT; 
-        $sql = "SELECT A.IdGuiaRemision Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento
+        $sql = "SELECT A.IdGuiaRemision Ids,A.UsuarioCreador UsuCre,A.ClaveAcceso,A.NombreDocumento,A.Ruc
             FROM " . $obj_con->BdIntermedio . ".NubeGuiaRemision A WHERE A.Estado IN($nEstado) "
                 . "AND A.EstadoEnv=2 AND A.FechaCarga>='$fechaIni' limit $limitEnvAUT "; 
                 //. "AND IdGuiaRemision=17637 ";
@@ -580,8 +580,10 @@ class NubeGuiaRemision {
                 if ($ids !== "") {
                     //Retorna Resultado Generado
                     $result = $this->generarFileXML($con,$obj_con,$ids,'NubeGuiaRemision','IdGuiaRemision');
-                    $DirDocAutorizado=  cls_Global::$seaDocAutGuia; 
-                    $DirDocFirmado=cls_Global::$seaDocGuia;
+                    //$DirDocAutorizado=  cls_Global::$seaDocAutGuia; 
+                    //$DirDocFirmado=cls_Global::$seaDocGuia;
+                    $DirDocAutorizado=cls_Global::$seaDocAutGuia.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                    $DirDocFirmado=cls_Global::$seaDocGuia.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
                     if ($result['status'] == 'OK') {//Retorna True o False 
                         $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeGuiaRemision','GUIA','IdGuiaRemision');
                     }elseif ($result['status'] == 'OK_REG') {
@@ -617,8 +619,11 @@ class NubeGuiaRemision {
                         'nomDoc' => $docAut[$i]["NombreDocumento"],  
                         'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
                     );
-                    $DirDocAutorizado=  cls_Global::$seaDocAutGuia; 
-                    $DirDocFirmado=cls_Global::$seaDocGuia;
+                    $DirDocAutorizado=cls_Global::$seaDocAutGuia.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                    $DirDocFirmado=cls_Global::$seaDocGuia.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                  
+                    //$DirDocAutorizado=  cls_Global::$seaDocAutGuia; 
+                    //$DirDocFirmado=cls_Global::$seaDocGuia;
                     $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado,'NubeGuiaRemision','GUIA','IdGuiaRemision');
                 
                 }
@@ -756,9 +761,10 @@ class NubeGuiaRemision {
         $dom->appendChild(EMPRESA::infoAdicionalXML($adiFact, $xml));
         
         $xml->formatOutput = true;
-
+        $rucDir=$cabFact[0]["Ruc"].'/';//Ruta Ruc para Separar carpetas
+        cls_Global::rutaPath(cls_Global::$seaDocXml.$rucDir);//Crea la Ruta pos si no existe.
         $nomDocfile = $cabFact[0]['NombreDocumento'] . '-' . $cabFact[0]['NumDocumento'] . '.xml';   
-        $xml->save(cls_Global::$seaDocXml.$nomDocfile);
+        $xml->save(cls_Global::$seaDocXml.$rucDir.$nomDocfile);
         
         return VSexception::messageFileXML('OK', $nomDocfile, $cabFact[0]["ClaveAcceso"], 2, null, null);
     }
