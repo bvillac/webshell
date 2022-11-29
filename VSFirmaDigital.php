@@ -60,6 +60,7 @@ class VSFirmaDigital {
 
     public function validarComprobanteWS($Documento,$DirDocFirmado) {
         $filexml = $DirDocFirmado . $Documento;
+        //cls_Global::putMessageLogFile($filexml);
         if (file_exists($filexml)) {//si la Ruta y el archivo Existe Continua
             //Archivo Existe
             $filebyte = $this->StrToByteArray(file_get_contents($filexml));
@@ -95,6 +96,7 @@ class VSFirmaDigital {
         }
         
         $response = $client->call($metodo, $param);
+        //cls_Global::putMessageLogFile($response);
         if ($client->fault) {
             //echo 'Existe un Problemas en el Envio';
             //print_r($response);

@@ -15,8 +15,8 @@ class EMPRESA {
                                             INNER JOIN " . $obj_con->BdAppweb . ".PUNTO_EMISION C
                                                     ON B.EST_ID=C.EST_ID AND C.EST_LOG='1')
                                     ON A.EMP_ID=B.EMP_ID AND B.EST_LOG='1'
-            WHERE A.EMP_ID='$emp_id' AND A.EMP_EST_LOG='1' 
-                     AND B.EST_ID='$est_id' AND C.PEMI_ID='$pemi_id'";
+            WHERE A.EMP_ID='$emp_id' AND A.EMP_EST_LOG='1' ";
+                     //AND B.EST_ID='$est_id' AND C.PEMI_ID='$pemi_id'";
         //echo $sql;
         //$rawData = $conApp->createCommand($sql)->queryAll(); //Varios registros =>  $rawData[0]['RazonSocial']
         //$rawData = $conApp->createCommand($sql)->queryRow();  //Un solo Registro => $rawData['RazonSocial']
@@ -71,8 +71,11 @@ class EMPRESA {
             $infoTributaria->appendChild($xml->createElement('agenteRetencion', trim($cabDoc[0]['AgenteRetencion'])));
         }
 		//Nota poner atencion en el formato xml las tildes de los conceptos
+         
 		if(strlen(trim($cabDoc[0]['RegimenMicroempresas']))>0){//Nota Modificar Factura Electronia a Rimpe de Negocios
-			$infoTributaria->appendChild($xml->createElement('contribuyenteRimpe', 'CONTRIBUYENTE RÉGIMEN RIMPE'));
+            cls_Global::putMessageLogFile("si ingreso");  
+			//$infoTributaria->appendChild($xml->createElement('contribuyenteRimpe', 'CONTRIBUYENTE RÉGIMEN RIMPE'));
+            $infoTributaria->appendChild($xml->createElement('contribuyenteRimpe', trim($cabDoc[0]['RegimenMicroempresas'])));
 		}
 		
         return $infoTributaria;
@@ -93,6 +96,19 @@ class EMPRESA {
             }
         }
         return $infoAdicional;
+    }
+
+    public function buscarServerMail() {
+        $obj_con = new cls_Base();
+        $conApp = $obj_con->conexionAppWeb();
+        $IdEmpresa=cls_Global::$emp_id;
+        //$rawData = array();
+        //$sql = "SELECT * FROM " . $obj_con->BdAppweb . ".VSServidorCorreo WHERE EMP_ID='$IdEmpresa';";
+        $sql = "SELECT Mail,NombreMostrar,Asunto,Clave,SMTPServidor,SMTPPuerto,CCO,DominioEmpresa,CorreoAdmin,SmtpSSL,MailCharSet,Estado
+                        FROM " . $obj_con->BdAppweb . ".VSServidorCorreo WHERE  EMP_ID='$IdEmpresa' AND Estado=1 ; ";
+        $sentencia = $conApp->query($sql);
+        $conApp->close();
+        return $sentencia->fetch_assoc();
     }
     
 }

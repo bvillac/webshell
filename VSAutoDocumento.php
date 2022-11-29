@@ -9,12 +9,11 @@ class VSAutoDocumento {
 
     public function AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,$DBTabDoc,$DocErr,$CampoID) {
         $firmaDig = new VSFirmaDigital();
-        $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);	
-        //cls_Global::putMessageLogFile($firma); 	 
+        $firma = $firmaDig->firmaXAdES_BES($result['nomDoc'],$DirDocFirmado);		 
         //Verifica Errores del Firmado
         if ($firma['status'] == 'OK') {
             //Validad COmprobante
-            $valComp = $firmaDig->validarComprobanteWS($result['nomDoc'],$DirDocFirmado); //Envio NOmbre Documento
+            $valComp = $firmaDig->validarComprobanteWS($result['nomDoc'],$DirDocFirmado); //Envio NOmbre Documento	 
             if ($valComp['status'] == 'OK') {//Retorna Datos del Comprobacion
                 //Verifica si el Doc Fue Recibido Correctamente...
                 $Rac = $valComp['data']['RespuestaRecepcionComprobante'];

@@ -7,7 +7,7 @@
  */
 require_once('PHPMailerAutoload.php');
 class mailSystem {
-    private $domEmpresa='Utimpor.com';
+    /*private $domEmpresa='Utimpor.com';
     //private $mailSMTP='mail.utimpor.com';
     private $mailSMTP='marquis.websitewelcome.com';
     private $noResponder='no-responder@utimpor.com';
@@ -17,7 +17,38 @@ class mailSystem {
     public $file_to_attachXML='';
     public $file_to_attachPDF='';
     public $fileXML='';
+    public $filePDF='';*/
+
+    public $domEmpresa='';
+    public $mailSMTP='';
+    public $mailPort='';
+    public $mailSMTPSecure='';
+    public $mailCharSet='';
+    public $noResponder='';
+    public $adminMail='';
+    public $noResponderPass='';//'ect{UZCJ6hvR';
+    public $Subject='Ha Recibido un(a)  Nuevo(a)!!! ';
+    public $file_to_attachXML='';
+    public $file_to_attachPDF='';
+    public $fileXML='';
     public $filePDF='';
+
+
+    public function parametroServer($dataMail,$objEmpData){
+        //Configuracion de ServerCorreo
+        //Mail,NombreMostrar,Asunto,Clave,SMTPServidor,SMTPPuerto,CCO,
+        //DominioEmpresa,CorreoAdmin,SmtpSSL,MailCharSet,Estad
+        $SerMail=$objEmpData->buscarServerMail();
+        $dataMail->domEmpresa= $SerMail["DominioEmpresa"];
+        $dataMail->mailSMTP= $SerMail["SMTPServidor"];
+        $dataMail->noResponder= $SerMail["Mail"];
+        $dataMail->noResponderPass= $SerMail["Clave"];
+        $dataMail->Subject= $SerMail["Asunto"];
+        $dataMail->adminMail= $SerMail["CorreoAdmin"];
+        $dataMail->mailPort= $SerMail["SMTPPuerto"];
+        $dataMail->mailSMTPSecure= $SerMail["SmtpSSL"];
+        $dataMail->mailCharSet= $SerMail["MailCharSet"]; 
+    }
     
     //Valida si es un Email Correcto Devuelve True
     private function valid_email($val) {
@@ -29,6 +60,7 @@ class mailSystem {
 
     //put your code here
     public function enviarMail($body,$CabPed,$obj_var,$usuData,$fil) {
+        $objEmpData= new EMPRESA();
         $mail = new PHPMailer();
         //$body = "Hola como estas";
         
@@ -37,8 +69,8 @@ class mailSystem {
         //$mail->SMTPSecure = 'tls';
         //$mail->Port = 587;
         //Para ssl
-        $mail->SMTPSecure = "ssl";
-        $mail->Port = 465;
+        $mail->SMTPSecure = $this->mailSMTPSecure;
+        $mail->Port = $this->mailPort;;
         // la dirección del servidor, p. ej.: smtp.servidor.com
         $mail->Host = $this->mailSMTP;//"mail.utimpor.com";
    
@@ -66,7 +98,7 @@ class mailSystem {
                 $mail->AddAddress(trim($DataCorreos[$icor]), trim($CabPed[$fil]["RazonSoc"]));
             }else{
                 //Correos Alternativos de admin  $adminMail
-                $mail->addBCC("bvillacreses@utimpor.com", "Byron Villa");
+                $mail->addBCC("byron_villacresesf@hotmail.com", "Byron Villa");
                 $mail->addBCC($usuData["CorreoUser"], $usuData["NombreUser"]);//Enviar Correos del Vendedor
             }
         }
@@ -90,17 +122,17 @@ class mailSystem {
         //$mail->addReplyTo('byronvillacreses@gmail.com', 'First Last');
         
         //$mail->AddAttachment("archivo.zip");//adjuntos un archivo al mensaje
-        $mail->AddAttachment($this->file_to_attachXML.$this->fileXML,$this->fileXML);
-        $mail->AddAttachment($this->file_to_attachPDF.$this->filePDF,$this->filePDF);
+        $mail->AddAttachment($this->file_to_attachXML.$CabPed[$fil]["Ruc"].'/'.$this->fileXML,$this->fileXML);
+        $mail->AddAttachment($this->file_to_attachPDF.$CabPed[$fil]["Ruc"].'/'.$this->filePDF,$this->filePDF);
         // si el SMTP necesita autenticación
         $mail->SMTPAuth = true;
 
         // credenciales usuario
         $mail->Username = $this->noResponder;
         $mail->Password = $this->noResponderPass;
-        $mail->CharSet = 'UTF-8';
+        $mail->CharSet =  $this->mailCharSet;
         //$mail->SMTPDebug = 4;//Muestra el Error
-
+        return $obj_var->messageSystem('OK', "¡¡Enviado!!", null, null, null);
         if (!$mail->Send()) {
             //echo "Error enviando: " . $mail->ErrorInfo;
             return $obj_var->messageSystem('NO_OK', "Error enviando: " . $mail->ErrorInfo, null, null, null);

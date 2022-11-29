@@ -60,12 +60,12 @@ $mensajePDF='
             require_once('barcode.inc.php'); 
             $code_number = $cabFact[0]["ClaveAcceso"];//Generamos Clave de Acceso
             //opcion 1 permite Guardar en una rutas y 0 Presenta por apantalla,   false=no muestro los numeros abajo.
-            new barCodeGenrator($code_number,1,$obj_var->rutaPDF.$cabFact[0]['IdentificacionComprador'].'.png', 280, 150, false);
+            new barCodeGenrator($code_number,1,$obj_var->rutaPDF.$cabDoc[0]["Ruc"].'/'.$cabFact[0]['IdentificacionComprador'].'.png', 280, 150, false);
             $mensajePDF .= '<table style="width:100%;">
                 <tbody>
                     <tr>
                         <td style="width:50%;vertical-align: central" align="center">
-                            <img src="'. $objEmp["EMP_LOGO"] .'" style="width:250px;height:110px;">
+                            <img src="logos/'. $objEmp["EMP_LOGO"] .'" style="width:250px;height:110px;">
                         </td>
                         <td rowspan="2" style="width:50%">';
                         include("formatFact/_frm_CabDoc.php"); //echo $this->renderPartial("_frm_CabFact", array("cabFact" => $cabFact)); 

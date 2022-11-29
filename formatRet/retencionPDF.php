@@ -66,7 +66,7 @@ $mensajePDF='
                 <tbody>
                     <tr>
                         <td style="width:50%;vertical-align: central" align="center">
-                            <img src="logoPDF.png" style="width:250px;height:110px;">
+                            <img src="logos/'. $objEmp["EMP_LOGO"] .'" style="width:250px;height:110px;">
                         </td>                        
                         <td rowspan="2" style="width:50%">';
                         include("formatRet/_frm_CabDoc.php"); //$this->renderPartial('_frm_CabDoc', array('cabDoc' => $cabDoc));

@@ -1,4 +1,5 @@
 <?php
+//cls_Global::putMessageLogFile($obj_var->rutaPDF.$cabDoc[0]["Ruc"].'/'.$cabFact[0]["IdentificacionComprador"]);
 $cabDocPDF = '<div>
     <table style="width:100mm" class="marcoDiv">
         <tbody>
@@ -57,7 +58,7 @@ $cabDocPDF = '<div>
             </tr>
             <tr>
                 <td style="width:50%">
-                            <img src="'.$obj_var->rutaPDF.$cabFact[0]["IdentificacionComprador"].'.png" style="width:280px;height:20px;">
+                            <img src="'.$obj_var->rutaPDF.$cabDoc[0]["Ruc"].'/'.$cabFact[0]["IdentificacionComprador"].'.png" style="width:280px;height:20px;">
                 </td>
             </tr>
             <tr>

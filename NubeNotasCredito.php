@@ -526,6 +526,8 @@ class NubeNotasCredito {
         //$con = $obj_con->conexionVsRAd();
         $objEmp=$objEmpData->buscarDataEmpresa(cls_Global::$emp_id,cls_Global::$est_id,cls_Global::$pemi_id);//recuperar info deL Contribuyente
         $con = $obj_con->conexionIntermedio();
+
+        $dataMail->parametroServer($dataMail,$objEmpData);
         
         $dataMail->file_to_attachXML=$obj_var->rutaXML.'NC/';//Rutas FACTURAS
         $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
@@ -577,9 +579,11 @@ class NubeNotasCredito {
                     //****************************************
                     
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
-                    $mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
+                    
+                    cls_Global::rutaPath($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/');//Crea la Ruta pos si no existe.
+                    $mPDF1->Output($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF, 'F');//I en un naverdoad  F=ENVIA A UN ARCHVIO
 
-                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
                     }else{
@@ -606,6 +610,8 @@ class NubeNotasCredito {
             return false;
         }   
     }
+
+    
     
     private function buscarMailNcRAD($con,$obj_var,$obj_con) {
             $rawData = array();
@@ -822,7 +828,7 @@ class NubeNotasCredito {
         $xml = new DomDocument('1.0', 'UTF-8');
         //$xml->version='1.0';
         //$xml->encoding='UTF-8';
-        $xml->standalone= TRUE;
+        //$xml->standalone= TRUE;
         
         //NODO PRINCIPAL
         $dom = $xml->createElement('notaCredito');

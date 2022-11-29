@@ -603,12 +603,14 @@ class NubeFactura {
         //$con = $obj_con->conexionVsRAd();
         $objEmp=$objEmpData->buscarDataEmpresa(cls_Global::$emp_id,cls_Global::$est_id,cls_Global::$pemi_id);//recuperar info deL Contribuyente
         $con = $obj_con->conexionIntermedio();
-     
+
+        $this->parametroServer($dataMail,$objEmpData);
+
         $dataMail->file_to_attachXML=$obj_var->rutaXML.'FACTURAS/';//Rutas FACTURAS
         $dataMail->file_to_attachPDF=$obj_var->rutaPDF;//Ructa de Documentos PDF
+        
         try {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
-		
             //Se procede a preparar con los correos para enviar.
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
                 //Retorna Informacion de Correos
@@ -658,10 +660,10 @@ class NubeFactura {
                     //****************************************                    
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     //$mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
-                    cls_Global::putMessageLogFile($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF);
+                    //cls_Global::putMessageLogFile($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF);
                     cls_Global::rutaPath($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/');//Crea la Ruta pos si no existe.
                     $mPDF1->Output($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
-                    //$resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
+                    $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
 	                //cls_Global::putMessageLogFile($resulMail);
                     if($resulMail["status"]=='OK'){
                         $cabDoc[$i]['EstadoEnv']=6;//Correo Envia
@@ -688,6 +690,22 @@ class NubeFactura {
             throw $e;
             return false;
         }   
+    }
+
+    private function parametroServer($dataMail,$objEmpData){
+        //Configuracion de ServerCorreo
+        //Mail,NombreMostrar,Asunto,Clave,SMTPServidor,SMTPPuerto,CCO,
+        //DominioEmpresa,CorreoAdmin,SmtpSSL,MailCharSet,Estad
+        $SerMail=$objEmpData->buscarServerMail();
+        $dataMail->domEmpresa= $SerMail["DominioEmpresa"];
+        $dataMail->mailSMTP= $SerMail["SMTPServidor"];
+        $dataMail->noResponder= $SerMail["Mail"];
+        $dataMail->noResponderPass= $SerMail["Clave"];
+        $dataMail->Subject= $SerMail["Asunto"];
+        $dataMail->adminMail= $SerMail["CorreoAdmin"];
+        $dataMail->mailPort= $SerMail["SMTPPuerto"];
+        $dataMail->mailSMTPSecure= $SerMail["SmtpSSL"];
+        $dataMail->mailCharSet= $SerMail["MailCharSet"]; 
     }
     
     private function buscarMailFacturasRAD($con,$obj_var,$obj_con) {
@@ -769,8 +787,7 @@ class NubeFactura {
             $obj_var = new cls_Global();
             $autDoc=new VSAutoDocumento(); 
             $obj_con = new cls_Base();
-            $con = $obj_con->conexionIntermedio();
-			//cls_Global::putMessageLogFile("llego");  
+            $con = $obj_con->conexionIntermedio(); 
             //$ids =0; //explode(",", $id);
             //Envia Documentos Ingrsados y Clave en Proceso
             $nEstado="1,4";
@@ -778,7 +795,6 @@ class NubeFactura {
             $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con,$nEstado); 
             //cls_Global::putMessageLogFile($docAut);            
             for ($i = 0; $i < count($docAut); $i++) {
-                //cls_Global::putMessageLogFile($docAut[$i]); 
                 $ids=$docAut[$i]["Ids"];
                 if ($ids !== "") {
                     //Retorna Resultado Generado
@@ -867,7 +883,7 @@ class NubeFactura {
         $xml = new DomDocument('1.0', 'UTF-8');
         //$xml->version='1.0';
         //$xml->encoding='UTF-8';
-        $xml->standalone= TRUE;
+        //$xml->standalone= TRUE;
         
         //NODO PRINCIPAL
         $dom = $xml->createElement('factura');

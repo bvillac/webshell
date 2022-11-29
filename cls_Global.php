@@ -16,7 +16,7 @@ class cls_Global {
     //put your code here
     //Datos de Empresa para Facturas Eletroncia
     //SOLUCIONES = 1 Y INNOVTIC =2
-    public static $emp_id='3';//Empresa
+    public static $emp_id='6';//Empresa
     public static $est_id='1';//Establecimiento
     public static $pemi_id='1';//Punto Emision
     public static $ambt_id='1';//Ambiente de Pruebas por Defecto =1 =>2 Produccion (cambiar en caso de Pruebas)
@@ -344,13 +344,13 @@ class cls_Global {
                         //        WHERE ClaveAcceso IS NULL AND AutorizacionSri IS NULL AND IND_UPD='L' AND FEC_VTA>'$fechaIni' LIMIT $limitEnv ";
                         break;
                     Case "GR"://GUIAS DE REMISION
-                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeGuiaRemision SET EstadoEnv='$Estado' WHERE IdGuiaRemision='$Ids';";
+                        //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeGuiaRemision SET EstadoEnv='$Estado' WHERE IdGuiaRemision='$Ids';";
                         break;
                     Case "RT"://RETENCIONES
-                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeRetencion SET EstadoEnv='$Estado' WHERE IdRetencion='$Ids';";
+                        //sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeRetencion SET EstadoEnv='$Estado' WHERE IdRetencion='$Ids';";
                         break;
                     Case "NC"://NOTAS DE CREDITO
-                        $sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeNotaCredito SET EstadoEnv='$Estado' WHERE IdNotaCredito='$Ids';";
+                        //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeNotaCredito SET EstadoEnv='$Estado' WHERE IdNotaCredito='$Ids';";
                         break;
                     Case "ND"://NOTAS DE DEBITO
                         //$sql = "UPDATE " . $obj_con->BdIntermedio . ".NubeFactura SET EstadoEnv='$Estado' WHERE IdFactura='$Ids';";
