@@ -601,6 +601,8 @@ class NubeFactura {
         $dataMail = new mailSystem();
         $rep = new REPORTES();
         //$con = $obj_con->conexionVsRAd();
+        //$TblEmpresa=cls_Global::retornaIdEmpresa($docAut[$i]["Ruc"]);
+
         $objEmp=$objEmpData->buscarDataEmpresa(cls_Global::$emp_id,cls_Global::$est_id,cls_Global::$pemi_id);//recuperar info deL Contribuyente
         $con = $obj_con->conexionIntermedio();
 
@@ -613,6 +615,9 @@ class NubeFactura {
             $cabDoc = $this->buscarMailFacturasRAD($con,$obj_var,$obj_con);//Consulta Documentos para Enviar
             //Se procede a preparar con los correos para enviar.
             for ($i = 0; $i < sizeof($cabDoc); $i++) {
+                $TblEmpresa=cls_Global::retornaIdEmpresa($cabDoc[$i]["Ruc"]);
+                $obj_con->BdServidor=$TblEmpresa['EMP_DBSEA'];//Actualiza la Base de Datos para Consultar Correos
+                
                 //Retorna Informacion de Correos
                 $rowUser=$obj_var->buscarCedRuc($cabDoc[$i]['CedRuc']);//Verifico si Existe la Cedula o Ruc
                 
@@ -661,7 +666,9 @@ class NubeFactura {
                     $mPDF1->WriteHTML($mensajePDF); //hacemos un render partial a una vista preparada, en este caso es la vista docPDF
                     //$mPDF1->Output($obj_var->rutaPDF.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
                     //cls_Global::putMessageLogFile($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF);
+                    //cls_Global::putMessageLogFile($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/');
                     cls_Global::rutaPath($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/');//Crea la Ruta pos si no existe.
+                    //cls_Global::putMessageLogFile($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF);
                     $mPDF1->Output($obj_var->rutaPDF.$cabDoc[$i]["Ruc"].'/'.$dataMail->filePDF, 'F');//I=lo presenta navegador  F=ENVIA A UN ARCHVIO                 
                     $resulMail=$dataMail->enviarMail($htmlMail,$cabDoc,$obj_var,$usuData,$i);
 	                //cls_Global::putMessageLogFile($resulMail);
@@ -793,24 +800,35 @@ class NubeFactura {
             $nEstado="1,4";
             //$nEstado="4,5,6";//Descomentar Solo Pruebas
             $docAut= $this->buscarDocFactAUT($con, $obj_var, $obj_con,$nEstado); 
-            //cls_Global::putMessageLogFile($docAut);            
+            //cls_Global::putMessageLogFile($docAut);  
+               
             for ($i = 0; $i < count($docAut); $i++) {
                 $ids=$docAut[$i]["Ids"];
                 if ($ids !== "") {
-                    //Retorna Resultado Generado
-                    $result = $this->generarFileXML($con,$obj_con,$ids,'NubeFactura','IdFactura');
-					//cls_Global::putMessageLogFile($result);  
-                    $DirDocAutorizado=cls_Global::$seaDocAutFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
-                    $DirDocFirmado=cls_Global::$seaDocFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
-                    if ($result['status'] == 'OK') {//Retorna True o False 
-                        $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
-                    }elseif ($result['status'] == 'OK_REG') {
-                        //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
-                        //Autorizacion de Comprobantes 
-                        //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                    //Actualiza Id Empresa
+                    $TblEmpresa=cls_Global::retornaIdEmpresa($docAut[$i]["Ruc"]);
+                    if($TblEmpresa!=0){
+                        cls_Global::$emp_id=$TblEmpresa["EMP_ID"];
+                        //cls_Global::putMessageLogFile("Id Empresa= ".cls_Global::$emp_id);  
+                        //Retorna Resultado Generado
+                        $result = $this->generarFileXML($con,$obj_con,$ids,'NubeFactura','IdFactura');
+                        //cls_Global::putMessageLogFile($result);  
+                        $DirDocAutorizado=cls_Global::$seaDocAutFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                        $DirDocFirmado=cls_Global::$seaDocFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                        if ($result['status'] == 'OK') {//Retorna True o False 
+                            $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeFactura','FACTURA','IdFactura');
+                        }elseif ($result['status'] == 'OK_REG') {
+                            //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                            //Autorizacion de Comprobantes 
+                            //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                        }else{
+                            return $result;
+                        }
+
                     }else{
-                        return $result;
-                    }
+                        //No existe Empresa                      
+                    }   
+                    
                 }
             }
             //return $errAuto->messageSystem('OK', null,40,null, null);
@@ -834,16 +852,26 @@ class NubeFactura {
                 //cls_Global::putMessageLogFile($docAut[$i]); 
                 $ids=$docAut[$i]["Ids"];
                 if ($ids !== "") {
-                    $result = array(
-                        'status' => 'OK',
-                        'nomDoc' => $docAut[$i]["NombreDocumento"],  
-                        'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
-                    );
-                    $DirDocAutorizado=cls_Global::$seaDocAutFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
-                    $DirDocFirmado=cls_Global::$seaDocFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
-                    //$DirDocAutorizado=  cls_Global::$seaDocAutFact; 
-                    //$DirDocFirmado=cls_Global::$seaDocFact;
-                    $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                    //Actualiza Id Empresa
+                    $TblEmpresa=cls_Global::retornaIdEmpresa($docAut[$i]["Ruc"]);
+                    if($TblEmpresa!=0){
+                        cls_Global::$emp_id=$TblEmpresa["EMP_ID"];
+                        cls_Global::putMessageLogFile("Id Empresa Auto= ".cls_Global::$emp_id); 
+                        $result = array(
+                            'status' => 'OK',
+                            'nomDoc' => $docAut[$i]["NombreDocumento"],  
+                            'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
+                        );
+                        $DirDocAutorizado=cls_Global::$seaDocAutFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                        $DirDocFirmado=cls_Global::$seaDocFact.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                        //$DirDocAutorizado=  cls_Global::$seaDocAutFact; 
+                        //$DirDocFirmado=cls_Global::$seaDocFact;
+                        $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+
+                    }else{
+                        //No existe Empresa Id
+                    }
+                    
                 
                 }
             }

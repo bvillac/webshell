@@ -16,7 +16,7 @@ class cls_Global {
     //put your code here
     //Datos de Empresa para Facturas Eletroncia
     //SOLUCIONES = 1 Y INNOVTIC =2
-    public static $emp_id='6';//Empresa
+    public static $emp_id='5';//Empresa
     public static $est_id='1';//Establecimiento
     public static $pemi_id='1';//Punto Emision
     public static $ambt_id='1';//Ambiente de Pruebas por Defecto =1 =>2 Produccion (cambiar en caso de Pruebas)
@@ -396,6 +396,30 @@ class cls_Global {
         if(!file_exists($path)){
             mkdir($path, 0777, true);
             chmod($path, 0777);
+        }
+    }
+
+    public static function retornaIdEmpresa($RucEmpresa) {
+        try {
+            $obj_con = new cls_Base();
+            $conCont = $obj_con->conexionAppWeb();
+            //$rawData = array();
+            $RucEmpresa=trim($RucEmpresa);  
+            $sql = "SELECT EMP_ID,EMP_RUC Ruc,EMP_DBSEA FROM " . $obj_con->BdAppweb . ".EMPRESA WHERE EMP_RUC='$RucEmpresa' AND EMP_EST_LOG=1;";          
+            //echo $sql;
+            $sentencia = $conCont->query($sql);
+            if ($sentencia->num_rows > 0) {
+                //Retorna Solo 1 Registro Asociado
+                return $fila = $sentencia->fetch_assoc();
+                //$this::$emp_id = $fila["EMP_ID"];
+                //$fila["EMP_ID"];
+            }
+            $conCont->close();
+            return 0;
+        } catch (Exception $e) {
+            //echo $e;
+            $conCont->close();
+            return 0;
         }
     }
     

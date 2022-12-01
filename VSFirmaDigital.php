@@ -96,7 +96,7 @@ class VSFirmaDigital {
         }
         
         $response = $client->call($metodo, $param);
-        //cls_Global::putMessageLogFile($response);
+        cls_Global::putMessageLogFile($response);
         if ($client->fault) {
             //echo 'Existe un Problemas en el Envio';
             //print_r($response);

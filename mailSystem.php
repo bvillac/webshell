@@ -132,7 +132,7 @@ class mailSystem {
         $mail->Password = $this->noResponderPass;
         $mail->CharSet =  $this->mailCharSet;
         //$mail->SMTPDebug = 4;//Muestra el Error
-        return $obj_var->messageSystem('OK', "¡¡Enviado!!", null, null, null);
+        //return $obj_var->messageSystem('OK', "¡¡Enviado!!", null, null, null);
         if (!$mail->Send()) {
             //echo "Error enviando: " . $mail->ErrorInfo;
             return $obj_var->messageSystem('NO_OK', "Error enviando: " . $mail->ErrorInfo, null, null, null);
