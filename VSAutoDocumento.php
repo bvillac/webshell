@@ -17,8 +17,7 @@ class VSAutoDocumento {
             if ($valComp['status'] == 'OK') {//Retorna Datos del Comprobacion
                 //Verifica si el Doc Fue Recibido Correctamente...
                 $Rac = $valComp['data']['RespuestaRecepcionComprobante'];
-                //$estadoRac = $Rac['estado'];
-                $estadoRac = 'RECIBIDA';//Solo para las pruebas.
+                $estadoRac = $Rac['estado'];
                 if ($estadoRac == 'RECIBIDA') {
                     //Continua con el Proceso
                     //Autorizacion de Comprobantes                     
@@ -256,6 +255,7 @@ class VSAutoDocumento {
 
     private function mensajeErrorDocumentos($con, $mensaje, $ids, $tipDoc) {
         $valida= new cls_Global();
+        $baseCone = new cls_Base();
         $IdFactura='';$IdRetencion='';$IdNotaCredito='';$IdNotaDebito='';$IdGuiaRemision='';
         switch ($tipDoc) {
             case 'FACTURA':
@@ -299,7 +299,7 @@ class VSAutoDocumento {
             $Mensaje=utf8_encode($valida->limpioCaracteresXML(trim($mensaje['mensaje'])));         
             //$InformacionAdicional=(!empty($mensaje['informacionAdicional']))?$mensaje['informacionAdicional']:'';
             $InformacionAdicional=(!empty($mensaje['informacionAdicional']))?utf8_encode($valida->limpioCaracteresXML(trim($mensaje['informacionAdicional']))):'';
-            $sql = "INSERT INTO " . $con->BdIntermedio . ".NubeMensajeError 
+            $sql = "INSERT INTO " . $baseCone->BdIntermedio . ".NubeMensajeError 
                  (IdFactura,IdRetencion,IdNotaCredito,IdNotaDebito,IdGuiaRemision,Identificador,TipoMensaje,Mensaje,InformacionAdicional)
                  VALUES
                  ('$IdFactura','$IdRetencion','$IdNotaCredito','$IdNotaDebito','$IdGuiaRemision','$Identificador','$TipoMensaje','$Mensaje','$InformacionAdicional')";  

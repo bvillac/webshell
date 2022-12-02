@@ -856,7 +856,7 @@ class NubeFactura {
                     $TblEmpresa=cls_Global::retornaIdEmpresa($docAut[$i]["Ruc"]);
                     if($TblEmpresa!=0){
                         cls_Global::$emp_id=$TblEmpresa["EMP_ID"];
-                        cls_Global::putMessageLogFile("Id Empresa Auto= ".cls_Global::$emp_id); 
+                        //cls_Global::putMessageLogFile("Id Empresa Auto= ".cls_Global::$emp_id); 
                         $result = array(
                             'status' => 'OK',
                             'nomDoc' => $docAut[$i]["NombreDocumento"],  

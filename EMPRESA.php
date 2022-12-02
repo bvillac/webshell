@@ -68,12 +68,13 @@ class EMPRESA {
         //}
 		
         if(strlen(trim($cabDoc[0]['AgenteRetencion']))>0){//Si existe agrega al XML
-            $infoTributaria->appendChild($xml->createElement('agenteRetencion', trim($cabDoc[0]['AgenteRetencion'])));
+            if(trim($cabDoc[0]['AgenteRetencion'])!=0){//Si existe agrega al XML
+                $infoTributaria->appendChild($xml->createElement('agenteRetencion', trim($cabDoc[0]['AgenteRetencion'])));
+            } 
         }
 		//Nota poner atencion en el formato xml las tildes de los conceptos
          
 		if(strlen(trim($cabDoc[0]['RegimenMicroempresas']))>0){//Nota Modificar Factura Electronia a Rimpe de Negocios
-            cls_Global::putMessageLogFile("si ingreso");  
 			//$infoTributaria->appendChild($xml->createElement('contribuyenteRimpe', 'CONTRIBUYENTE RÉGIMEN RIMPE'));
             $infoTributaria->appendChild($xml->createElement('contribuyenteRimpe', trim($cabDoc[0]['RegimenMicroempresas'])));
 		}

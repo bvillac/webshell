@@ -744,21 +744,30 @@ class NubeNotasCredito {
                 //cls_Global::putMessageLogFile($docAut[$i]); 
                 $ids=$docAut[$i]["Ids"];
                 if ($ids !== "") {
-                    //Retorna Resultado Generado
-                    $result = $this->generarFileXML($con,$obj_con,$ids,'NubeNotaCredito','IdNotaCredito');
-                    //$DirDocAutorizado=  cls_Global::$seaDocAutNc; 
-                    //$DirDocFirmado=cls_Global::$seaDocNc;
-                    $DirDocAutorizado=cls_Global::$seaDocAutNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
-                    $DirDocFirmado=cls_Global::$seaDocNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
-                    if ($result['status'] == 'OK') {//Retorna True o False                         
-                        $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeNotaCredito','NOTA_CREDITO','IdNotaCredito');
-                    }elseif ($result['status'] == 'OK_REG') {
-                        //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
-                        //Autorizacion de Comprobantes 
-                        //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                    //Actualiza Id Empresa
+                    $TblEmpresa=cls_Global::retornaIdEmpresa($docAut[$i]["Ruc"]);
+                    if($TblEmpresa!=0){
+                        cls_Global::$emp_id=$TblEmpresa["EMP_ID"];
+                        //Retorna Resultado Generado
+                        $result = $this->generarFileXML($con,$obj_con,$ids,'NubeNotaCredito','IdNotaCredito');
+                        //$DirDocAutorizado=  cls_Global::$seaDocAutNc; 
+                        //$DirDocFirmado=cls_Global::$seaDocNc;
+                        $DirDocAutorizado=cls_Global::$seaDocAutNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                        $DirDocFirmado=cls_Global::$seaDocNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                        if ($result['status'] == 'OK') {//Retorna True o False                         
+                            $autDoc->AutorizaDocumento($result,$ids,$DirDocAutorizado,$DirDocFirmado,'NubeNotaCredito','NOTA_CREDITO','IdNotaCredito');
+                        }elseif ($result['status'] == 'OK_REG') {
+                            //LA CLAVE DE ACCESO REGISTRADA ingresa directamente a Obtener su autorizacion
+                            //Autorizacion de Comprobantes 
+                            //return $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado, 'NubeFactura','FACTURA','IdFactura');
+                        }else{
+                            return $result;
+                        }
+
                     }else{
-                        return $result;
+                        //No existe Empresa     
                     }
+                    
                 }
             }
             //return $errAuto->messageSystem('OK', null,40,null, null);
@@ -780,18 +789,25 @@ class NubeNotasCredito {
                 //cls_Global::putMessageLogFile($docAut[$i]); 
                 $ids=$docAut[$i]["Ids"];
                 if ($ids !== "") {
-                    $result = array(
-                        'status' => 'OK',
-                        'nomDoc' => $docAut[$i]["NombreDocumento"],  
-                        'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
-                    );
-                    //$DirDocAutorizado=cls_Global::$seaDocAutNc; 
-                    //$DirDocFirmado=cls_Global::$seaDocNc;
-                    $DirDocAutorizado=cls_Global::$seaDocAutNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
-                    $DirDocFirmado=cls_Global::$seaDocNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
-                  
-                    $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado,'NubeNotaCredito','NOTA DE CREDITO','IdNotaCredito');
-                
+                    //Actualiza Id Empresa
+                    $TblEmpresa=cls_Global::retornaIdEmpresa($docAut[$i]["Ruc"]);
+                    if($TblEmpresa!=0){
+                        cls_Global::$emp_id=$TblEmpresa["EMP_ID"];
+                        $result = array(
+                            'status' => 'OK',
+                            'nomDoc' => $docAut[$i]["NombreDocumento"],  
+                            'ClaveAcceso' => $docAut[$i]["ClaveAcceso"]
+                        );
+                        //$DirDocAutorizado=cls_Global::$seaDocAutNc; 
+                        //$DirDocFirmado=cls_Global::$seaDocNc;
+                        $DirDocAutorizado=cls_Global::$seaDocAutNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos 
+                        $DirDocFirmado=cls_Global::$seaDocNc.$docAut[$i]["Ruc"].'/';//Se agrega Ruc Empresa Separar documentos
+                      
+                        $autDoc->autorizaComprobante($result, $ids, $DirDocAutorizado, $DirDocFirmado,'NubeNotaCredito','NOTA DE CREDITO','IdNotaCredito');
+                    }else{
+                        //No existe Empresa Id
+                    }
+                    
                 }
             }
             //return $errAuto->messageSystem('OK', null,40,null, null);
