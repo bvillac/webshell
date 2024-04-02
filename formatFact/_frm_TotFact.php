@@ -16,11 +16,27 @@ for ($ib = 0; $ib < sizeof($impFact); $ib++) {
                 $BASEIVA12=$impFact[$ib]['BaseImponible'];
                 $VALORIVA12=$impFact[$ib]['Valor'];
                 break;
+            case 4:
+                $BASEIVA12=$impFact[$ib]['BaseImponible'];
+                $VALORIVA12=$impFact[$ib]['Valor'];
+                break;
+            case 5:
+                $BASEIVA12=$impFact[$ib]['BaseImponible'];
+                $VALORIVA12=$impFact[$ib]['Valor'];
+                break;
             case 6://No objeto Iva
                 $NOOBJIVA=$impFact[$ib]['BaseImponible'];
                 break;
             case 7://Excento de Iva
                 $EXENTOIVA=$impFact[$ib]['BaseImponible'];
+                break;
+            case 8:
+                $BASEIVA12=$impFact[$ib]['BaseImponible'];
+                $VALORIVA12=$impFact[$ib]['Valor'];
+                break;
+            case 10:
+                $BASEIVA12=$impFact[$ib]['BaseImponible'];
+                $VALORIVA12=$impFact[$ib]['Valor'];
                 break;
             default:
         }
