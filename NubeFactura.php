@@ -955,11 +955,23 @@ class NubeFactura {
                                 //$VALORIVA12 = $impFact[$i]['Valor'];
                                 $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
                                 break;
+                            case 4://IVA 15%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 5://IVA 5%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
                             case 6://No objeto Iva
                                 //$NOOBJIVA=$impFact[$i]['BaseImponible'];
                                 break;
                             case 7://Excento de Iva
                                 //$EXENTOIVA=$impFact[$i]['BaseImponible'];
+                                break;
+                            case 8://IVA DIFERIDO%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 10://IVA 13%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
                                 break;
                             default:
                         }

@@ -896,18 +896,30 @@ class NubeNotasCredito {
                                 //$VALORIVA12 = $impFact[$i]['Valor'];
                                 $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
                                 break;
+                            case 4://IVA 15%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 5://IVA 5%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
                             case 6://No objeto Iva
                                 //$NOOBJIVA=$impFact[$i]['BaseImponible'];
                                 break;
                             case 7://Excento de Iva
                                 //$EXENTOIVA=$impFact[$i]['BaseImponible'];
                                 break;
+                            case 8://IVA DIFERIDO%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
+                            case 10://IVA 13%
+                                $TConImpuestos->appendChild($this->totalImpuestoXML($impFact,$i,$xml));
+                                break;
                             default:
                         }
                     }
                     //NOta Verificar cuando el COdigo sea igual a 3 o 5 Para los demas impuestos
                     $infoNotaCredito->appendChild($TConImpuestos);
-                } 
+                }  
             $infoNotaCredito->appendChild($xml->createElement('motivo', $cabFact[0]["MotivoModificacion"]));
             //$infoFactura->appendChild($xml->createElement('propina', cls_Global::formatoDecXML($cabFact[0]["Propina"])));
             //$infoFactura->appendChild($xml->createElement('importeTotal', cls_Global::formatoDecXML($cabFact[0]["ImporteTotal"])));

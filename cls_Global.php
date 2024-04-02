@@ -30,7 +30,7 @@ class cls_Global {
     var $limitEnv=3;
     var $limitEnvMail=2;
     public static $limitEnvAUT=2;
-    var $IVAdefault=12;//Valor de Iva por Defecto en Textos
+    var $IVAdefault=15;//Valor de Iva por Defecto en Textos
     var $Author="Utimpor";
     var $rutaPDF="/opt/SEADOC/DOCPDF/";
     var $rutaXML="/opt/SEADOC/AUTORIZADO/";
